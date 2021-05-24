@@ -1,0 +1,9 @@
+build
+.externalNativeBuild
+*.iml
+.gradle
+.idea
+.cxx
+local.properties
+proguardMapping.txt
+**/.DS_Store

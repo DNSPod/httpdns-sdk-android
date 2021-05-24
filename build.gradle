@@ -1,0 +1,99 @@
+apply plugin: 'com.android.library'
+
+android {
+    compileSdkVersion 28
+    buildToolsVersion "28.0.3"
+
+    defaultConfig {
+        //noinspection MinSdkTooLow
+        minSdkVersion 11
+        targetSdkVersion 28
+        versionCode project.subVersionCode
+        versionName "${project.subVersionName}a"
+
+        externalNativeBuild {
+            // 注意使用hidden后jni外部接口需要使用JNIEXPORT或者__attribute__ ((visibility ("default")))
+            cmake {
+                cppFlags "-fvisibility=hidden", "-Wall"
+                arguments "-GNinja"
+            }
+        }
+        ndk {
+            abiFilters "armeabi-v7a", "arm64-v8a", "x86", "x86_64"
+        }
+
+        consumerProguardFiles 'consumer-proguard-rules.pro'
+
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+    }
+
+    buildTypes {
+        debug {
+            minifyEnabled false
+            buildConfigField("String","VERSION_NAME","\"${project.subVersionName}a\"")
+        }
+
+        release {
+            minifyEnabled true
+            buildConfigField("String","VERSION_NAME","\"${project.subVersionName}a\"")
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    externalNativeBuild {
+        cmake {
+            path "CMakeLists.txt"
+        }
+    }
+
+    libraryVariants.all { variant ->
+        def newLibName = "HTTPDNS_Android_v${defaultConfig.versionName}_${variant.buildType.name}.aar"
+        variant.outputs.all {
+            outputFileName = newLibName
+        }
+    }
+}
+
+configurations {
+    doclava
+}
+
+dependencies {
+    implementation 'androidx.annotation:annotation:1.1.0'
+//    implementation files('libs/beacon-android-release-3.1.2-cover.jar')
+    testImplementation 'junit:junit:4.12'
+    androidTestImplementation('com.android.support.test.espresso:espresso-core:3.0.2', {
+        exclude group: 'com.android.support', module: 'support-annotations'
+    })
+
+
+   doclava 'com.google.doclava:doclava:1.0.6'
+}
+
+task generateJavadoc(type: Javadoc, dependsOn: project.configurations.doclava) {
+   failOnError = true
+   classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+   destinationDir = file("../javadocs/")
+
+   options.doclet = "com.google.doclava.Doclava"
+   options.docletpath = configurations.doclava.files.asType(List)
+   options.encoding = "UTF-8"
+   options.memberLevel = JavadocMemberLevel.PUBLIC
+
+   title = null
+   source = [
+           'src/main/java/com/tencent/msdk/dns/DnsConfig.java',
+           'src/main/java/com/tencent/msdk/dns/DnsService.java',
+           'src/main/java/com/tencent/msdk/dns/base/executor/DnsExecutors.java',
+           'src/main/java/com/tencent/msdk/dns/ILookedUpListener.java',
+           'src/main/java/com/tencent/msdk/dns/base/log/ILogNode.java',
+           'src/main/java/com/tencent/msdk/dns/core/LookupResult.java',
+           'src/main/java/com/tencent/msdk/dns/core/IpSet.java',
+           'src/main/java/com/tencent/msdk/dns/core/stat/StatisticsMerge.java',
+           'src/main/java/com/tencent/msdk/dns/core/stat/AbsStatistics.java',
+           'src/main/java/com/tencent/msdk/dns/core/local/LocalDns.java',
+           'src/main/java/com/tencent/msdk/dns/core/rest/share/AbsRestDns.java',
+
+           'src/main/java/com/tencent/msdk/dns/MSDKDnsResolver.java',
+   ]
+}
