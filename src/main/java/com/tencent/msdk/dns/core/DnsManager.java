@@ -8,6 +8,7 @@ import com.tencent.msdk.dns.base.utils.NetworkStack;
 import com.tencent.msdk.dns.core.local.LocalDns;
 import com.tencent.msdk.dns.core.rest.aeshttp.AesHttpDns;
 import com.tencent.msdk.dns.core.rest.deshttp.DesHttpDns;
+import com.tencent.msdk.dns.core.rest.https.HttpsDns;
 import com.tencent.msdk.dns.core.retry.Retry;
 import com.tencent.msdk.dns.core.sorter.Sorter;
 import com.tencent.msdk.dns.core.stat.StatisticsMerge;
@@ -48,6 +49,8 @@ public final class DnsManager {
         registerDns(new DesHttpDns(DnsDescription.Family.INET6));
         registerDns(new AesHttpDns(DnsDescription.Family.INET));
         registerDns(new AesHttpDns(DnsDescription.Family.INET6));
+        registerDns(new HttpsDns(DnsDescription.Family.INET));
+        registerDns(new HttpsDns(DnsDescription.Family.INET6));
     }
 
     @SuppressWarnings("WeakerAccess")
@@ -176,7 +179,7 @@ public final class DnsManager {
                         IpSet.EMPTY, new StatisticsMerge(lookupParams.appContext));
             }
         }
-
+//        初始化CountDownLatch同步计数器
         CountDownLatch lookupLatch = new CountDownLatch(1);
         LookupResultHolder lookupResultHolder = new LookupResultHolder();
         RUNNING_LOOKUP_LATCH_MAP.put(
@@ -218,7 +221,6 @@ public final class DnsManager {
         // NOTE: sessions仅会被当前线程访问
         List<IDns.ISession> sessions = new ArrayList<>();
         lookupContext.sessions(sessions);
-
         try {
             // NOTE: 当前对外API上, 不支持AAAA记录的解析, 需要保留LocalDns的解析结果作为AAAA解析结果
             // 暂时不忽略LocalDns解析结果(即超时时间内会等待LocalDns解析结果, 无论RestDns是否已经解析成功)
@@ -230,7 +232,7 @@ public final class DnsManager {
                     DnsLog.d("DnsManager lookup getResultFromCache success");
                     return lookupResult;
                 }
-
+                // 打开Selector
                 prepareTasks(restDnsGroup, lookupContext);
                 if (!lookupContext.allDnsLookedUp() && null != localDnsGroup) {
                     prepareTasks(localDnsGroup, lookupContext);
@@ -295,6 +297,7 @@ public final class DnsManager {
                     selector.select(waitTimeMills);
                 } catch (Exception ignored) {
                 }
+                // Socket进行请求
                 tryLookup(lookupContext);
                 if (!sessions.isEmpty() && // 需要重试
                         canRetry(startTimeMills, timeoutMills, maxRetryTimes, retriedTimes)) {
@@ -321,6 +324,7 @@ public final class DnsManager {
             LookupResult<IStatisticsMerge> lookupResult =
                     new LookupResult<IStatisticsMerge>(ipSet, statMerge);
             lookupResultHolder.mLookupResult = lookupResult;
+
             return lookupResult;
         } finally {
             // 结束超时的session, 统计收尾
@@ -396,7 +400,8 @@ public final class DnsManager {
             return;
         }
         IDns.ISession session;
-        if (((null != lookupContext.selector()) || tryOpenSelector(lookupContext)) &&
+        // HTTPS情况下也采用HTTPCONNECTION做请求
+        if (!Const.HTTPS_CHANNEL.equals(lookupContext.channel()) && ((null != lookupContext.selector()) || tryOpenSelector(lookupContext)) &&
                 null != (session = dns.getSession(lookupContext))) {
             LookupHelper.prepareNonBlockLookupTask(session, lookupContext);
         } else {
@@ -443,9 +448,10 @@ public final class DnsManager {
             } else if (token.isWritable()) {
                 DnsLog.d("%s event writable",
                         session.getDns().getDescription());
+                // 发起请求
                 session.request();
             } else {
-                if (token.isConnectable()){
+                if (token.isConnectable()) {
                     DnsLog.d("%s event connectable",
                             session.getDns().getDescription());
                     session.connect();

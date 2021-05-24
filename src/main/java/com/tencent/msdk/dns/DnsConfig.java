@@ -24,6 +24,7 @@ public final class DnsConfig {
     public final boolean initBuiltInReporters;
 
     public final String dnsIp;
+
     public final LookupExtra lookupExtra;
 
     public final int timeoutMills;
@@ -47,7 +48,7 @@ public final class DnsConfig {
 
     private DnsConfig(int logLevel,
                       String appId, String userId, boolean initBuiltInReporters,
-                      String dnsIp, String dnsId, String dnsKey,
+                      String dnsIp, String dnsId, String dnsKey, String token,
                       int timeoutMills,
                       Set<WildcardDomain> protectedDomains,
                       Set<String> preLookupDomains, Set<String> asyncLookupDomains,
@@ -60,7 +61,7 @@ public final class DnsConfig {
         this.userId = userId;
         this.initBuiltInReporters = initBuiltInReporters;
         this.dnsIp = dnsIp;
-        this.lookupExtra = new LookupExtra(dnsId, dnsKey);
+        this.lookupExtra = new LookupExtra(dnsId, dnsKey, token);
         this.timeoutMills = timeoutMills;
         this.protectedDomains = protectedDomains;
         this.preLookupDomains = preLookupDomains;
@@ -164,6 +165,7 @@ public final class DnsConfig {
         private String mDnsIp = "";
         private String mDnsId = "";
         private String mDnsKey = "";
+        private String mToken = "";
 
         private int mTimeoutMills = 1000;
 
@@ -301,6 +303,22 @@ public final class DnsConfig {
             mDnsKey = dnsKey;
             return this;
         }
+
+        /**
+         * 设置Token
+         *
+         * @param token https使用的标识
+         * @return 当前Builder实例, 方便链式调用
+         * @throws IllegalArgumentException token为空时抛出
+         */
+        public Builder token(String token) {
+            if (TextUtils.isEmpty(token)) {
+                throw new IllegalArgumentException("token".concat(Const.EMPTY_TIPS));
+            }
+            mToken = token;
+            return this;
+        }
+
 
         /**
          * 设置域名解析请求超时时间
@@ -493,13 +511,18 @@ public final class DnsConfig {
             return this;
         }
 
-        Builder aesHttp() {
+        public Builder aesHttp() {
             mChannel = Const.AES_HTTP_CHANNEL;
             return this;
         }
 
-        Builder desHttp() {
+        public Builder desHttp() {
             mChannel = Const.DES_HTTP_CHANNEL;
+            return this;
+        }
+
+        public Builder https() {
+            mChannel = Const.HTTPS_CHANNEL;
             return this;
         }
 
@@ -597,7 +620,7 @@ public final class DnsConfig {
          */
         public DnsConfig build() {
             return new DnsConfig(mLogLevel,
-                    mAppId, mUserId, mInitBuiltInReporters, mDnsIp, mDnsId, mDnsKey,
+                    mAppId, mUserId, mInitBuiltInReporters, mDnsIp, mDnsId, mDnsKey,mToken,
                     mTimeoutMills,
                     mProtectedDomains, mPreLookupDomains, mAsyncLookupDomains,
                     mChannel, mBlockFirst,

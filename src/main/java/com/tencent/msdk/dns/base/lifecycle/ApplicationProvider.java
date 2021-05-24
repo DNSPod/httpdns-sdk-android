@@ -1,7 +1,6 @@
 package com.tencent.msdk.dns.base.lifecycle;
 
 import android.app.Activity;
-//import android.app.ActivityThread;
 import android.app.Application;
 import android.content.Context;
 
@@ -18,9 +17,6 @@ final class ApplicationProvider {
             if (null == sApplication) {
                 sApplication = getApplication(Platform.get().getActivity());
             }
-//            if (null == sApplication) {
-//                sApplication = getApplication();
-//            }
         }
         return sApplication;
     }
@@ -46,12 +42,4 @@ final class ApplicationProvider {
             return null;
         }
     }
-
-//    private static Application getApplication() {
-//        try {
-//            return ActivityThread.currentActivityThread().getApplication();
-//        } catch (Throwable tr) {
-//            return null;
-//        }
-//    }
 }

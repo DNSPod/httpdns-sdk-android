@@ -1,6 +1,8 @@
 package com.tencent.msdk.dns.core.rest.share;
 
 import android.text.TextUtils;
+import android.util.Log;
+
 import com.tencent.msdk.dns.base.log.DnsLog;
 import com.tencent.msdk.dns.base.utils.CommonUtils;
 import com.tencent.msdk.dns.base.utils.HttpHelper;
@@ -50,7 +52,6 @@ public abstract class AbsHttpDns extends AbsRestDns {
     public DnsDescription getDescription() {
         return mDescription;
     }
-
     @Override
     public LookupResult lookup(LookupParameters<LookupExtra> lookupParams) {
         // block way
@@ -62,52 +63,70 @@ public abstract class AbsHttpDns extends AbsRestDns {
         int timeoutMills = lookupParams.timeoutMills;
         String dnsIp = lookupParams.dnsIp;
         LookupExtra lookupExtra = lookupParams.lookupExtra;
+        //  域名解析统计数据类
         Statistics stat = new Statistics();
         stat.retryTimes = lookupParams.curRetryTime;
         stat.asyncLookup = lookupParams.enableAsyncLookup;
         stat.netChangeLookup = lookupParams.netChangeLookup;
-
+        //  域名解析开始时间统计
         stat.startLookup();
 
         if (tryGetResultFromCache(lookupParams, stat)) {
             stat.endLookup();
             return new LookupResult<>(stat.ips, stat);
         }
-
+        //  缓冲区，用来写SocketChannel
         BufferedReader reader = null;
         try {
-            //noinspection ConstantConditions
+            //  noinspection ConstantConditions
             String urlStr = getTargetUrl(dnsIp, hostname, lookupExtra);
             if (TextUtils.isEmpty(urlStr)) {
                 stat.errorCode = ErrorCode.ENCRYPT_REQUEST_CONTENT_FAILED_ERROR_CODE;
                 return new LookupResult<>(stat.ips, stat);
             }
-            String rawRspContent;
+            //  接受返回string
+            String rawRspContent = "";
+            String lineTxt = "";
             try {
+                //  发起请求
                 URLConnection connection = new URL(urlStr).openConnection();
                 connection.setConnectTimeout(timeoutMills);
                 connection.setReadTimeout(timeoutMills);
-                //noinspection CharsetObjectCanBeUsed
+                //  noinspection CharsetObjectCanBeUsed
+                //  读取网络请求结果
                 reader = new BufferedReader(new InputStreamReader(
                         connection.getInputStream(), "UTF-8"));
-                rawRspContent = reader.readLine();
+                //  结果赋值
+//                  rawRspContent = reader.readLine();
+                while ((lineTxt = reader.readLine()) != null) {
+                    lineTxt+='\n';
+                    rawRspContent+=lineTxt;
+                 }
+                // 去除最后的"\n"字符避免干扰 ResponseParser 区分批量查询的结果
+                rawRspContent = rawRspContent.substring(0, rawRspContent.length()-2);
+                reader.close();
             } catch (Exception e) {
                 stat.errorCode = ErrorCode.RESPONSE_FAILED_FOR_EXCEPTION_ERROR_CODE;
                 stat.errorMsg = e.getMessage();
                 throw e;
             }
+
+            //  解密
             String rspContent = decrypt(rawRspContent, lookupExtra.bizKey);
             DnsLog.d(getTag() + "lookup byUrl: %s, rsp:[%s]", urlStr, rspContent);
             if (TextUtils.isEmpty(rspContent)) {
                 stat.isGetEmptyResponse = true;
                 stat.errorCode = ErrorCode.DECRYPT_RESPONSE_CONTENT_FAILED_ERROR_CODE;
             }
+            //  返回结果解析器
             Response rsp = ResponseParser.parseResponse(mFamily, rspContent);
+            DnsLog.d(getTag()+"lookup response: ====> %s", rsp.toString());
             if (rsp == Response.EMPTY) {
                 stat.isGetEmptyResponse = true;
                 stat.errorCode = ErrorCode.PARSE_RESPONSE_CONTENT_FAILED_ERROR_CODE;
                 return new LookupResult<>(stat.ips, stat);
             }
+            //  返回值处理
             mCacheHelper.put(lookupParams, rsp);
             stat.errorCode = ErrorCode.SUCCESS;
             stat.clientIp = rsp.clientIp;
@@ -215,6 +234,7 @@ public abstract class AbsHttpDns extends AbsRestDns {
                     throw e;
                 }
                 try {
+//                    Selector注册监听
                     mSelectionKey = mChannel.register(selector,
                             SelectionKey.OP_CONNECT | SelectionKey.OP_READ | SelectionKey.OP_WRITE);
                     mSelectionKey.attach(mChannel);

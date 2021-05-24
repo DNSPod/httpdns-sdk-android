@@ -7,6 +7,7 @@ public interface Const {
     String DES_HTTPS_CHANNEL = "DesHttps";
     String AES_HTTP_CHANNEL = "AesHttp";
     String AES_HTTPS_CHANNEL = "AesHttps";
+    String HTTPS_CHANNEL = "Https";
 
     int MAX_IP_COUNT = 5;
 

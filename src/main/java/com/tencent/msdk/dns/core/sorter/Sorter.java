@@ -17,9 +17,11 @@ import java.util.List;
 public final class Sorter implements ISorter {
 
     private final int mCurNetStack;
-
-    private String mV4IpFromLocal = null;
-    private String mV6IpFromLocal = null;
+    // 适配批量更新的情况，IPFromLocal更改为数组
+//    private String mV4IpFromLocal = null;
+//    private String mV6IpFromLocal = null;
+    private List<String> mV4IpFromLocal = Collections.emptyList();
+    private List<String> mV6IpFromLocal = Collections.emptyList();
     private List<String> mV4IpsFromRest = Collections.emptyList();
     private List<String> mV6IpsFromRest = Collections.emptyList();
 
@@ -42,10 +44,10 @@ public final class Sorter implements ISorter {
         if (Const.LOCAL_CHANNEL.equals(dns.getDescription().channel)) {
             DnsLog.d("sorter put lookup from local: %s", Arrays.toString(ips));
             for (String ip : ips) {
-                if (TextUtils.isEmpty(mV4IpFromLocal) && IpValidator.isV4Ip(ip)) {
-                    mV4IpFromLocal = ip;
-                } else if (TextUtils.isEmpty(mV6IpFromLocal) && IpValidator.isV6Ip(ip)) {
-                    mV6IpFromLocal = ip;
+                if (IpValidator.isV4Ip(ip)) {
+                    mV4IpFromLocal = addIp(mV4IpFromLocal, ip);
+                } else if (IpValidator.isV6Ip(ip)) {
+                    mV6IpFromLocal = addIp(mV6IpFromLocal, ip);
                 }
             }
         } else {
@@ -67,7 +69,7 @@ public final class Sorter implements ISorter {
             if (!mV4IpsFromRest.isEmpty()) {
                 v4IpSet.addAll(mV4IpsFromRest);
             } else if (null != mV4IpFromLocal) {
-                v4IpSet.add(mV4IpFromLocal);
+                v4IpSet.addAll(mV4IpFromLocal);
             }
         }
         List<String> v6IpSet = new ArrayList<>();
@@ -75,7 +77,7 @@ public final class Sorter implements ISorter {
             if (!mV6IpsFromRest.isEmpty()) {
                 v6IpSet.addAll(mV6IpsFromRest);
             } else if (null != mV6IpFromLocal) {
-                v6IpSet.add(mV6IpFromLocal);
+                v6IpSet.addAll(mV6IpFromLocal);
             }
         }
         return new IpSet(v4IpSet.toArray(Const.EMPTY_IPS), v6IpSet.toArray(Const.EMPTY_IPS));

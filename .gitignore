@@ -6,3 +6,4 @@ build
 .cxx
 local.properties
 proguardMapping.txt
+**/.DS_Store
