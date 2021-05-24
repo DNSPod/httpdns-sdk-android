@@ -2,6 +2,7 @@ package com.tencent.msdk.dns.core.local;
 
 import android.text.TextUtils;
 import android.util.Log;
+
 import com.tencent.msdk.dns.base.log.DnsLog;
 import com.tencent.msdk.dns.core.Const;
 import com.tencent.msdk.dns.core.DnsDescription;
@@ -10,8 +11,10 @@ import com.tencent.msdk.dns.core.LookupContext;
 import com.tencent.msdk.dns.core.LookupParameters;
 import com.tencent.msdk.dns.core.LookupResult;
 import com.tencent.msdk.dns.core.stat.AbsStatistics;
+
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.Arrays;
 
 public final class LocalDns implements IDns<IDns.ILookupExtra> {
@@ -69,20 +72,45 @@ public final class LocalDns implements IDns<IDns.ILookupExtra> {
         }
 
         String[] ips = Const.EMPTY_IPS;
-        try {
-            // LocalDns使用系统默认时延
-            InetAddress[] inetAddresses = InetAddress.getAllByName(hostname);
-            ips = new String[inetAddresses.length];
-            for (int i = 0; i < inetAddresses.length; i++) {
-                ips[i] = inetAddresses[i].getHostAddress();
+        //  判断是否是批量查询
+        String[] hostList = hostname.split(",");
+        if (hostList.length > 1) {
+            // 批量查询
+            ArrayList<String> ipsList = new ArrayList();
+            for (String host : hostList) {
+                try {
+                    // LocalDns使用系统默认时延
+                    InetAddress[] inetAddresses = InetAddress.getAllByName(host);
+                    ips = new String[inetAddresses.length];
+                    for (int i = 0; i < inetAddresses.length; i++) {
+                        ipsList.add(host + ":" + inetAddresses[i].getHostAddress());
+                    }
+                    // NOTE: 避免无谓的toString调用
+                    if (DnsLog.canLog(Log.DEBUG)) {
+                        DnsLog.d("LocalDns lookup for %s result: %s", hostname, Arrays.toString(ips));
+                    }
+                } catch (UnknownHostException e) {
+                    DnsLog.d(e, "LocalDns lookup %s failed", hostname);
+                }
             }
-            // NOTE: 避免无谓的toString调用
-            if (DnsLog.canLog(Log.DEBUG)) {
-                DnsLog.d("LocalDns lookup for %s result: %s", hostname, Arrays.toString(ips));
+            ips = ipsList.toArray(new String[ipsList.size()]);
+        } else {
+            try {
+                // LocalDns使用系统默认时延
+                InetAddress[] inetAddresses = InetAddress.getAllByName(hostname);
+                ips = new String[inetAddresses.length];
+                for (int i = 0; i < inetAddresses.length; i++) {
+                    ips[i] = inetAddresses[i].getHostAddress();
+                }
+                // NOTE: 避免无谓的toString调用
+                if (DnsLog.canLog(Log.DEBUG)) {
+                    DnsLog.d("LocalDns lookup for %s result: %s", hostname, Arrays.toString(ips));
+                }
+            } catch (UnknownHostException e) {
+                DnsLog.d(e, "LocalDns lookup %s failed", hostname);
             }
-        } catch (UnknownHostException e) {
-            DnsLog.d(e, "LocalDns lookup %s failed", hostname);
         }
+
         return ips;
     }
 

@@ -27,10 +27,22 @@ public final class IpValidator {
                     "([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1?[0-9])?[0-9])\\\\.){3}(25[0-5]|(2[0-4]|1?[0-9])?[0-9])");
 
     public static boolean isV4Ip(/* @Nullable */String ip) {
-        return !TextUtils.isEmpty(ip) && IPV4_PATTERN.matcher(ip).matches();
+        String realIp = formatIp(ip);
+        return !TextUtils.isEmpty(realIp) && IPV4_PATTERN.matcher(realIp).matches();
     }
 
     public static boolean isV6Ip(/* @Nullable */String ip) {
-        return !TextUtils.isEmpty(ip) && IPV6_PATTERN.matcher(ip).matches();
+        String realIp = formatIp(ip);
+        return !TextUtils.isEmpty(ip) && IPV6_PATTERN.matcher(ip).matches() || !TextUtils.isEmpty(realIp) && IPV6_PATTERN.matcher(realIp).matches();
+    }
+
+    // 带域名的ip转换适配批量查询
+    private static String formatIp(String ip){
+        // 批量ip例子：baidu.com:39.156.69.79
+        if(ip.contains(":")){
+            int i=ip.indexOf(":");
+            return ip.substring(i+1);
+        }
+        return ip;
     }
 }

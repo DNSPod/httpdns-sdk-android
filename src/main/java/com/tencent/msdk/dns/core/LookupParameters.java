@@ -31,6 +31,7 @@ public final class LookupParameters<LookupExtra extends IDns.ILookupExtra> {
     public final int curRetryTime;
     public final boolean netChangeLookup;
 
+
     private LookupParameters(
             Context appContext,
             String hostname, int timeoutMills, String dnsIp, LookupExtra lookupExtra,

@@ -2,6 +2,7 @@ package com.tencent.msdk.dns;
 
 import android.content.Context;
 import android.text.TextUtils;
+
 import com.tencent.msdk.dns.base.executor.DnsExecutors;
 import com.tencent.msdk.dns.base.lifecycle.ActivityLifecycleDetector;
 import com.tencent.msdk.dns.base.log.DnsLog;
@@ -24,6 +25,7 @@ import com.tencent.msdk.dns.core.LookupResult;
 import com.tencent.msdk.dns.core.rest.share.LookupExtra;
 import com.tencent.msdk.dns.core.stat.StatisticsMerge;
 import com.tencent.msdk.dns.report.ReportHelper;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -147,8 +149,8 @@ public final class DnsService {
      * ***** 实验性功能 *****
      * 进行域名解析
      *
-     * @param hostname       域名
-     * @param fallback2Local 访问HTTPDNS服务失败时, 是否fallback到LocalDNS进行域名解析
+     * @param hostname          域名
+     * @param fallback2Local    访问HTTPDNS服务失败时, 是否fallback到LocalDNS进行域名解析
      * @param enableAsyncLookup 是否对当前域名启用异步解析
      * @return {@link IpSet}实例, 即解析得到的Ip集合
      * @throws IllegalStateException 没有初始化时抛出

@@ -50,7 +50,7 @@ public final class Response {
     // NOTE: 仅用于创建空实现, 空实现实际上为无效值, 无法通过常规构造器创建
     private Response(String clientIp, String[] ips, int ttl) {
         this.clientIp = clientIp;
-        this.ips = ips;
+        this.ips = ips;       
         this.ttl = ttl;
     }
 
@@ -86,6 +86,7 @@ public final class Response {
         for (int i = maxIpCount - 1, j = ipCount - 1; i >= 0 && j >= 0; i--) {
             String ip = ips[i];
             if (!Const.INVALID_IP.equals(ip)) {
+                // 将有效IP添加到realIps中
                 realIps[j--] = ip;
             }
         }
