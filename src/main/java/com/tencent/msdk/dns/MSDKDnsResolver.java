@@ -38,7 +38,7 @@ public class MSDKDnsResolver {
      * @param context <a href="https://developer.android.google.cn/reference/android/content/Context">Context</a>实例, SDK内部持有ApplicationContext用于监听网络切换等操作
      * @param appId   即SDK appId, 从<a href="https://console.cloud.tencent.com/HttpDNS">腾讯云官网</a>申请获得
      * @param debug   是否输出调试日志, true为输出, false不输出, SDK默认仅将日志通过logcat输出, tag统一使用HTTPDNS
-     * @param dnsIp   由外部传入的dnsIp，如"119.29.29.29"，从<a href="https://cloud.tencent.com/document/product/379/17655"></a> 文档提供的IP为准
+     * @param dnsIp   由外部传入的dnsIp，如"119.29.29.99"，从<a href="https://cloud.tencent.com/document/product/379/17655"></a> 文档提供的IP为准
      * @param timeout 域名解析请求超时时间, 单位为ms
      */
     public void init(Context context, String appId, String dnsIp, boolean debug, int timeout) {
@@ -56,7 +56,7 @@ public class MSDKDnsResolver {
      * @param appId   即SDK appId, 从<a href="https://console.cloud.tencent.com/httpdns">腾讯云官网</a>申请获得
      * @param dnsId   即HTTPDNS服务的授权Id, 从<a href="https://console.cloud.tencent.com/httpdns">腾讯云官网</a>申请获得
      * @param dnsKey  即HTTPDNS服务的授权Id对应的加密密钥, 从<a href="https://console.cloud.tencent.com/httpdns">腾讯云官网</a>申请获得
-     * @param dnsIp   由外部传入的dnsIp，如"119.29.29.29"，从<a href="https://cloud.tencent.com/document/product/379/17655"></a> 文档提供的IP为准
+     * @param dnsIp   由外部传入的dnsIp，如"119.29.29.99"，从<a href="https://cloud.tencent.com/document/product/379/17655"></a> 文档提供的IP为准
      * @param debug   是否输出调试日志, true为输出, false不输出, SDK默认仅将日志通过logcat输出, tag统一使用HTTPDNS
      * @param timeout 域名解析请求超时时间, 单位为ms
      */
@@ -71,7 +71,7 @@ public class MSDKDnsResolver {
         DnsConfig.Builder dnsConfigBuilder =
                 new DnsConfig
                         .Builder()
-                        .logLevel(debug ? Log.DEBUG : Log.WARN)
+                        .logLevel(debug ? Log.VERBOSE : Log.WARN)
                         .appId(appID)
                         .timeoutMills(timeout);
         if (null != dnsIp) {
@@ -103,7 +103,7 @@ public class MSDKDnsResolver {
         DnsConfig.Builder dnsConfigBuilder =
                 new DnsConfig
                         .Builder()
-                        .logLevel(debug ? Log.DEBUG : Log.WARN)
+                        .logLevel(debug ? Log.VERBOSE : Log.WARN)
                         .appId(appID)
                         .timeoutMills(timeout);
         if (null != dnsIp) {
