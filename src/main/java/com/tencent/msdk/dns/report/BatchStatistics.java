@@ -80,7 +80,6 @@ final class BatchStatistics {
         private final boolean mAsyncLookup;
 
         private final StringBuilder mNetTypeListBuilder = new StringBuilder();
-        private final StringBuilder mSsidListBuilder = new StringBuilder();
 
         private final StringBuilder mHostnameListBuilder = new StringBuilder();
         private final StringBuilder mChannelListBuilder = new StringBuilder();

@@ -48,7 +48,6 @@ interface ReportConst {
     String LOOKUP_COUNT_KEY = "lookup_count";
 
     String BATCH_NETWORK_TYPE_KEY = "net_types";
-    String BATCH_SSID_KEY = "ssids";
 
     String BATCH_HOSTNAME_KEY = "domains";
     String BATCH_NETWORK_STACK_KEY = "net_stacks";
