@@ -16,7 +16,6 @@ interface ReportConst {
     String USER_ID_KEY = "userID";
 
     String NETWORK_TYPE_KEY = "netType";
-    String SSID_KEY = "ssid";
 
     String CHANNEL_KEY = "channel";
     String HOSTNAME_KEY = "domain";

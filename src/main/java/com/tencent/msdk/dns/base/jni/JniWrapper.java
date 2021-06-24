@@ -41,4 +41,13 @@ public final class JniWrapper {
             return null;
         }
     }
+
+    public static int sendToUnity(String strMsg) {
+        try {
+            return Jni.sendToUnity(strMsg);
+        } catch (Throwable tr) {
+            DnsLog.w("sendToUnity failed");
+            return -4;
+        }
+    }
 }

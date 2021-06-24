@@ -10,6 +10,7 @@
 #include "stack/NetworkStack.h"
 #include "des/des.h"
 #include "aes/aes.h"
+#include "adapter/HttpDnsBridge.h"
 
 extern "C" JNIEXPORT int
 
@@ -89,4 +90,15 @@ Java_com_tencent_msdk_dns_base_jni_Jni_aesCrypt(JNIEnv *env,
     C_SAFE_FREE(src);
     C_SAFE_FREE(aes_iv);
     return jarray;
+}
+
+JNIEXPORT jint JNICALL Java_com_tencent_msdk_dns_base_jni_Jni_sendToUnity
+        (JNIEnv *env, jclass cls, jstring _str) {
+    std::string str_msg = self_dns::JniHelper::Jstring2String(env, _str);
+    int res = -1;
+    HTTPDNSSendToUnity send_to_unity_func = HTTPDNSGetBridge();
+    if (send_to_unity_func) {
+        res = send_to_unity_func(str_msg.c_str());
+    }
+    return res;
 }

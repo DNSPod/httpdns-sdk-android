@@ -3,8 +3,6 @@ package com.tencent.msdk.dns.base.utils;
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.net.wifi.WifiInfo;
-import android.net.wifi.WifiManager;
 import android.telephony.TelephonyManager;
 
 public final class NetworkUtils {
@@ -67,22 +65,6 @@ public final class NetworkUtils {
         } catch (Exception e) {
             return NETWORK_CLASS_UNKNOWN;
         }
-    }
-
-    public static String getSSID(/* @Nullable */Context context) {
-        if (null == context) {
-            return "";
-        }
-        WifiManager wifiManager = (WifiManager)
-                context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-        if (null == wifiManager) {
-            return "";
-        }
-        WifiInfo wifiInfo = wifiManager.getConnectionInfo();
-        if (null == wifiInfo) {
-            return "";
-        }
-        return wifiInfo.getSSID();
     }
 
     private static int getMobileNetworkClass(NetworkInfo info) {

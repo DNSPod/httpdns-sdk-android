@@ -24,10 +24,6 @@ public final class StatisticsMerge implements IStatisticsMerge<LookupExtra> {
      * 网络类型
      */
     public final String netType;
-    /**
-     * WiFi SSID(如果当前网络是WiFi)
-     */
-    public final String ssid;
 
     /**
      * 域名
@@ -85,7 +81,6 @@ public final class StatisticsMerge implements IStatisticsMerge<LookupExtra> {
         }
 
         netType = NetworkUtils.getNetworkName(context);
-        ssid = NetworkUtils.getSSID(context);
     }
 
     @Override
@@ -170,7 +165,6 @@ public final class StatisticsMerge implements IStatisticsMerge<LookupExtra> {
     public String toString() {
         return super.toString() + "{" +
                 "netType='" + netType + '\'' +
-                ", ssid='" + ssid + '\'' +
                 ", hostname='" + hostname + '\'' +
                 ", channel='" + channel + '\'' +
                 ", curNetStack=" + curNetStack +
