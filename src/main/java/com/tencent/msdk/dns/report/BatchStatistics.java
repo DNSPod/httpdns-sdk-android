@@ -8,7 +8,6 @@ import com.tencent.msdk.dns.core.stat.StatisticsMerge;
 final class BatchStatistics {
 
     public final String netTypeList;
-    public final String ssidList;
 
     public final String hostnameList;
     public final String channelList;
@@ -33,7 +32,7 @@ final class BatchStatistics {
     public final String restInet6LookupRetryTimesList;
 
     private BatchStatistics(
-            String netTypeList, String ssidList,
+            String netTypeList,
             String hostnameList, String channelList, String netStackList,
             String restInetNetChangeLookupList,
             String restInetStartLookupTimeMillsList,
@@ -52,7 +51,6 @@ final class BatchStatistics {
             String restInet6LookupCostTimeMillsList,
             String restInet6LookupRetryTimesList) {
         this.netTypeList = netTypeList;
-        this.ssidList = ssidList;
         this.hostnameList = hostnameList;
         this.channelList = channelList;
         this.netStackList = netStackList;
@@ -82,7 +80,6 @@ final class BatchStatistics {
         private final boolean mAsyncLookup;
 
         private final StringBuilder mNetTypeListBuilder = new StringBuilder();
-        private final StringBuilder mSsidListBuilder = new StringBuilder();
 
         private final StringBuilder mHostnameListBuilder = new StringBuilder();
         private final StringBuilder mChannelListBuilder = new StringBuilder();
@@ -116,7 +113,6 @@ final class BatchStatistics {
             }
 
             mNetTypeListBuilder.append(statMerge.netType).append(VALUE_SPLITTER);
-            mSsidListBuilder.append(statMerge.ssid).append(VALUE_SPLITTER);
             mHostnameListBuilder.append(statMerge.hostname).append(VALUE_SPLITTER);
             mNetStackListBuilder.append(statMerge.curNetStack).append(VALUE_SPLITTER);
             if (mAsyncLookup) {
@@ -184,7 +180,6 @@ final class BatchStatistics {
         public BatchStatistics build() {
             if (0 != mNetTypeListBuilder.length()) {
                 mNetTypeListBuilder.setLength(mNetTypeListBuilder.length() - 1);
-                mSsidListBuilder.setLength(mSsidListBuilder.length() - 1);
                 mHostnameListBuilder.setLength(mHostnameListBuilder.length() - 1);
                 mNetStackListBuilder.setLength(mNetStackListBuilder.length() - 1);
 
@@ -225,7 +220,7 @@ final class BatchStatistics {
             }
 
             return new BatchStatistics(
-                    mNetTypeListBuilder.toString(), mSsidListBuilder.toString(),
+                    mNetTypeListBuilder.toString(),
                     mHostnameListBuilder.toString(), mChannelListBuilder.toString(),
                     mNetStackListBuilder.toString(),
                     mRestInetNetChangeLookupListBuilder.toString(),

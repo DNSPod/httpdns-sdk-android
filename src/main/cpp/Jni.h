@@ -29,6 +29,10 @@ Java_com_tencent_msdk_dns_base_jni_Jni_aesCrypt(JNIEnv *env,
                                                 jint mode,
                                                 jbyteArray _aes_iv);
 
+JNIEXPORT jint JNICALL Java_com_tencent_msdk_dns_base_jni_Jni_sendToUnity
+        (JNIEnv *env, jclass cls, jstring _str);
+
+
 #ifdef __cplusplus
 }
 #endif

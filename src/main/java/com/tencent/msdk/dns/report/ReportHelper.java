@@ -67,7 +67,6 @@ public final class ReportHelper {
         }
         BatchStatistics batchStat = batchStatBuilder.build();
         preLookupEventMap.put(ReportConst.BATCH_NETWORK_TYPE_KEY, batchStat.netTypeList);
-        preLookupEventMap.put(ReportConst.BATCH_SSID_KEY, batchStat.ssidList);
         preLookupEventMap.put(ReportConst.BATCH_HOSTNAME_KEY, batchStat.hostnameList);
         preLookupEventMap.put(ReportConst.BATCH_NETWORK_STACK_KEY, batchStat.netStackList);
 
@@ -131,7 +130,6 @@ public final class ReportHelper {
 
         lookupMethodCalledEventMap.put(ReportConst.CHANNEL_KEY, statMerge.channel);
         lookupMethodCalledEventMap.put(ReportConst.NETWORK_TYPE_KEY, statMerge.netType);
-        lookupMethodCalledEventMap.put(ReportConst.SSID_KEY, statMerge.ssid);
         lookupMethodCalledEventMap.put(ReportConst.HOSTNAME_KEY, statMerge.hostname);
         lookupMethodCalledEventMap.put(ReportConst.NETWORK_STACK_KEY,
                 String.valueOf(statMerge.curNetStack));
@@ -208,7 +206,6 @@ public final class ReportHelper {
         }
         BatchStatistics batchStat = batchStatBuilder.build();
         asyncLookupEventMap.put(ReportConst.BATCH_NETWORK_TYPE_KEY, batchStat.netTypeList);
-        asyncLookupEventMap.put(ReportConst.BATCH_SSID_KEY, batchStat.ssidList);
         asyncLookupEventMap.put(
                 ReportConst.BATCH_NETWORK_CHANGE_KEY, batchStat.restInetNetChangeLookupList);
         asyncLookupEventMap.put(ReportConst.BATCH_HOSTNAME_KEY, batchStat.hostnameList);

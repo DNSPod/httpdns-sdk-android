@@ -2,6 +2,7 @@ package com.tencent.msdk.dns;
 
 import android.content.Context;
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.tencent.msdk.dns.base.executor.DnsExecutors;
 import com.tencent.msdk.dns.base.lifecycle.ActivityLifecycleDetector;
