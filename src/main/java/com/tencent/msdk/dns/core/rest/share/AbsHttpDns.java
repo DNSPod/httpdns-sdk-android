@@ -103,7 +103,7 @@ public abstract class AbsHttpDns extends AbsRestDns {
                     rawRspContent+=lineTxt;
                  }
                 // 去除最后的"\n"字符避免干扰 ResponseParser 区分批量查询的结果
-                rawRspContent = rawRspContent.substring(0, rawRspContent.length()-2);
+                rawRspContent = rawRspContent.length()>0 ? rawRspContent.substring(0, rawRspContent.length()-2) : "";
                 reader.close();
             } catch (Exception e) {
                 stat.errorCode = ErrorCode.RESPONSE_FAILED_FOR_EXCEPTION_ERROR_CODE;
