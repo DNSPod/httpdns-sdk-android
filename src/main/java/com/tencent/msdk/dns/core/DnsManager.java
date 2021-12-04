@@ -285,7 +285,8 @@ public final class DnsManager {
 
             // 非阻塞解析
             // TODO: sessions加上对于解析结果可以忽略的支持(主要是支持LocalDns)
-            while (!sessions.isEmpty()) {
+            while (!sessions.isEmpty() &&
+                    SystemClock.elapsedRealtime() - startTimeMills < timeoutMills) {
                 // sleep以降低系统调用频率
                 try {
                     Thread.sleep(SYSTEM_CALL_INTERVAL_MILLS);
