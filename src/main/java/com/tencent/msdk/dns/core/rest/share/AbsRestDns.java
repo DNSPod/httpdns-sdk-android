@@ -266,7 +266,7 @@ public abstract class AbsRestDns implements IDns<LookupExtra> {
 
             @Override
             public boolean tryFinishConnect() {
-                return false;
+                return true;
             }
 
             @Override

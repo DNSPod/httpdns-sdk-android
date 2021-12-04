@@ -165,12 +165,19 @@ public abstract class AbsHttpDns extends AbsRestDns {
             public boolean tryFinishConnect() {
                 if (null != mChannel) {
                     try {
+                        if (mChannel.isConnected()) {
+                            // 连接成功后可能是等待OP_READ或者OP_WRITE
+                            return true;
+                        }
                         boolean res = mChannel.finishConnect();
-                        // switch channel to write-only
-                        mSelectionKey.interestOps(SelectionKey.OP_WRITE);
+                        if (res) {
+                            // 首次连接成功，switch channel to write-read
+                            DnsLog.d(getTag() + "tryFinishConnect connect success");
+                            mSelectionKey.interestOps(SelectionKey.OP_WRITE | SelectionKey.OP_READ);
+                        }
                         return res;
                     } catch (Exception e) {
-                        DnsLog.d(e, getTag() + "connect failed");
+                        DnsLog.d(e, getTag() + "tryFinishConnect connect failed");
                         end();
                         // SocketChannel负责创建连接
                         mStat.errorCode = ErrorCode.CONNECT_FAILED_ERROR_CODE;
@@ -261,6 +268,7 @@ public abstract class AbsHttpDns extends AbsRestDns {
         @Override
         protected int connectInternal() {
             try {
+                DnsLog.d(getTag() + "connect start");
                 mChannel.connect(mTargetSockAddr);
             } catch (Exception e) {
                 DnsLog.d(e, getTag() + "connect failed");

@@ -285,17 +285,18 @@ public final class DnsManager {
 
             // 非阻塞解析
             // TODO: sessions加上对于解析结果可以忽略的支持(主要是支持LocalDns)
-            while (!sessions.isEmpty() &&
-                    SystemClock.elapsedRealtime() - startTimeMills < timeoutMills) {
+            while (!sessions.isEmpty()) {
                 // sleep以降低系统调用频率
                 try {
                     Thread.sleep(SYSTEM_CALL_INTERVAL_MILLS);
                 } catch (Exception ignored) {
                 }
                 try {
-                    DnsLog.d("sessions is not empty, wait for sessions:%d, mills:%d", sessions.size(), waitTimeMills);
+                    DnsLog.d("selector %s wait for sessions:%d, mills:%d",
+                            selector, sessions.size(), waitTimeMills);
                     selector.select(waitTimeMills);
-                } catch (Exception ignored) {
+                } catch (Exception e) {
+                    DnsLog.d(e, "sessions not empty, but exception");
                 }
                 // Socket进行请求
                 tryLookup(lookupContext);
@@ -440,9 +441,9 @@ public final class DnsManager {
                     lookupContext.dnses().remove(dns);
                     if (session.getStatistics().lookupSuccess()) {
                         lookupContext.sorter().put(dns, ips);
-                        lookupContext.statisticsMerge()
-                                .merge(dns, session.getStatistics());
                     }
+                    lookupContext.statisticsMerge()
+                            .merge(dns, session.getStatistics());
                     continue;
                 }
             } else if (token.isWritable()) {
