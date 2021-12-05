@@ -2,6 +2,7 @@ package com.tencent.msdk.dns.report;
 
 import android.app.Activity;
 
+import com.tencent.msdk.dns.BackupResolver;
 import com.tencent.msdk.dns.BuildConfig;
 import com.tencent.msdk.dns.DnsConfig;
 import com.tencent.msdk.dns.base.compat.CollectionCompat;
@@ -109,11 +110,21 @@ public final class ReportHelper {
         if (null == lookupResult) {
             throw new IllegalArgumentException("lookupResult".concat(Const.NULL_POINTER_TIPS));
         }
-        if (!ReportManager.canReport()) {
-            return;
-        }
+
         if (!(lookupResult.stat instanceof StatisticsMerge)) {
             DnsLog.w("lookupResult.stat is not instanceof StatisticsMerge");
+            return;
+        }
+
+        //  ErrorCode==2 进行容灾处理
+        if(((StatisticsMerge) lookupResult.stat).restInetDnsStat.errorCode!=0 || ((StatisticsMerge) lookupResult.stat).restInet6DnsStat.errorCode!=0){
+            BackupResolver backupInfo = BackupResolver.getInstance();
+            backupInfo.setErrorCount(backupInfo.getErrorCount()+1);
+            DnsLog.d("dnsip连接失败, 当前失败次数：" + backupInfo.getErrorCount());
+        }
+
+        //  灯塔反射引入
+        if (!ReportManager.canReport()) {
             return;
         }
 

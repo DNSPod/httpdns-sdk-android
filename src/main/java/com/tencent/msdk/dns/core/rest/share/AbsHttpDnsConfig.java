@@ -14,12 +14,12 @@ public abstract class AbsHttpDnsConfig {
 
     /* @Nullable */
     public SocketAddress getTargetSocketAddress(String dnsIp, int family) {
-        if (null == mBizTargetSockAddr) {
+//        if (null == mBizTargetSockAddr) {
             try {
                 mBizTargetSockAddr = new InetSocketAddress(InetAddress.getByName(dnsIp), getBizTargetPort());
             } catch (Exception ignored) {
             }
-        }
+//        }
         return mBizTargetSockAddr;
     }
 }
