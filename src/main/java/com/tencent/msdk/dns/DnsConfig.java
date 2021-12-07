@@ -2,6 +2,7 @@ package com.tencent.msdk.dns;
 
 import android.text.TextUtils;
 import android.util.Log;
+
 import com.tencent.msdk.dns.base.compat.CollectionCompat;
 import com.tencent.msdk.dns.base.executor.DnsExecutors;
 import com.tencent.msdk.dns.base.log.ILogNode;
@@ -9,6 +10,7 @@ import com.tencent.msdk.dns.base.report.IReporter;
 import com.tencent.msdk.dns.base.utils.CommonUtils;
 import com.tencent.msdk.dns.core.Const;
 import com.tencent.msdk.dns.core.rest.share.LookupExtra;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -620,7 +622,7 @@ public final class DnsConfig {
          */
         public DnsConfig build() {
             return new DnsConfig(mLogLevel,
-                    mAppId, mUserId, mInitBuiltInReporters, mDnsIp, mDnsId, mDnsKey,mToken,
+                    mAppId, mUserId, mInitBuiltInReporters, mDnsIp, mDnsId, mDnsKey, mToken,
                     mTimeoutMills,
                     mProtectedDomains, mPreLookupDomains, mAsyncLookupDomains,
                     mChannel, mBlockFirst,

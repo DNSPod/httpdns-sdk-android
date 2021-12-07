@@ -14,6 +14,7 @@ import com.tencent.msdk.dns.core.LookupParameters;
 import com.tencent.msdk.dns.core.LookupResult;
 import com.tencent.msdk.dns.core.rest.share.rsp.Response;
 import com.tencent.msdk.dns.core.rest.share.rsp.ResponseParser;
+
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.SocketAddress;
@@ -52,6 +53,7 @@ public abstract class AbsHttpDns extends AbsRestDns {
     public DnsDescription getDescription() {
         return mDescription;
     }
+
     @Override
     public LookupResult lookup(LookupParameters<LookupExtra> lookupParams) {
         // block way
@@ -99,11 +101,11 @@ public abstract class AbsHttpDns extends AbsRestDns {
                 //  结果赋值
 //                  rawRspContent = reader.readLine();
                 while ((lineTxt = reader.readLine()) != null) {
-                    lineTxt+='\n';
-                    rawRspContent+=lineTxt;
-                 }
+                    lineTxt += '\n';
+                    rawRspContent += lineTxt;
+                }
                 // 去除最后的"\n"字符避免干扰 ResponseParser 区分批量查询的结果
-                rawRspContent = rawRspContent.length()>0 ? rawRspContent.substring(0, rawRspContent.length()-2) : "";
+                rawRspContent = rawRspContent.length() > 0 ? rawRspContent.substring(0, rawRspContent.length() - 2) : "";
                 reader.close();
             } catch (Exception e) {
                 stat.errorCode = ErrorCode.RESPONSE_FAILED_FOR_EXCEPTION_ERROR_CODE;
@@ -120,7 +122,7 @@ public abstract class AbsHttpDns extends AbsRestDns {
             }
             //  返回结果解析器
             Response rsp = ResponseParser.parseResponse(mFamily, rspContent);
-            DnsLog.d(getTag()+"lookup response: ====> %s", rsp.toString());
+            DnsLog.d(getTag() + "lookup response: ====> %s", rsp.toString());
             if (rsp == Response.EMPTY) {
                 stat.isGetEmptyResponse = true;
                 stat.errorCode = ErrorCode.PARSE_RESPONSE_CONTENT_FAILED_ERROR_CODE;
@@ -366,7 +368,7 @@ public abstract class AbsHttpDns extends AbsRestDns {
                         sb.append(rspHttpRsp);
                         if (HttpHelper.checkHttpRspFinished(rspHttpRsp)) {
                             DnsLog.d(getTag() + "receive response check http rsp finished:%d, so break",
-                                rspLen);
+                                    rspLen);
                             break;
                         }
                         // 重新清空rspBuf，并再次接收

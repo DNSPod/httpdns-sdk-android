@@ -58,8 +58,6 @@ public final class DnsService {
         if (null == config) {
             config = new DnsConfig.Builder().build();
         }
-        // 初始化ErrorCount=0为容灾做准备
-        BackupResolver.getInstance().setErrorCount(0);
 
         // NOTE: 在开始打日志之前设置日志开关
         DnsLog.setLogLevel(config.logLevel);
@@ -68,6 +66,8 @@ public final class DnsService {
         Context appContext = context.getApplicationContext();
         sAppContext = appContext;
         sConfig = config;
+        // 初始化Backup配置为容灾做准备
+        BackupResolver.getInstance().init(sConfig);
 
         NetworkChangeManager.install(appContext);
         ActivityLifecycleDetector.install(appContext);
@@ -109,7 +109,7 @@ public final class DnsService {
     }
 
     public static String getDnsDetail(String hostname) {
-        String dnsIp = BackupResolver.getInstance().getDnsIp(sConfig.dnsIp, sConfig.channel);
+        String dnsIp = BackupResolver.getInstance().getDnsIp();
         LookupResult<IStatisticsMerge> lookupResult = DnsManager.getResultFromCache(new LookupParameters.Builder<LookupExtra>()
                 .context(sAppContext)
                 .hostname(hostname)
@@ -186,7 +186,7 @@ public final class DnsService {
             channel = sConfig.channel;
         }
         //  进行容灾判断是否要切换备份域名
-        String dnsIp = BackupResolver.getInstance().getDnsIp(sConfig.dnsIp, sConfig.channel);
+        String dnsIp = BackupResolver.getInstance().getDnsIp();
 
         // NOTE: trim操作太重，下层默认不再处理
         DnsLog.v("DnsService.getAddrsByName(%s, %s, %b, %b) called", hostname, channel, fallback2Local, enableAsyncLookup);
@@ -301,7 +301,7 @@ public final class DnsService {
             DnsExecutors.WORK.execute(new Runnable() {
                 @Override
                 public void run() {
-                    String dnsIp = BackupResolver.getInstance().getDnsIp(sConfig.dnsIp, sConfig.channel);
+                    String dnsIp = BackupResolver.getInstance().getDnsIp();
                     LookupParameters<LookupExtra> lookupParams =
                             new LookupParameters.Builder<LookupExtra>()
                                     .context(sAppContext)

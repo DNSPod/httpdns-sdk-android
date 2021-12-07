@@ -117,10 +117,15 @@ public final class ReportHelper {
         }
 
         //  ErrorCode==2 进行容灾处理
-        if(((StatisticsMerge) lookupResult.stat).restInetDnsStat.errorCode!=0 || ((StatisticsMerge) lookupResult.stat).restInet6DnsStat.errorCode!=0){
+        if(((StatisticsMerge) lookupResult.stat).restInetDnsStat.errorCode!=0 && ((StatisticsMerge) lookupResult.stat).restInetDnsStat.errorCode!=41001 || ((StatisticsMerge) lookupResult.stat).restInet6DnsStat.errorCode!=0 && ((StatisticsMerge) lookupResult.stat).restInet6DnsStat.errorCode!=41001){
             BackupResolver backupInfo = BackupResolver.getInstance();
             backupInfo.setErrorCount(backupInfo.getErrorCount()+1);
             DnsLog.d("dnsip连接失败, 当前失败次数：" + backupInfo.getErrorCount());
+        }
+
+        //  当前请求均成功将ErrorCount置为0
+        if(((StatisticsMerge) lookupResult.stat).restInetDnsStat.errorCode==0 && ((StatisticsMerge) lookupResult.stat).restInet6DnsStat.errorCode==0){
+            BackupResolver.getInstance().setErrorCount(0);
         }
 
         //  灯塔反射引入
