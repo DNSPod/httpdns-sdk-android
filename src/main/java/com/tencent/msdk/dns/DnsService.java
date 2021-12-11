@@ -203,7 +203,7 @@ public final class DnsService {
                             .blockFirst(sConfig.blockFirst)
                             .enableAsyncLookup(enableAsyncLookup)
                             .build());
-            ReportHelper.reportLookupMethodCalledEvent(lookupResult);
+            ReportHelper.reportLookupMethodCalledEvent(lookupResult, sAppContext);
             return lookupResult.ipSet;
         }
         if (fallback2Local) {

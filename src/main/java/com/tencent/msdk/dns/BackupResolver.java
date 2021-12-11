@@ -50,7 +50,7 @@ public class BackupResolver {
         mErrorCount = 0;
         //  http和https是两个IP
         if (Const.HTTPS_CHANNEL.equals(dnsConfig.channel)) {
-            backupIps = new ArrayList<String>(Arrays.asList(mConfig.dnsIp, "119.29.28.99"));
+            backupIps = new ArrayList<String>(Arrays.asList(mConfig.dnsIp, "119.28.28.99"));
         } else {
             backupIps = new ArrayList<String>(Arrays.asList(mConfig.dnsIp, "119.28.28.98"));
         }
@@ -83,10 +83,11 @@ public class BackupResolver {
         // 当容灾ip切换超过间隔时间后尝试切换回主ip
         if ((mIpIndex != 0) && mBackupTime > 0 && ((SystemClock.elapsedRealtime() - mBackupTime) >= mInterval)) {
             mIpIndex = 0;
+            mErrorCount = 0;
         }
         //  mIpIndex+1 进行容灾IP切换
         if (mErrorCount >= maxErrorCount) {
-            // 主ip切走时记录时间
+            // 记录主ip切走的时间
             if (mIpIndex == 0) {
                 mBackupTime = SystemClock.elapsedRealtime();
             }
@@ -97,6 +98,8 @@ public class BackupResolver {
             } else {
                 mIpIndex++;
             }
+            //  ip切换后清空ip错误次数
+            mErrorCount = 0;
             DnsLog.d("当前hdns失败次数大于" + mErrorCount + "，ip切换为：" + backupIps.get(mIpIndex));
         }
 
