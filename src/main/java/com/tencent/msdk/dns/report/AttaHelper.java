@@ -13,9 +13,9 @@ import java.net.URL;
  * Atta主要用于容灾上报和灯塔（用户个人上报）用途不同
  */
 public class AttaHelper {
-    private static String mAttaUrl = "https://h.trace.qq.com/kv";
-    private static String mAttaid = "0f500064192";
-    private static String mToken = "4725229671";
+    private static final String ATTA_URL = "https://h.trace.qq.com/kv";
+    private static final String ATTA_ID = "0f500064192";
+    private static final String ATTA_TOKEN = "4725229671";
 
     public static Runnable report(final String carrier, final String networkType, final String dnsId, final String encryptType, final String eventName, final long eventTime, final String dnsIp, final String sdkVersion, final String deviceName, final String systemName, final String systemVersion) {
         return new Runnable() {
@@ -23,7 +23,7 @@ public class AttaHelper {
             public void run() {
                 HttpURLConnection connection = null;
                 try {
-                    URL url = new URL(mAttaUrl + "?attaid=" + mAttaid + "&token=" + mToken + "&carrier=" + carrier + "&networkType=" + networkType + "&dnsId=" + dnsId + "&encryptType=" + encryptType + "&eventName=" + eventName + "&eventTime=" + eventTime + "&dnsIp=" + dnsIp + "&sdkVersion=" + sdkVersion + "&deviceName=" + deviceName + "&systemName=" + systemName + "&systemVersion=" + systemVersion);
+                    URL url = new URL(ATTA_URL + "?attaid=" + M_ATTAID + "&token=" + ATTA_TOKEN + "&carrier=" + carrier + "&networkType=" + networkType + "&dnsId=" + dnsId + "&encryptType=" + encryptType + "&eventName=" + eventName + "&eventTime=" + eventTime + "&dnsIp=" + dnsIp + "&sdkVersion=" + sdkVersion + "&deviceName=" + deviceName + "&systemName=" + systemName + "&systemVersion=" + systemVersion);
                     DnsLog.d("开始Atta上报：" + url);
                     connection = (HttpURLConnection) url.openConnection();
                     //设置请求方法
