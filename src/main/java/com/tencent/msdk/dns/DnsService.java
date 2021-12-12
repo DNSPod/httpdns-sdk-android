@@ -66,6 +66,8 @@ public final class DnsService {
         Context appContext = context.getApplicationContext();
         sAppContext = appContext;
         sConfig = config;
+        // 初始化Backup配置为容灾做准备
+        BackupResolver.getInstance().init(sConfig);
 
         NetworkChangeManager.install(appContext);
         ActivityLifecycleDetector.install(appContext);
@@ -107,11 +109,12 @@ public final class DnsService {
     }
 
     public static String getDnsDetail(String hostname) {
+        String dnsIp = BackupResolver.getInstance().getDnsIp();
         LookupResult<IStatisticsMerge> lookupResult = DnsManager.getResultFromCache(new LookupParameters.Builder<LookupExtra>()
                 .context(sAppContext)
                 .hostname(hostname)
                 .timeoutMills(sConfig.timeoutMills)
-                .dnsIp(sConfig.dnsIp)
+                .dnsIp(dnsIp)
                 .lookupExtra(sConfig.lookupExtra)
                 .channel(sConfig.channel)
                 .fallback2Local(true)
@@ -182,6 +185,8 @@ public final class DnsService {
         if (TextUtils.isEmpty(channel)) {
             channel = sConfig.channel;
         }
+        //  进行容灾判断是否要切换备份域名
+        String dnsIp = BackupResolver.getInstance().getDnsIp();
 
         // NOTE: trim操作太重，下层默认不再处理
         DnsLog.v("DnsService.getAddrsByName(%s, %s, %b, %b) called", hostname, channel, fallback2Local, enableAsyncLookup);
@@ -191,14 +196,14 @@ public final class DnsService {
                             .context(sAppContext)
                             .hostname(hostname)
                             .timeoutMills(sConfig.timeoutMills)
-                            .dnsIp(sConfig.dnsIp)
+                            .dnsIp(dnsIp)
                             .lookupExtra(sConfig.lookupExtra)
                             .channel(channel)
                             .fallback2Local(fallback2Local)
                             .blockFirst(sConfig.blockFirst)
                             .enableAsyncLookup(enableAsyncLookup)
                             .build());
-            ReportHelper.reportLookupMethodCalledEvent(lookupResult);
+            ReportHelper.reportLookupMethodCalledEvent(lookupResult, sAppContext);
             return lookupResult.ipSet;
         }
         if (fallback2Local) {
@@ -208,7 +213,7 @@ public final class DnsService {
                             .context(sAppContext)
                             .hostname(hostname)
                             .timeoutMills(sConfig.timeoutMills)
-                            .dnsIp(sConfig.dnsIp)
+                            .dnsIp(dnsIp)
                             .lookupExtra(IDns.ILookupExtra.EMPTY)
                             .channel(Const.LOCAL_CHANNEL)
                             .fallback2Local(false)
@@ -296,12 +301,13 @@ public final class DnsService {
             DnsExecutors.WORK.execute(new Runnable() {
                 @Override
                 public void run() {
+                    String dnsIp = BackupResolver.getInstance().getDnsIp();
                     LookupParameters<LookupExtra> lookupParams =
                             new LookupParameters.Builder<LookupExtra>()
                                     .context(sAppContext)
                                     .hostname(domain)
                                     .timeoutMills(sConfig.timeoutMills)
-                                    .dnsIp(sConfig.dnsIp)
+                                    .dnsIp(dnsIp)
                                     .lookupExtra(sConfig.lookupExtra)
                                     .channel(sConfig.channel)
                                     .fallback2Local(false)

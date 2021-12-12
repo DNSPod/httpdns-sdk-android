@@ -30,9 +30,9 @@ public final class LookupHelper {
                 lookupContext.dnses().remove(dns);
                 if (session.getStatistics().lookupSuccess()) {
                     lookupContext.sorter().put(dns, ips);
-                    lookupContext.statisticsMerge()
-                            .merge(dns, session.getStatistics());
                 }
+                lookupContext.statisticsMerge()
+                        .merge(dns, session.getStatistics());
             }
         } else if (!forRetry) {
             lookupContext.sessions().add(session);

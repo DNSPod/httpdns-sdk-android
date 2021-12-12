@@ -1,9 +1,13 @@
 package com.tencent.msdk.dns.report;
 
 import android.app.Activity;
+import android.content.Context;
+import android.os.SystemClock;
 
+import com.tencent.msdk.dns.BackupResolver;
 import com.tencent.msdk.dns.BuildConfig;
 import com.tencent.msdk.dns.DnsConfig;
+import com.tencent.msdk.dns.DnsService;
 import com.tencent.msdk.dns.base.compat.CollectionCompat;
 import com.tencent.msdk.dns.base.executor.DnsExecutors;
 import com.tencent.msdk.dns.base.lifecycle.ActivityLifecycleCallbacksWrapper;
@@ -105,15 +109,36 @@ public final class ReportHelper {
         report(ReportConst.PRE_LOOKUP_EVENT_NAME, preLookupEventMap);
     }
 
-    public static void reportLookupMethodCalledEvent(LookupResult lookupResult) {
+    public static void reportLookupMethodCalledEvent(LookupResult lookupResult, Context context) {
         if (null == lookupResult) {
             throw new IllegalArgumentException("lookupResult".concat(Const.NULL_POINTER_TIPS));
         }
-        if (!ReportManager.canReport()) {
-            return;
-        }
+
         if (!(lookupResult.stat instanceof StatisticsMerge)) {
             DnsLog.w("lookupResult.stat is not instanceof StatisticsMerge");
+            return;
+        }
+
+        //  ErrorCode==2 进行容灾处理
+        if (((StatisticsMerge) lookupResult.stat).restInetDnsStat.errorCode != 0 && ((StatisticsMerge) lookupResult.stat).restInetDnsStat.errorCode != 41001 || ((StatisticsMerge) lookupResult.stat).restInet6DnsStat.errorCode != 0 && ((StatisticsMerge) lookupResult.stat).restInet6DnsStat.errorCode != 41001) {
+            BackupResolver backupInfo = BackupResolver.getInstance();
+            //  获取手机卡运营商code
+            String carrierCode = AttaHelper.getSimOperator(context);
+            // 开始上报
+            String dnsIp = backupInfo.getDnsIp();
+            DnsExecutors.WORK.execute(AttaHelper.report(carrierCode, ((StatisticsMerge) lookupResult.stat).netType, sDnsConfig.lookupExtra.bizId, sDnsConfig.channel, "HttpDnsfail", System.currentTimeMillis(), dnsIp, BuildConfig.VERSION_NAME, AttaHelper.getSystemModel(), "Andriod", AttaHelper.getSystemVersion()));
+            // 报错记录+1
+            backupInfo.setErrorCount(backupInfo.getErrorCount() + 1);
+            DnsLog.d("dnsip连接失败, 当前失败次数：" + backupInfo.getErrorCount());
+        }
+
+        //  当前请求均成功将ErrorCount置为0
+        if (((StatisticsMerge) lookupResult.stat).restInetDnsStat.errorCode == 0 && ((StatisticsMerge) lookupResult.stat).restInet6DnsStat.errorCode == 0) {
+            BackupResolver.getInstance().setErrorCount(0);
+        }
+
+        //  灯塔反射引入
+        if (!ReportManager.canReport()) {
             return;
         }
 
