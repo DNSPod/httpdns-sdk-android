@@ -23,7 +23,7 @@ public class AttaHelper {
             public void run() {
                 HttpURLConnection connection = null;
                 try {
-                    URL url = new URL(ATTA_URL + "?attaid=" + M_ATTAID + "&token=" + ATTA_TOKEN + "&carrier=" + carrier + "&networkType=" + networkType + "&dnsId=" + dnsId + "&encryptType=" + encryptType + "&eventName=" + eventName + "&eventTime=" + eventTime + "&dnsIp=" + dnsIp + "&sdkVersion=" + sdkVersion + "&deviceName=" + deviceName + "&systemName=" + systemName + "&systemVersion=" + systemVersion);
+                    URL url = new URL(ATTA_URL + "?attaid=" + ATTA_ID + "&token=" + ATTA_TOKEN + "&carrier=" + carrier + "&networkType=" + networkType + "&dnsId=" + dnsId + "&encryptType=" + encryptType + "&eventName=" + eventName + "&eventTime=" + eventTime + "&dnsIp=" + dnsIp + "&sdkVersion=" + sdkVersion + "&deviceName=" + deviceName + "&systemName=" + systemName + "&systemVersion=" + systemVersion);
                     DnsLog.d("开始Atta上报：" + url);
                     connection = (HttpURLConnection) url.openConnection();
                     //设置请求方法
