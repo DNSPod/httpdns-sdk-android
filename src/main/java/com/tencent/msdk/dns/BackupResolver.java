@@ -23,7 +23,7 @@ public class BackupResolver {
     // 当前ip解析失败的次数
     private int mErrorCount = 0;
     // 解析失败的最大次数
-    private int maxErrorCount = 1;
+    private int maxErrorCount = 3;
     private DnsConfig mConfig;
     //  解析ips
     List<String> backupIps;
@@ -32,7 +32,7 @@ public class BackupResolver {
     // 记录主ip切换时间，每隔10min切回测试一次主IP（不主动探测主备IP是否恢复）
     private long mBackupTime = 0;
     // 尝试切回主ip的间隔时间，默认为10分钟
-    private long mInterval = 10 * 60 * 60 * 1000;
+    private long mInterval = 1 * 60 * 1000;
 
     public static BackupResolver getInstance() {//静态get方法
         if (mBackupResolver == null) {
@@ -100,7 +100,6 @@ public class BackupResolver {
             }
             //  ip切换后清空ip错误次数
             mErrorCount = 0;
-            DnsLog.d("当前hdns失败次数大于" + mErrorCount + "，ip切换为：" + backupIps.get(mIpIndex));
         }
 
         String backip = backupIps.get(mIpIndex);
