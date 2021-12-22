@@ -70,6 +70,14 @@ public class BackupResolver {
     }
 
     /**
+     * 校验是否满足上报条件-当前失败次数>=解析失败的最大次数时进行上报
+     * @return
+     */
+    public boolean getCanReport(int errorCount) {
+        return errorCount>=maxErrorCount;
+    }
+
+    /**
      * 主IP故障，切换备份IP策略
      * 1. 主备IP切换：在精确性、速度上折中处理，主IP解析的同时，会发起LocalDNS解析，若主IP首次解析不成功，立即返回 上次解析结果，如果没有上次解析结果，则返回LocalDNS解析结果，如果主IP 3次解析不成功，则切换到备份IP进行解析。
      * <p>

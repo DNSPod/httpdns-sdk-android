@@ -122,11 +122,21 @@ public final class ReportHelper {
         //  ErrorCode==2 进行容灾处理
         if (((StatisticsMerge) lookupResult.stat).restInetDnsStat.errorCode != 0 && ((StatisticsMerge) lookupResult.stat).restInetDnsStat.errorCode != 41001 || ((StatisticsMerge) lookupResult.stat).restInet6DnsStat.errorCode != 0 && ((StatisticsMerge) lookupResult.stat).restInet6DnsStat.errorCode != 41001) {
             BackupResolver backupInfo = BackupResolver.getInstance();
-            //  获取手机卡运营商code
-            String carrierCode = AttaHelper.getSimOperator(context);
-            // 开始上报
-            String dnsIp = backupInfo.getDnsIp();
-            DnsExecutors.WORK.execute(AttaHelper.report(carrierCode, ((StatisticsMerge) lookupResult.stat).netType, sDnsConfig.lookupExtra.bizId, sDnsConfig.channel, "HttpDnsfail", System.currentTimeMillis(), dnsIp, BuildConfig.VERSION_NAME, AttaHelper.getSystemModel(), "Andriod", AttaHelper.getSystemVersion()));
+            //  仅当达到最大失败次数满足切换IP时候上报
+            if (backupInfo.getCanReport(backupInfo.getErrorCount() + 1)) {
+                //  获取手机卡运营商code
+                String carrierCode = AttaHelper.getSimOperator(context);
+                //  获取当前dnsip
+                String dnsIp = backupInfo.getDnsIp();
+                //  上报a解析失败
+                if (((StatisticsMerge) lookupResult.stat).restInetDnsStat.errorCode != 0) {
+                    DnsExecutors.WORK.execute(AttaHelper.report(carrierCode, ((StatisticsMerge) lookupResult.stat).netType, sDnsConfig.lookupExtra.bizId, sDnsConfig.channel, "HttpDnsfail", System.currentTimeMillis(), dnsIp, BuildConfig.VERSION_NAME, AttaHelper.getSystemModel(), "Andriod", AttaHelper.getSystemVersion(), ((StatisticsMerge) lookupResult.stat).restInetDnsStat.costTimeMills, ((StatisticsMerge) lookupResult.stat).hostname, "a", sDnsConfig.timeoutMills, ((StatisticsMerge) lookupResult.stat).restInetDnsStat.ttl, ((StatisticsMerge) lookupResult.stat).restInetDnsStat.errorCode));
+                }
+                //  上报4a解析失败
+                if (((StatisticsMerge) lookupResult.stat).restInet6DnsStat.errorCode != 0) {
+                    DnsExecutors.WORK.execute(AttaHelper.report(carrierCode, ((StatisticsMerge) lookupResult.stat).netType, sDnsConfig.lookupExtra.bizId, sDnsConfig.channel, "HttpDnsfail", System.currentTimeMillis(), dnsIp, BuildConfig.VERSION_NAME, AttaHelper.getSystemModel(), "Andriod", AttaHelper.getSystemVersion(), ((StatisticsMerge) lookupResult.stat).restInet6DnsStat.costTimeMills, ((StatisticsMerge) lookupResult.stat).hostname, "aaaa", sDnsConfig.timeoutMills, ((StatisticsMerge) lookupResult.stat).restInet6DnsStat.ttl, ((StatisticsMerge) lookupResult.stat).restInet6DnsStat.errorCode));
+                }
+            }
             // 报错记录+1
             backupInfo.setErrorCount(backupInfo.getErrorCount() + 1);
             DnsLog.d("dnsip连接失败, 当前失败次数：" + backupInfo.getErrorCount());
