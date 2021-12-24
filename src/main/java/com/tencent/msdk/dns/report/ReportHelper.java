@@ -3,6 +3,7 @@ package com.tencent.msdk.dns.report;
 import android.app.Activity;
 import android.content.Context;
 import android.os.SystemClock;
+import android.util.Log;
 
 import com.tencent.msdk.dns.BackupResolver;
 import com.tencent.msdk.dns.BuildConfig;
@@ -113,17 +114,15 @@ public final class ReportHelper {
         if (null == lookupResult) {
             throw new IllegalArgumentException("lookupResult".concat(Const.NULL_POINTER_TIPS));
         }
-
         if (!(lookupResult.stat instanceof StatisticsMerge)) {
             DnsLog.w("lookupResult.stat is not instanceof StatisticsMerge");
             return;
         }
-
         //  ErrorCode==2 进行容灾处理
-        if (((StatisticsMerge) lookupResult.stat).restInetDnsStat.errorCode != 0 && ((StatisticsMerge) lookupResult.stat).restInetDnsStat.errorCode != 41001 || ((StatisticsMerge) lookupResult.stat).restInet6DnsStat.errorCode != 0 && ((StatisticsMerge) lookupResult.stat).restInet6DnsStat.errorCode != 41001) {
+        if (((StatisticsMerge) lookupResult.stat).restInetDnsStat.errorCode == 2 || ((StatisticsMerge) lookupResult.stat).restInet6DnsStat.errorCode == 2) {
             BackupResolver backupInfo = BackupResolver.getInstance();
             //  仅当达到最大失败次数满足切换IP时候上报
-            if (backupInfo.getCanReport(backupInfo.getErrorCount() + 1)) {
+            if (sDnsConfig.enableReport && backupInfo.getCanReport(backupInfo.getErrorCount() + 1)) {
                 //  获取手机卡运营商code
                 String carrierCode = AttaHelper.getSimOperator(context);
                 //  获取当前dnsip
@@ -142,9 +141,29 @@ public final class ReportHelper {
             DnsLog.d("dnsip连接失败, 当前失败次数：" + backupInfo.getErrorCount());
         }
 
-        //  当前请求均成功将ErrorCount置为0
-        if (((StatisticsMerge) lookupResult.stat).restInetDnsStat.errorCode == 0 && ((StatisticsMerge) lookupResult.stat).restInet6DnsStat.errorCode == 0) {
-            BackupResolver.getInstance().setErrorCount(0);
+        //  请求正常时的上报逻辑
+        if (((StatisticsMerge) lookupResult.stat).restInetDnsStat.errorCode == 0 || ((StatisticsMerge) lookupResult.stat).restInet6DnsStat.errorCode == 0) {
+            BackupResolver backupInfo = BackupResolver.getInstance();
+            SpendReportResolver spendReport = SpendReportResolver.getInstance();
+            //  请求成功后将ErrorCount置为0
+            backupInfo.setErrorCount(0);
+            //  请求成功后在spend上报次数和上报时间间隔满足的条件下进行正常路径解析时长的上报
+            if (sDnsConfig.enableReport && spendReport.getCanReport()) {
+                //  获取手机卡运营商code
+                String carrierCode = AttaHelper.getSimOperator(context);
+                //  获取当前dnsip
+                String dnsIp = backupInfo.getDnsIp();
+                //  a记录解析耗时上报
+                if (((StatisticsMerge) lookupResult.stat).restInetDnsStat.errorCode == 0) {
+                    DnsExecutors.WORK.execute(AttaHelper.report(carrierCode, ((StatisticsMerge) lookupResult.stat).netType, sDnsConfig.lookupExtra.bizId, sDnsConfig.channel, "HttpDnsSpend", System.currentTimeMillis(), dnsIp, BuildConfig.VERSION_NAME, AttaHelper.getSystemModel(), "Andriod", AttaHelper.getSystemVersion(), ((StatisticsMerge) lookupResult.stat).restInet6DnsStat.costTimeMills, ((StatisticsMerge) lookupResult.stat).hostname, "a", sDnsConfig.timeoutMills, ((StatisticsMerge) lookupResult.stat).restInet6DnsStat.ttl, ((StatisticsMerge) lookupResult.stat).restInet6DnsStat.errorCode));
+                }
+                //  4a记录解析耗时上报
+                if (((StatisticsMerge) lookupResult.stat).restInet6DnsStat.errorCode == 0) {
+                    DnsExecutors.WORK.execute(AttaHelper.report(carrierCode, ((StatisticsMerge) lookupResult.stat).netType, sDnsConfig.lookupExtra.bizId, sDnsConfig.channel, "HttpDnsSpend", System.currentTimeMillis(), dnsIp, BuildConfig.VERSION_NAME, AttaHelper.getSystemModel(), "Andriod", AttaHelper.getSystemVersion(), ((StatisticsMerge) lookupResult.stat).restInet6DnsStat.costTimeMills, ((StatisticsMerge) lookupResult.stat).hostname, "aaaa", sDnsConfig.timeoutMills, ((StatisticsMerge) lookupResult.stat).restInet6DnsStat.ttl, ((StatisticsMerge) lookupResult.stat).restInet6DnsStat.errorCode));
+                }
+                // 记录正常解析上报的时间
+                spendReport.setLastReportTime(System.currentTimeMillis());
+            }
         }
 
         //  灯塔反射引入

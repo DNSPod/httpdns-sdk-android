@@ -2,7 +2,6 @@ package com.tencent.msdk.dns;
 
 import android.content.Context;
 import android.text.TextUtils;
-import android.util.Log;
 
 import com.tencent.msdk.dns.base.executor.DnsExecutors;
 import com.tencent.msdk.dns.base.lifecycle.ActivityLifecycleDetector;
@@ -26,6 +25,7 @@ import com.tencent.msdk.dns.core.LookupResult;
 import com.tencent.msdk.dns.core.rest.share.LookupExtra;
 import com.tencent.msdk.dns.core.stat.StatisticsMerge;
 import com.tencent.msdk.dns.report.ReportHelper;
+import com.tencent.msdk.dns.report.SpendReportResolver;
 
 import java.util.Collections;
 import java.util.List;
@@ -68,7 +68,8 @@ public final class DnsService {
         sConfig = config;
         // 初始化Backup配置为容灾做准备
         BackupResolver.getInstance().init(sConfig);
-
+        // 初始化SpendHelper配置为正常上报做准备
+        SpendReportResolver.getInstance().init();
         NetworkChangeManager.install(appContext);
         ActivityLifecycleDetector.install(appContext);
         // NOTE: 当前版本暂时不会提供为OneSdk版本, 默认使用灯塔上报

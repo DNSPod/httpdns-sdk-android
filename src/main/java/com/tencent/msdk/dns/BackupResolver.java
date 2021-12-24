@@ -32,7 +32,7 @@ public class BackupResolver {
     // 记录主ip切换时间，每隔10min切回测试一次主IP（不主动探测主备IP是否恢复）
     private long mBackupTime = 0;
     // 尝试切回主ip的间隔时间，默认为10分钟
-    private long mInterval = 1 * 60 * 1000;
+    private long mInterval = 10 * 60 * 1000;
 
     public static BackupResolver getInstance() {//静态get方法
         if (mBackupResolver == null) {
