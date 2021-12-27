@@ -36,7 +36,9 @@ public final class DnsConfig {
     /* @Nullable */ public final Set<String> asyncLookupDomains;
 
     public final String channel;
+    public final boolean enableReport;
     public final boolean blockFirst;
+
 
     /* @Nullable */ public final DnsExecutors.ExecutorSupplier executorSupplier;
 
@@ -54,7 +56,7 @@ public final class DnsConfig {
                       int timeoutMills,
                       Set<WildcardDomain> protectedDomains,
                       Set<String> preLookupDomains, Set<String> asyncLookupDomains,
-                      String channel, boolean blockFirst,
+                      String channel, boolean enableReport, boolean blockFirst,
                       DnsExecutors.ExecutorSupplier executorSupplier,
                       ILookedUpListener lookedUpListener, List<ILogNode> logNodes,
                       List<IReporter> reporters) {
@@ -69,6 +71,7 @@ public final class DnsConfig {
         this.preLookupDomains = preLookupDomains;
         this.asyncLookupDomains = asyncLookupDomains;
         this.channel = channel;
+        this.enableReport = enableReport;
         this.blockFirst = blockFirst;
         this.executorSupplier = executorSupplier;
         this.lookedUpListener = lookedUpListener;
@@ -104,6 +107,7 @@ public final class DnsConfig {
                 ", preLookupDomains=" + CommonUtils.toString(preLookupDomains) +
                 ", asyncLookupDomains=" + CommonUtils.toString(asyncLookupDomains) +
                 ", channel='" + channel + '\'' +
+                ", enableReport='" + enableReport + '\'' +
                 ", blockFirst=" + blockFirst +
                 ", executorSupplier=" + executorSupplier +
                 ", lookedUpListener=" + lookedUpListener +
@@ -180,6 +184,7 @@ public final class DnsConfig {
         private Set<String> mAsyncLookupDomains = null;
 
         private String mChannel = Const.DES_HTTP_CHANNEL;
+        private boolean mEnableReport = false;
         private boolean mBlockFirst = false;
 
         private DnsExecutors.ExecutorSupplier mExecutorSupplier = null;
@@ -528,6 +533,11 @@ public final class DnsConfig {
             return this;
         }
 
+        public Builder enableReport(boolean enableReport){
+            mEnableReport = enableReport;
+            return this;
+        }
+
         /**
          * 优先通过阻塞方式进行域名解析
          * 不设置时, 默认优先通过非阻塞方式进行域名解析
@@ -625,7 +635,7 @@ public final class DnsConfig {
                     mAppId, mUserId, mInitBuiltInReporters, mDnsIp, mDnsId, mDnsKey, mToken,
                     mTimeoutMills,
                     mProtectedDomains, mPreLookupDomains, mAsyncLookupDomains,
-                    mChannel, mBlockFirst,
+                    mChannel, mEnableReport, mBlockFirst,
                     mExecutorSupplier,
                     mLookedUpListener, mLogNodes,
                     mReporters);

@@ -34,7 +34,6 @@ public class AttaHelper {
                     connection.setReadTimeout(2000);
                     connection.connect();
                     int respCode = connection.getResponseCode();
-                    DnsLog.d("Atta respCode：" + respCode);
                 } catch (IOException e) {
                     e.printStackTrace();
                 } finally {

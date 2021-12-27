@@ -65,12 +65,30 @@ public class MSDKDnsResolver {
      */
     public void init(Context context, String appId, String dnsId, String dnsKey, String dnsIp, boolean debug,
                      int timeout) {
-        init(context, appId, dnsId, dnsKey, dnsIp, debug, timeout, Const.DES_HTTP_CHANNEL);
+        init(context, appId, dnsId, dnsKey, dnsIp, debug, timeout, Const.DES_HTTP_CHANNEL, false);
     }
+
+    /**
+     * 初始化SDK
+     *
+     * @param context <a href="https://developer.android.google.cn/reference/android/content/Context">Context</a>实例, SDK内部持有ApplicationContext用于监听网络切换等操作
+     * @param appId   即SDK appId, 从<a href="https://console.cloud.tencent.com/httpdns">腾讯云官网</a>申请获得
+     * @param dnsId   即HTTPDNS服务的授权Id, 从<a href="https://console.cloud.tencent.com/httpdns">腾讯云官网</a>申请获得
+     * @param dnsKey  即HTTPDNS服务的授权Id对应的加密密钥, 从<a href="https://console.cloud.tencent.com/httpdns">腾讯云官网</a>申请获得
+     * @param dnsIp   由外部传入的dnsIp，可选："119.29.29.98"（仅支持 http 请求），"119.29.29.99"（仅支持 https 请求）以腾讯云文档（https://cloud.tencent.com/document/product/379/54976）提供的 IP 为准
+     * @param debug   是否输出调试日志, true为输出, false不输出, SDK默认仅将日志通过logcat输出, tag统一使用HTTPDNS
+     * @param timeout 域名解析请求超时时间, 单位为ms
+     */
+    public void init(Context context, String appId, String dnsId, String dnsKey, String dnsIp, boolean debug,
+                     int timeout, boolean enableReport) {
+        init(context, appId, dnsId, dnsKey, dnsIp, debug, timeout, Const.DES_HTTP_CHANNEL, enableReport);
+    }
+
+
 
     // channel可选AES_HTTP_CHANNEL，DES_HTTP_CHANNEL
     public void init(Context context, String appID, String dnsId, String dnsKey, String dnsIp, boolean debug,
-                     int timeout, String channel) {
+                     int timeout, String channel, boolean enableReport) {
         DnsConfig.Builder dnsConfigBuilder =
                 new DnsConfig
                         .Builder()
@@ -86,7 +104,10 @@ public class MSDKDnsResolver {
         if (null != dnsKey) {
             dnsConfigBuilder.dnsKey(dnsKey);
         }
-
+        if (null != dnsKey) {
+            dnsConfigBuilder.dnsKey(dnsKey);
+        }
+        dnsConfigBuilder.enableReport(enableReport);
         if (AES_HTTP_CHANNEL.equals(channel)) {
             // aes http
             dnsConfigBuilder.aesHttp();
@@ -114,7 +135,7 @@ public class MSDKDnsResolver {
     * @param token 腾讯云官网（https://console.cloud.tencent.com/httpdns）申请获得，用于 HTTPS 校验
     */
     public void init(Context context, String appID, String dnsId, String dnsKey, String dnsIp, boolean debug,
-                     int timeout, String channel, String token) {
+                     int timeout, String channel, String token, boolean enableReport) {
         DnsConfig.Builder dnsConfigBuilder =
                 new DnsConfig
                         .Builder()
@@ -130,6 +151,8 @@ public class MSDKDnsResolver {
         if (null != dnsKey) {
             dnsConfigBuilder.dnsKey(dnsKey);
         }
+
+        dnsConfigBuilder.enableReport(enableReport);
 
         // HTTPS的情况下必须要传如token
         if (HTTPS_CHANNEL.equals(channel) && null != token) {
