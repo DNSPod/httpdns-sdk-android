@@ -108,6 +108,7 @@ public class BackupResolver {
             }
             //  ip切换后清空ip错误次数
             mErrorCount = 0;
+            DnsLog.d("IP Changed：" + backupIps.get(mIpIndex));
         }
 
         String backip = backupIps.get(mIpIndex);

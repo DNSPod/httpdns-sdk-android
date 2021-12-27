@@ -84,8 +84,6 @@ public class MSDKDnsResolver {
         init(context, appId, dnsId, dnsKey, dnsIp, debug, timeout, Const.DES_HTTP_CHANNEL, enableReport);
     }
 
-
-
     // channel可选AES_HTTP_CHANNEL，DES_HTTP_CHANNEL
     public void init(Context context, String appID, String dnsId, String dnsKey, String dnsIp, boolean debug,
                      int timeout, String channel, boolean enableReport) {
