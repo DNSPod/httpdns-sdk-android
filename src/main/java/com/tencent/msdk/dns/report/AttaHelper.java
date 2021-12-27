@@ -33,7 +33,7 @@ public class AttaHelper {
                     //设置读取超时时间（毫秒）
                     connection.setReadTimeout(2000);
                     connection.connect();
-//                    int respCode = connection.getResponseCode();
+                    int respCode = connection.getResponseCode();
                 } catch (IOException e) {
                     e.printStackTrace();
                 } finally {

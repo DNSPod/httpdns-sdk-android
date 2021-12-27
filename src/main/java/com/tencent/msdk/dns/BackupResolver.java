@@ -71,10 +71,11 @@ public class BackupResolver {
 
     /**
      * 校验是否满足上报条件-当前失败次数>=解析失败的最大次数时进行上报
+     *
      * @return
      */
     public boolean getCanReport(int errorCount) {
-        return errorCount>=maxErrorCount;
+        return errorCount >= maxErrorCount;
     }
 
     /**
