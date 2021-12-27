@@ -15,9 +15,9 @@ public class SpendReportResolver {
     private long mLastReportTime = 0;
     // 当前spend上报的次数
     private int mReportCount = 0;
-    // 解析失败的最大次数
+    // 允许的最大上报次数
     private int maxReportCount = 3;
-    // 解析间隔为5分钟
+    // 解析耗时上报的间隔时间
     private long mInterval = 5 * 60 * 1000;
 
     public static SpendReportResolver getInstance() {//静态get方法

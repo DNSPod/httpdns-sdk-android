@@ -119,7 +119,7 @@ public final class ReportHelper {
             return;
         }
         //  ErrorCode==2 进行容灾处理
-        if (((StatisticsMerge) lookupResult.stat).restInetDnsStat.errorCode == 2 || ((StatisticsMerge) lookupResult.stat).restInet6DnsStat.errorCode == 2) {
+        if (((StatisticsMerge) lookupResult.stat).restInetDnsStat.errorCode == 2 || ((StatisticsMerge) lookupResult.stat).restInet6DnsStat.errorCode == 2 || (Const.HTTPS_CHANNEL.equals(sDnsConfig.channel) && (((StatisticsMerge) lookupResult.stat).restInetDnsStat.errorCode == 1 || ((StatisticsMerge) lookupResult.stat).restInet6DnsStat.errorCode == 1))) {
             BackupResolver backupInfo = BackupResolver.getInstance();
             //  仅当达到最大失败次数满足切换IP时候上报
             if (sDnsConfig.enableReport && backupInfo.getCanReport(backupInfo.getErrorCount() + 1)) {
