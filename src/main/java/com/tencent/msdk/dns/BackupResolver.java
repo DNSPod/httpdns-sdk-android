@@ -10,6 +10,7 @@ import com.tencent.msdk.dns.core.Const;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * 容灾记录类，目前主要记录ErrorCount的值
@@ -21,7 +22,7 @@ public class BackupResolver {
     }
 
     // 当前ip解析失败的次数
-    private int mErrorCount = 0;
+    private AtomicInteger mErrorCount = new AtomicInteger(0);
     // 解析失败的最大次数
     private int maxErrorCount = 3;
     private DnsConfig mConfig;
@@ -47,7 +48,7 @@ public class BackupResolver {
 
     public void init(DnsConfig dnsConfig) {
         mConfig = dnsConfig;
-        mErrorCount = 0;
+        mErrorCount = new AtomicInteger(0);
         //  http和https是两个IP
         if (Const.HTTPS_CHANNEL.equals(dnsConfig.channel)) {
             backupIps = new ArrayList<String>(Arrays.asList(mConfig.dnsIp, "119.28.28.99"));
@@ -57,16 +58,18 @@ public class BackupResolver {
 
     }
 
-    public void setErrorCount(int errorCount) {
-        if (0 > errorCount) {
-            throw new IllegalArgumentException("errorCount".concat(Const.LESS_THAN_0_TIPS));
-        }
-        this.mErrorCount = errorCount;
-        DnsLog.d("ErrorInfo mErrorCount: " + mErrorCount);
+    public void incrementErrorCount(){
+        Integer count = mErrorCount.incrementAndGet();
+        DnsLog.d(Thread.currentThread().getName() + " increment mErrorCount: " + count);
+    }
+
+    public void setErrorCount(Integer count){
+        mErrorCount.set(count);
+        DnsLog.d(Thread.currentThread().getName() + " set mErrorCount: " + count);
     }
 
     public int getErrorCount() {
-        return this.mErrorCount;
+        return mErrorCount.get();
     }
 
     /**
@@ -92,10 +95,10 @@ public class BackupResolver {
         // 当容灾ip切换超过间隔时间后尝试切换回主ip
         if ((mIpIndex != 0) && mBackupTime > 0 && ((SystemClock.elapsedRealtime() - mBackupTime) >= mInterval)) {
             mIpIndex = 0;
-            mErrorCount = 0;
+            mErrorCount.set(0);
         }
         //  mIpIndex+1 进行容灾IP切换
-        if (mErrorCount >= maxErrorCount) {
+        if (mErrorCount.get() >= maxErrorCount) {
             // 记录主ip切走的时间
             if (mIpIndex == 0) {
                 mBackupTime = SystemClock.elapsedRealtime();
@@ -108,7 +111,7 @@ public class BackupResolver {
                 mIpIndex++;
             }
             //  ip切换后清空ip错误次数
-            mErrorCount = 0;
+            mErrorCount.set(0);
             DnsLog.d("IP Changed：" + backupIps.get(mIpIndex));
         }
 
