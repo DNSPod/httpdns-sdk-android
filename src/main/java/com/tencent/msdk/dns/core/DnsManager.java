@@ -251,16 +251,16 @@ public final class DnsManager {
             int retriedTimes = 0;
 
             CountDownLatch countDownLatch = transaction.commit();
-                lookupContext.countDownLatch(countDownLatch);
+            lookupContext.countDownLatch(countDownLatch);
             Selector selector = lookupContext.selector();
             if (null == selector) {
                 DnsLog.d("selector is null");
                 // 仅阻塞解析
                 // NOTE: 临时方案 HDNS有返回时不被LocalDNS阻塞 TODO: CountDownLatch改为Semaphore
-                while (!(dnses.isEmpty() || (countDownLatch.getCount()==1 && dnses.contains(localDnsGroup.mUnspecDns))) &&
+                while (!(dnses.isEmpty() || (countDownLatch.getCount() == 1 && dnses.contains(localDnsGroup.mUnspecDns))) &&
                         SystemClock.elapsedRealtime() - startTimeMills < timeoutMills) {
                     try {
-                            countDownLatch.await(waitTimeMills, TimeUnit.MILLISECONDS);
+                        countDownLatch.await(waitTimeMills, TimeUnit.MILLISECONDS);
 
                     } catch (Exception e) {
                         DnsLog.d(e, "sessions not empty, but exception");
@@ -323,7 +323,7 @@ public final class DnsManager {
                     DnsLog.d("selector wait for last timeout if sessions is not empty, sessions:%d, mills:%d", sessions.size(), waitTimeMills);
                 }
                 // NOTE: 临时方案 HDNS有返回时不被LocalDNS阻塞，TODO：CountDownLatch改为Semaphore
-                while(!(countDownLatch.getCount()==0 || (countDownLatch.getCount()==1 && dnses.contains(localDnsGroup.mUnspecDns) ||  (SystemClock.elapsedRealtime() - startTimeMills < timeoutMills)))){
+                while (!(countDownLatch.getCount() == 0 || (countDownLatch.getCount() == 1 && dnses.contains(localDnsGroup.mUnspecDns) || (SystemClock.elapsedRealtime() - startTimeMills < timeoutMills)))) {
                     countDownLatch.await(100, TimeUnit.MILLISECONDS);
                 }
 
