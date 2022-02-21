@@ -128,6 +128,12 @@ public abstract class AbsHttpDns extends AbsRestDns {
                 stat.errorCode = ErrorCode.PARSE_RESPONSE_CONTENT_FAILED_ERROR_CODE;
                 return new LookupResult<>(stat.ips, stat);
             }
+            if(rsp.ips==Const.EMPTY_IPS){
+                DnsLog.d(getTag() + "receive success, but no " + (DnsDescription.Family.INET6 == mFamily ? "INET6" : "INET") + " record");
+                stat.isGetEmptyResponse = true;
+                stat.errorCode = ErrorCode.NO_RECORD;
+                return new LookupResult<>(stat.ips, stat);
+            }
             //  返回值处理
             mCacheHelper.put(lookupParams, rsp);
             stat.errorCode = ErrorCode.SUCCESS;
@@ -410,7 +416,16 @@ public abstract class AbsHttpDns extends AbsRestDns {
                 mStat.errorCode = ErrorCode.DECRYPT_RESPONSE_CONTENT_FAILED_ERROR_CODE;
                 return Response.EMPTY;
             }
-            return ResponseParser.parseResponse(mFamily, rspContent);
+            Response resParser = ResponseParser.parseResponse(mFamily, rspContent);
+            //  将hdns有返回但域名自身解析记录配置为空的情况独立出来
+            if(resParser.ips==Const.EMPTY_IPS){
+                DnsLog.d(getTag() + "receive success, but no " + (DnsDescription.Family.INET6 == mFamily ? "INET6" : "INET") + " record");
+                mStat.isGetEmptyResponse = true;
+                mStat.errorCode = ErrorCode.NO_RECORD;
+                return Response.EMPTY;
+            }
+            return resParser;
+
         }
 
         @Override
