@@ -1,6 +1,7 @@
 package com.tencent.msdk.dns.core;
 
 import android.os.SystemClock;
+import android.util.Log;
 
 import com.tencent.msdk.dns.base.compat.CollectionCompat;
 import com.tencent.msdk.dns.base.log.DnsLog;
@@ -227,6 +228,7 @@ public final class DnsManager {
             if (null != restDnsGroup) {
                 // 先查缓存，有其一即可
                 LookupResult<IStatisticsMerge> lookupResult = getResultFromCache(lookupParams);
+                DnsLog.d("getResultFromCache: " + lookupResult);
                 if (lookupResult.stat.lookupSuccess()) {
                     lookupResultHolder.mLookupResult = lookupResult;
                     DnsLog.d("DnsManager lookup getResultFromCache success");
@@ -254,10 +256,12 @@ public final class DnsManager {
             if (null == selector) {
                 DnsLog.d("selector is null");
                 // 仅阻塞解析
-                while (!dnses.isEmpty() &&
+                // NOTE: 临时方案 HDNS有返回时不被LocalDNS阻塞 TODO: CountDownLatch改为Semaphore
+                while (!(dnses.isEmpty() || (countDownLatch.getCount() == 1 && dnses.contains(localDnsGroup.mUnspecDns))) &&
                         SystemClock.elapsedRealtime() - startTimeMills < timeoutMills) {
                     try {
                         countDownLatch.await(waitTimeMills, TimeUnit.MILLISECONDS);
+
                     } catch (Exception e) {
                         DnsLog.d(e, "sessions not empty, but exception");
                     }
@@ -318,7 +322,11 @@ public final class DnsManager {
                 if (sessions.size() > 0) {
                     DnsLog.d("selector wait for last timeout if sessions is not empty, sessions:%d, mills:%d", sessions.size(), waitTimeMills);
                 }
-                countDownLatch.await(remainTimeMills, TimeUnit.MILLISECONDS);
+                // NOTE: 临时方案 HDNS有返回时不被LocalDNS阻塞，TODO：CountDownLatch改为Semaphore
+                while (!(countDownLatch.getCount() == 0 || (countDownLatch.getCount() == 1 && dnses.contains(localDnsGroup.mUnspecDns) || (SystemClock.elapsedRealtime() - startTimeMills < timeoutMills)))) {
+                    countDownLatch.await(100, TimeUnit.MILLISECONDS);
+                }
+
             } catch (Exception ignored) {
             }
             IpSet ipSet = sorter.sort();

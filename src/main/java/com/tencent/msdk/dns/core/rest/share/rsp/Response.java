@@ -30,9 +30,9 @@ public final class Response {
         }
         // NOTE: 前面先进行一次参数校验, 再尝试处理后台返回(格式正确但)内容不符预期情况
         ips = fixIps(family, ips);
-        if (CommonUtils.isEmpty(ips)) {
-            throw new IllegalArgumentException("ips".concat(Const.EMPTY_TIPS));
-        }
+//        if (CommonUtils.isEmpty(ips)) {
+//            throw new IllegalArgumentException("ips".concat(Const.EMPTY_TIPS));
+//        }
         if (isTtlInvalid(ttl)) {
             throw new IllegalArgumentException("ttl".concat(Const.INVALID_TIPS));
         }

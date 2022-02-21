@@ -62,9 +62,10 @@ public final class LookupHelper {
                     dnses.remove(dns);
                     if (lookupResult.stat.lookupSuccess()) {
                         lookupContext.sorter().put(dns, lookupResult.ipSet.ips);
-                        lookupContext.statisticsMerge()
-                                .merge(dns, lookupResult.stat);
                     }
+                    // 不论是否成功都将stat进行合并，让正确的errorCode可以传出
+                    lookupContext.statisticsMerge()
+                            .merge(dns, lookupResult.stat);
                 }
 
             }

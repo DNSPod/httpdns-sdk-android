@@ -7,3 +7,4 @@ build
 local.properties
 proguardMapping.txt
 **/.DS_Store
+src/test/
