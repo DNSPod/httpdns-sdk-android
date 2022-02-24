@@ -170,6 +170,11 @@ public class MSDKDnsResolver {
         DnsLog.d("MSDKDnsResolver.init() called, ver:%s, channel:%s", BuildConfig.VERSION_NAME, channel);
     }
 
+    public void init(Context context, DnsConfig dnsConfig){
+        DnsService.init(context, dnsConfig);
+        DnsLog.d("MSDKDnsResolver.init() called, ver:%s, channel:%s", BuildConfig.VERSION_NAME, dnsConfig.channel);
+    }
+
     /**
      * 设置UserId, 进行数据上报时区分用户, 出现问题时, 依赖该Id进行单用户问题排查
      *
