@@ -314,7 +314,7 @@ public final class DnsService {
                                     .fallback2Local(false)
                                     .blockFirst(sConfig.blockFirst)
                                     .ignoreCurrentNetworkStack(true)
-                                    .enableAsyncLookup(sConfig.asyncLookupDomains.contains(domain))
+                                    .enableAsyncLookup(sConfig.asyncLookupDomains != null && sConfig.asyncLookupDomains.contains(domain))
                                     .build();
                     preLookupResults[iSnapshot] = DnsManager.lookupWrapper(lookupParams);
                     preLookupCountDownLatch.countDown();
