@@ -212,13 +212,12 @@ public class MSDKDnsResolver {
         return getAddrByName(domain, true);
     }
 
-    private String getAddrByName(String domain, boolean useHttp) {
+    public String getAddrByName(String domain, boolean fallback2Local) {
         DnsLog.v("MSDKDnsResolver.getAddrByName() called.");
-
         IpSet ipSet = IpSet.EMPTY;
         // NOTE: 兼容旧版本实现, 未调用init时不crash
         try {
-            ipSet = DnsService.getAddrsByName(domain, useHttp);
+            ipSet = DnsService.getAddrsByName(domain, fallback2Local);
         } catch (Exception ignored) {
         }
         String v4Ip = "0";
