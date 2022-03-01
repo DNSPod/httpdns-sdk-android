@@ -101,9 +101,9 @@ public final class DnsManager {
         LookupExtra lookupExtra = lookupParams.lookupExtra;
 
         LookupContext<LookupExtra> lookupContext = LookupContext.wrap(lookupParams);
-        if(!NetworkStack.isInvalid(lookupParams.customNetStack) && lookupParams.customNetStack > 0){
+        if (!NetworkStack.isInvalid(lookupParams.customNetStack) && lookupParams.customNetStack > 0) {
             lookupContext.currentNetworkStack(lookupParams.customNetStack);
-        }else{
+        } else {
             lookupContext.currentNetworkStack(NetworkStack.get());
         }
 
@@ -207,9 +207,9 @@ public final class DnsManager {
         } else {
             restDnsGroup = CHANNEL_DNS_GROUP_MAP.get(channel);
         }
-        if(!NetworkStack.isInvalid(lookupParams.customNetStack) && lookupParams.customNetStack > 0){
+        if (!NetworkStack.isInvalid(lookupParams.customNetStack) && lookupParams.customNetStack > 0) {
             lookupContext.currentNetworkStack(lookupParams.customNetStack);
-        }else{
+        } else {
             lookupContext.currentNetworkStack(NetworkStack.get());
         }
         ISorter sorter = sSorterFactory.create(lookupContext.currentNetworkStack());
