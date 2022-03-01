@@ -4,6 +4,7 @@ import android.content.Context;
 import android.text.TextUtils;
 
 import com.tencent.msdk.dns.base.utils.CommonUtils;
+import com.tencent.msdk.dns.base.utils.NetworkStack;
 
 public final class LookupParameters<LookupExtra extends IDns.ILookupExtra> {
 
@@ -24,6 +25,7 @@ public final class LookupParameters<LookupExtra extends IDns.ILookupExtra> {
 
     public final int family;
     public final boolean ignoreCurNetStack;
+    public final int customNetStack;
 
     // TODO(zefeng): 分离enableAsyncLookup以及asyncLookup
     public final boolean enableAsyncLookup;
@@ -36,7 +38,7 @@ public final class LookupParameters<LookupExtra extends IDns.ILookupExtra> {
             Context appContext,
             String hostname, int timeoutMills, String dnsIp, LookupExtra lookupExtra,
             String channel, boolean fallback2Local, boolean blockFirst,
-            int family, boolean ignoreCurNetStack, boolean enableAsyncLookup,
+            int family, boolean ignoreCurNetStack, int customNetStack, boolean enableAsyncLookup,
             int curRetryTime, boolean netChangeLookup) {
         this.appContext = appContext;
         this.hostname = hostname;
@@ -48,6 +50,7 @@ public final class LookupParameters<LookupExtra extends IDns.ILookupExtra> {
         this.blockFirst = blockFirst;
         this.family = family;
         this.ignoreCurNetStack = ignoreCurNetStack;
+        this.customNetStack = customNetStack;
         this.enableAsyncLookup = enableAsyncLookup;
         this.curRetryTime = curRetryTime;
         this.netChangeLookup = netChangeLookup;
@@ -67,8 +70,10 @@ public final class LookupParameters<LookupExtra extends IDns.ILookupExtra> {
                 blockFirst == that.blockFirst &&
                 family == that.family &&
                 ignoreCurNetStack == that.ignoreCurNetStack &&
+                customNetStack == that.customNetStack &&
                 enableAsyncLookup == that.enableAsyncLookup &&
                 curRetryTime == that.curRetryTime &&
+                customNetStack == that.customNetStack &&
                 netChangeLookup == that.netChangeLookup &&
                 CommonUtils.equals(appContext, that.appContext) &&
                 CommonUtils.equals(hostname, that.hostname) &&
@@ -80,7 +85,7 @@ public final class LookupParameters<LookupExtra extends IDns.ILookupExtra> {
     @Override
     public int hashCode() {
         return CommonUtils.hash(appContext, hostname, timeoutMills, dnsIp, lookupExtra, channel,
-                fallback2Local, blockFirst, family, ignoreCurNetStack, enableAsyncLookup,
+                fallback2Local, blockFirst, family, ignoreCurNetStack, customNetStack, enableAsyncLookup,
                 curRetryTime, netChangeLookup);
     }
 
@@ -97,6 +102,7 @@ public final class LookupParameters<LookupExtra extends IDns.ILookupExtra> {
                 ", blockFirst=" + blockFirst +
                 ", family=" + family +
                 ", ignoreCurNetStack=" + ignoreCurNetStack +
+                ", customNetStack=" + customNetStack +
                 ", enableAsyncLookup=" + enableAsyncLookup +
                 ", curRetryTime=" + curRetryTime +
                 ", netChangeLookup=" + netChangeLookup +
@@ -119,6 +125,7 @@ public final class LookupParameters<LookupExtra extends IDns.ILookupExtra> {
 
         private int mFamily = DnsDescription.Family.UN_SPECIFIC;
         private boolean mIgnoreCurNetStack = false;
+        private int mCustomNetStack = 0;
 
         private boolean mEnableAsyncLookup = false;
 
@@ -139,6 +146,7 @@ public final class LookupParameters<LookupExtra extends IDns.ILookupExtra> {
             mBlockFirst = lookupParams.blockFirst;
             mFamily = lookupParams.family;
             mIgnoreCurNetStack = lookupParams.ignoreCurNetStack;
+            mCustomNetStack = lookupParams.customNetStack;
             mEnableAsyncLookup = lookupParams.enableAsyncLookup;
             mCurRetryTime = lookupParams.curRetryTime;
             mNetChangeLookup = lookupParams.netChangeLookup;
@@ -216,6 +224,15 @@ public final class LookupParameters<LookupExtra extends IDns.ILookupExtra> {
             return this;
         }
 
+        public Builder<LookupExtra> customNetStack(int customNetStack) {
+            if (NetworkStack.isInvalid(customNetStack)) {
+                throw new IllegalArgumentException("customNetStack".concat(Const.INVALID_TIPS));
+            }
+
+            mCustomNetStack = customNetStack;
+            return this;
+        }
+
         public Builder<LookupExtra> enableAsyncLookup(boolean enableAsyncLookup) {
             mEnableAsyncLookup = enableAsyncLookup;
             return this;
@@ -258,7 +275,7 @@ public final class LookupParameters<LookupExtra extends IDns.ILookupExtra> {
             return new LookupParameters<>(mAppContext,
                     mHostname, mTimeoutMills, mDnsIp, mLookupExtra,
                     mChannel, mFallback2Local, mBlockFirst,
-                    mFamily, mIgnoreCurNetStack, mEnableAsyncLookup,
+                    mFamily, mIgnoreCurNetStack, mCustomNetStack, mEnableAsyncLookup,
                     mCurRetryTime, mNetChangeLookup);
         }
     }
