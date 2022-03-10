@@ -1,6 +1,8 @@
 package com.tencent.msdk.dns.core.rest.share;
 
 import android.text.TextUtils;
+
+import com.tencent.msdk.dns.BackupResolver;
 import com.tencent.msdk.dns.base.compat.CollectionCompat;
 import com.tencent.msdk.dns.base.executor.DnsExecutors;
 import com.tencent.msdk.dns.base.log.DnsLog;
@@ -157,7 +159,8 @@ public final class CacheHelper {
                                 DnsExecutors.MAIN.cancel(task);
                             }
                         }
-
+                        DnsLog.d("Network changed, refetch ThreeNets Ips");
+                        BackupResolver.getInstance().getThreeNets();
                         synchronized (mAsyncLookupParamsSet) {
                             DnsLog.d("Network changed, enable async lookup");
                             Iterator<LookupParameters<LookupExtra>> asyncLookupParamsIterator =
