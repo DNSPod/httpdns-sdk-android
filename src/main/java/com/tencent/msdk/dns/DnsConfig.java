@@ -323,7 +323,7 @@ public final class DnsConfig {
          * @throws IllegalArgumentException token为空时抛出
          */
         public Builder token(String token) {
-            if (TextUtils.isEmpty(token)) {
+            if (mChannel == Const.HTTPS_CHANNEL && TextUtils.isEmpty(token)) {
                 throw new IllegalArgumentException("token".concat(Const.EMPTY_TIPS));
             }
             mToken = token;
@@ -519,6 +519,11 @@ public final class DnsConfig {
                 }
             }
 
+            return this;
+        }
+
+        public Builder channel(String channel) {
+            mChannel = channel;
             return this;
         }
 

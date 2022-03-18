@@ -322,17 +322,18 @@ public final class DnsService {
                 }
             });
         }
-        DnsExecutors.WORK.execute(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    preLookupCountDownLatch.await();
-                    DnsLog.d("Await for pre lookup count down success");
-                } catch (Exception e) {
-                    DnsLog.w(e, "Await for pre lookup count down failed");
-                }
-                ReportHelper.reportPreLookupEvent(preLookupResults);
-            }
-        });
+// TODO: 目前上报效率比较低，等预解析逻辑更新为批量后再恢复上报
+//        DnsExecutors.WORK.execute(new Runnable() {
+//            @Override
+//            public void run() {
+//                try {
+//                    preLookupCountDownLatch.await();
+//                    DnsLog.d("Await for pre lookup count down success");
+//                } catch (Exception e) {
+//                    DnsLog.w(e, "Await for pre lookup count down failed");
+//                }
+//                ReportHelper.reportPreLookupEvent(preLookupResults);
+//            }
+//        });
     }
 }
