@@ -170,6 +170,11 @@ public class MSDKDnsResolver {
         DnsLog.d("MSDKDnsResolver.init() called, ver:%s, channel:%s", BuildConfig.VERSION_NAME, channel);
     }
 
+    public void init(Context context, DnsConfig dnsConfig){
+        DnsService.init(context, dnsConfig);
+        DnsLog.d("MSDKDnsResolver.init() called, ver:%s, channel:%s", BuildConfig.VERSION_NAME, dnsConfig.channel);
+    }
+
     /**
      * 设置UserId, 进行数据上报时区分用户, 出现问题时, 依赖该Id进行单用户问题排查
      *
@@ -207,13 +212,12 @@ public class MSDKDnsResolver {
         return getAddrByName(domain, true);
     }
 
-    private String getAddrByName(String domain, boolean useHttp) {
+    public String getAddrByName(String domain, boolean fallback2Local) {
         DnsLog.v("MSDKDnsResolver.getAddrByName() called.");
-
         IpSet ipSet = IpSet.EMPTY;
         // NOTE: 兼容旧版本实现, 未调用init时不crash
         try {
-            ipSet = DnsService.getAddrsByName(domain, useHttp);
+            ipSet = DnsService.getAddrsByName(domain, fallback2Local);
         } catch (Exception ignored) {
         }
         String v4Ip = "0";

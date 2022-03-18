@@ -38,6 +38,7 @@ public final class DnsConfig {
     public final String channel;
     public final boolean enableReport;
     public final boolean blockFirst;
+    public final int customNetStack;
 
 
     /* @Nullable */ public final DnsExecutors.ExecutorSupplier executorSupplier;
@@ -57,7 +58,7 @@ public final class DnsConfig {
                       Set<WildcardDomain> protectedDomains,
                       Set<String> preLookupDomains, Set<String> asyncLookupDomains,
                       String channel, boolean enableReport, boolean blockFirst,
-                      DnsExecutors.ExecutorSupplier executorSupplier,
+                      int customNetStack, DnsExecutors.ExecutorSupplier executorSupplier,
                       ILookedUpListener lookedUpListener, List<ILogNode> logNodes,
                       List<IReporter> reporters) {
         this.logLevel = logLevel;
@@ -73,6 +74,7 @@ public final class DnsConfig {
         this.channel = channel;
         this.enableReport = enableReport;
         this.blockFirst = blockFirst;
+        this.customNetStack = customNetStack;
         this.executorSupplier = executorSupplier;
         this.lookedUpListener = lookedUpListener;
         this.logNodes = logNodes;
@@ -109,6 +111,7 @@ public final class DnsConfig {
                 ", channel='" + channel + '\'' +
                 ", enableReport='" + enableReport + '\'' +
                 ", blockFirst=" + blockFirst +
+                ", customNetStack=" + customNetStack +
                 ", executorSupplier=" + executorSupplier +
                 ", lookedUpListener=" + lookedUpListener +
                 ", logNodes=" + CommonUtils.toString(logNodes) +
@@ -186,6 +189,7 @@ public final class DnsConfig {
         private String mChannel = Const.DES_HTTP_CHANNEL;
         private boolean mEnableReport = false;
         private boolean mBlockFirst = false;
+        private int mCustomNetStack = 0;
 
         private DnsExecutors.ExecutorSupplier mExecutorSupplier = null;
 
@@ -319,7 +323,7 @@ public final class DnsConfig {
          * @throws IllegalArgumentException token为空时抛出
          */
         public Builder token(String token) {
-            if (TextUtils.isEmpty(token)) {
+            if (mChannel == Const.HTTPS_CHANNEL && TextUtils.isEmpty(token)) {
                 throw new IllegalArgumentException("token".concat(Const.EMPTY_TIPS));
             }
             mToken = token;
@@ -518,6 +522,11 @@ public final class DnsConfig {
             return this;
         }
 
+        public Builder channel(String channel) {
+            mChannel = channel;
+            return this;
+        }
+
         public Builder aesHttp() {
             mChannel = Const.AES_HTTP_CHANNEL;
             return this;
@@ -625,6 +634,11 @@ public final class DnsConfig {
             return this;
         }
 
+        public Builder setCustomNetStack(int customNetStack) {
+            mCustomNetStack = customNetStack;
+            return this;
+        }
+
         /**
          * 构建DnsConfig实例
          *
@@ -636,7 +650,7 @@ public final class DnsConfig {
                     mTimeoutMills,
                     mProtectedDomains, mPreLookupDomains, mAsyncLookupDomains,
                     mChannel, mEnableReport, mBlockFirst,
-                    mExecutorSupplier,
+                    mCustomNetStack, mExecutorSupplier,
                     mLookedUpListener, mLogNodes,
                     mReporters);
         }
