@@ -126,6 +126,10 @@ public final class DnsService {
         return statMerge.toJsonResult();
     }
 
+    private static boolean enableAsyncLookup(String domain) {
+        return sConfig.asyncLookupDomains != null && sConfig.asyncLookupDomains.contains(domain);
+    }
+
     /**
      * 进行域名解析
      *
@@ -134,7 +138,7 @@ public final class DnsService {
      * @throws IllegalStateException 没有初始化时抛出
      */
     public static IpSet getAddrsByName(/* @Nullable */String hostname) {
-        return getAddrsByName(hostname, sConfig.channel, true, false);
+        return getAddrsByName(hostname, sConfig.channel, true, enableAsyncLookup(hostname));
     }
 
     /**
@@ -147,7 +151,7 @@ public final class DnsService {
      */
     public static IpSet getAddrsByName(
             /* @Nullable */String hostname, boolean fallback2Local) {
-        return getAddrsByName(hostname, sConfig.channel, fallback2Local, false);
+        return getAddrsByName(hostname, sConfig.channel, fallback2Local, enableAsyncLookup(hostname));
     }
 
     /**
@@ -315,7 +319,7 @@ public final class DnsService {
                                     .fallback2Local(false)
                                     .blockFirst(sConfig.blockFirst)
                                     .ignoreCurrentNetworkStack(true)
-                                    .enableAsyncLookup(sConfig.asyncLookupDomains != null && sConfig.asyncLookupDomains.contains(domain))
+                                    .enableAsyncLookup(enableAsyncLookup(domain))
                                     .build();
                     preLookupResults[iSnapshot] = DnsManager.lookupWrapper(lookupParams);
                     preLookupCountDownLatch.countDown();
