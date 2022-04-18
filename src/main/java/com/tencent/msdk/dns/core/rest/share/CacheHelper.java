@@ -123,9 +123,9 @@ public final class CacheHelper {
             pendingTasks = new PendingTasks();
         }
 
-        final Set<String> asyncLookupDomains = DnsService.getDnsConfig().asyncLookupDomains;
+        final Set<String> persistentCacheDomains = DnsService.getDnsConfig().persistentCacheDomains;
         // 创建缓存更新任务
-        if (asyncLookupDomains != null && asyncLookupDomains.contains(hostname)) {
+        if (persistentCacheDomains != null && persistentCacheDomains.contains(hostname)) {
             final int lookupFamily = mDns.getDescription().family;
             final LookupParameters<LookupExtra> newLookupParams;
             newLookupParams =

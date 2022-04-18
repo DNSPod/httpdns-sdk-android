@@ -131,7 +131,7 @@ public final class DnsService {
     }
 
     private static boolean enableAsyncLookup(String domain) {
-        return sConfig.asyncLookupDomains != null && sConfig.asyncLookupDomains.contains(domain);
+        return sConfig.persistentCacheDomains != null && sConfig.persistentCacheDomains.contains(domain);
     }
 
     /**
@@ -299,8 +299,7 @@ public final class DnsService {
         final int numOfPreLookupDomain = sConfig.preLookupDomains.size();
         final String[] preLookupDomains =
                 sConfig.preLookupDomains.toArray(new String[numOfPreLookupDomain]);
-        final Set<String> asyncLookupDomains = null != sConfig.asyncLookupDomains ?
-                sConfig.asyncLookupDomains : Collections.<String>emptySet();
+        final Set<String> persistentCacheDomains = sConfig.persistentCacheDomains;
 
         final LookupResult[] preLookupResults = new LookupResult[numOfPreLookupDomain];
         final CountDownLatch preLookupCountDownLatch = new CountDownLatch(numOfPreLookupDomain);
@@ -323,7 +322,7 @@ public final class DnsService {
                                     .fallback2Local(false)
                                     .blockFirst(sConfig.blockFirst)
                                     .ignoreCurrentNetworkStack(true)
-                                    .enableAsyncLookup(sConfig.asyncLookupDomains != null && sConfig.asyncLookupDomains.contains(domain))
+                                    .enableAsyncLookup(persistentCacheDomains != null && persistentCacheDomains.contains(domain))
                                     .build();
                     preLookupResults[iSnapshot] = DnsManager.lookupWrapper(lookupParams);
                     preLookupCountDownLatch.countDown();

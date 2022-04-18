@@ -33,7 +33,7 @@ public final class DnsConfig {
 
     /* @Nullable */ public final Set<WildcardDomain> protectedDomains;
     /* @Nullable */ public final Set<String> preLookupDomains;
-    /* @Nullable */ public final Set<String> asyncLookupDomains;
+    /* @Nullable */ public final Set<String> persistentCacheDomains;
 
     public final String channel;
     public final boolean enableReport;
@@ -56,7 +56,7 @@ public final class DnsConfig {
                       String dnsIp, String dnsId, String dnsKey, String token,
                       int timeoutMills,
                       Set<WildcardDomain> protectedDomains,
-                      Set<String> preLookupDomains, Set<String> asyncLookupDomains,
+                      Set<String> preLookupDomains, Set<String> persistentCacheDomains,
                       String channel, boolean enableReport, boolean blockFirst,
                       int customNetStack, DnsExecutors.ExecutorSupplier executorSupplier,
                       ILookedUpListener lookedUpListener, List<ILogNode> logNodes,
@@ -70,7 +70,7 @@ public final class DnsConfig {
         this.timeoutMills = timeoutMills;
         this.protectedDomains = protectedDomains;
         this.preLookupDomains = preLookupDomains;
-        this.asyncLookupDomains = asyncLookupDomains;
+        this.persistentCacheDomains = persistentCacheDomains;
         this.channel = channel;
         this.enableReport = enableReport;
         this.blockFirst = blockFirst;
@@ -107,7 +107,7 @@ public final class DnsConfig {
                 ", timeoutMills=" + timeoutMills +
                 ", protectedDomains=" + CommonUtils.toString(protectedDomains) +
                 ", preLookupDomains=" + CommonUtils.toString(preLookupDomains) +
-                ", asyncLookupDomains=" + CommonUtils.toString(asyncLookupDomains) +
+                ", persistentCacheDomains=" + CommonUtils.toString(persistentCacheDomains) +
                 ", channel='" + channel + '\'' +
                 ", enableReport='" + enableReport + '\'' +
                 ", blockFirst=" + blockFirst +
@@ -180,11 +180,11 @@ public final class DnsConfig {
 
         private int mMaxNumOfPreLookupDomains = DEFAULT_MAX_NUM_OF_PRE_LOOKUP_DOMAINS;
 
-        // mAsyncLookupDomains包含于mPreLookupDomains, mPreLookupDomains包含于mProtectedDomains
+        // mPreLookupDomains包含于mProtectedDomains
 
         private Set<WildcardDomain> mProtectedDomains = null;
         private Set<String> mPreLookupDomains = null;
-        private Set<String> mAsyncLookupDomains = null;
+        private Set<String> mPersistentCacheDomains = null;
 
         private String mChannel = Const.DES_HTTP_CHANNEL;
         private boolean mEnableReport = false;
@@ -461,8 +461,8 @@ public final class DnsConfig {
                 }
             }
 //            调整：保活域名独立于预解析域名
-//            if (null != mAsyncLookupDomains) {
-//                Iterator<String> domainIterator = mAsyncLookupDomains.iterator();
+//            if (null != mPersistentCacheDomains) {
+//                Iterator<String> domainIterator = mPersistentCacheDomains.iterator();
 //                while (domainIterator.hasNext()) {
 //                    String domain = domainIterator.next();
 //                    if (!mPreLookupDomains.contains(domain)) {
@@ -483,13 +483,13 @@ public final class DnsConfig {
          * @return 当前Builder实例, 方便链式调用
          * @throws IllegalArgumentException domains为空时抛出
          */
-        public synchronized Builder asyncLookupDomains(String... domains) {
+        public synchronized Builder persistentCacheDomains(String... domains) {
             if (CommonUtils.isEmpty(domains)) {
                 throw new IllegalArgumentException("domains".concat(Const.EMPTY_TIPS));
             }
 
-            if (null == mAsyncLookupDomains) {
-                mAsyncLookupDomains = CollectionCompat.createSet(domains.length);
+            if (null == mPersistentCacheDomains) {
+                mPersistentCacheDomains = CollectionCompat.createSet(domains.length);
             }
 
             for (String domain : domains) {
@@ -497,7 +497,7 @@ public final class DnsConfig {
                     throw new IllegalArgumentException("domain".concat(Const.EMPTY_TIPS));
                 }
 
-                mAsyncLookupDomains.add(domain);
+                mPersistentCacheDomains.add(domain);
             }
 
             return this;
@@ -629,7 +629,7 @@ public final class DnsConfig {
             return new DnsConfig(mLogLevel,
                     mAppId, mUserId, mInitBuiltInReporters, mDnsIp, mDnsId, mDnsKey, mToken,
                     mTimeoutMills,
-                    mProtectedDomains, mPreLookupDomains, mAsyncLookupDomains,
+                    mProtectedDomains, mPreLookupDomains, mPersistentCacheDomains,
                     mChannel, mEnableReport, mBlockFirst,
                     mCustomNetStack, mExecutorSupplier,
                     mLookedUpListener, mLogNodes,
