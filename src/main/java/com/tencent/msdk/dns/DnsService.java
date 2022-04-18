@@ -43,6 +43,10 @@ public final class DnsService {
 
     private static volatile boolean sInited = false;
 
+    public static DnsConfig getDnsConfig() {
+        return sConfig;
+    }
+
     /**
      * 初始化SDK
      *
@@ -138,7 +142,7 @@ public final class DnsService {
      * @throws IllegalStateException 没有初始化时抛出
      */
     public static IpSet getAddrsByName(/* @Nullable */String hostname) {
-        return getAddrsByName(hostname, sConfig.channel, true, enableAsyncLookup(hostname));
+        return getAddrsByName(hostname, sConfig.channel, true, false);
     }
 
     /**
@@ -151,7 +155,7 @@ public final class DnsService {
      */
     public static IpSet getAddrsByName(
             /* @Nullable */String hostname, boolean fallback2Local) {
-        return getAddrsByName(hostname, sConfig.channel, fallback2Local, enableAsyncLookup(hostname));
+        return getAddrsByName(hostname, sConfig.channel, fallback2Local, false);
     }
 
     /**
@@ -319,7 +323,7 @@ public final class DnsService {
                                     .fallback2Local(false)
                                     .blockFirst(sConfig.blockFirst)
                                     .ignoreCurrentNetworkStack(true)
-                                    .enableAsyncLookup(enableAsyncLookup(domain))
+                                    .enableAsyncLookup(sConfig.asyncLookupDomains != null && sConfig.asyncLookupDomains.contains(domain))
                                     .build();
                     preLookupResults[iSnapshot] = DnsManager.lookupWrapper(lookupParams);
                     preLookupCountDownLatch.countDown();

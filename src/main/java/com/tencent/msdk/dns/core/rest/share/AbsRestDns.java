@@ -37,8 +37,8 @@ public abstract class AbsRestDns implements IDns<LookupExtra> {
             throw new IllegalArgumentException("stat".concat(Const.NULL_POINTER_TIPS));
         }
 
+        // 初始化，保活域名刷新不命中缓存
         if (lookupParams.enableAsyncLookup) {
-            // 异步解析不命中缓存
             return false;
         }
         String hostname = lookupParams.hostname;

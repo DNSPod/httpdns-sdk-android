@@ -1,6 +1,8 @@
 package com.tencent.msdk.dns.core.rest.share;
 
 import android.text.TextUtils;
+
+import com.tencent.msdk.dns.DnsService;
 import com.tencent.msdk.dns.base.compat.CollectionCompat;
 import com.tencent.msdk.dns.base.executor.DnsExecutors;
 import com.tencent.msdk.dns.base.log.DnsLog;
@@ -99,6 +101,11 @@ public final class CacheHelper {
 
             cacheUpdateTask(lookupParams, rsp, hostname);
         }
+
+        // todo:批量域名的存储逻辑仍先保留。批量域名解析查询缓存仍以整个hostname为索引。
+        AbsRestDns.Statistics stat = new AbsRestDns.Statistics(rsp.ips, rsp.clientIp, rsp.ttl);
+        stat.errorCode = ErrorCode.SUCCESS;
+        mCache.add(lookupParams.hostname, new LookupResult<>(rsp.ips, stat));
     }
 
     private void cacheUpdateTask(LookupParameters<LookupExtra> lookupParams, Response rsp, final String hostname) {
@@ -116,22 +123,18 @@ public final class CacheHelper {
             pendingTasks = new PendingTasks();
         }
 
+        final Set<String> asyncLookupDomains = DnsService.getDnsConfig().asyncLookupDomains;
         // 创建缓存更新任务
-        if (lookupParams.enableAsyncLookup) {
-            int origLookUpFamily = lookupParams.family;
+        if (asyncLookupDomains != null && asyncLookupDomains.contains(hostname)) {
             final int lookupFamily = mDns.getDescription().family;
             final LookupParameters<LookupExtra> newLookupParams;
-            if (!lookupParams.fallback2Local && origLookUpFamily == lookupFamily &&
-                    !lookupParams.netChangeLookup) {
-                newLookupParams = lookupParams;
-            } else {
-                newLookupParams =
-                        new LookupParameters.Builder<>(lookupParams)
-                                .fallback2Local(false)
-                                .family(lookupFamily)
-                                .networkChangeLookup(false)
-                                .build();
-            }
+            newLookupParams =
+                    new LookupParameters.Builder<>(lookupParams)
+                            .enableAsyncLookup(true)
+                            .fallback2Local(false)
+                            .family(lookupFamily)
+                            .networkChangeLookup(false)
+                            .build();
             mAsyncLookupParamsSet.add(newLookupParams);
             final Runnable asyncLookupTask = new Runnable() {
                 @Override
@@ -141,7 +144,6 @@ public final class CacheHelper {
                     DnsExecutors.WORK.execute(new Runnable() {
                         @Override
                         public void run() {
-                            // todo-sara: lookupWrapper方法仍然会优先请求缓存，并不一定会发送实时请求。是否该调整为直接发送请求
                             LookupResult lookupResult = DnsManager.lookupWrapper(newLookupParams);
                             AsyncLookupResultQueue.enqueue(lookupResult);
                         }
