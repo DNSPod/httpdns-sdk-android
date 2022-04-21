@@ -73,7 +73,6 @@ public final class LookupParameters<LookupExtra extends IDns.ILookupExtra> {
                 customNetStack == that.customNetStack &&
                 enableAsyncLookup == that.enableAsyncLookup &&
                 curRetryTime == that.curRetryTime &&
-                customNetStack == that.customNetStack &&
                 netChangeLookup == that.netChangeLookup &&
                 CommonUtils.equals(appContext, that.appContext) &&
                 CommonUtils.equals(hostname, that.hostname) &&
