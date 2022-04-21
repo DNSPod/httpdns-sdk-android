@@ -112,10 +112,12 @@ public final class CacheHelper {
         PendingTasks pendingTasks = mHostnamePendingTasksMap.get(hostname);
         if (null != pendingTasks) {
             if (null != pendingTasks.removeExpiredCacheTask) {
+                mPendingTasks.remove(pendingTasks.removeExpiredCacheTask);
                 DnsExecutors.MAIN.cancel(pendingTasks.removeExpiredCacheTask);
                 pendingTasks.removeExpiredCacheTask = null;
             }
             if (null != pendingTasks.asyncLookupTask) {
+                mPendingTasks.remove(pendingTasks.asyncLookupTask);
                 DnsExecutors.MAIN.cancel(pendingTasks.asyncLookupTask);
                 pendingTasks.asyncLookupTask = null;
             }
@@ -130,6 +132,7 @@ public final class CacheHelper {
             final LookupParameters<LookupExtra> newLookupParams;
             newLookupParams =
                     new LookupParameters.Builder<>(lookupParams)
+                            .hostname(hostname)
                             .enableAsyncLookup(true)
                             .fallback2Local(false)
                             .family(lookupFamily)
