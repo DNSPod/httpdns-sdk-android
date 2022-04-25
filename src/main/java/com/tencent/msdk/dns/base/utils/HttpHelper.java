@@ -145,4 +145,8 @@ public final class HttpHelper {
         }
         return rsps[1];
     }
+
+    public static int responseStatus(String rawRsp) {
+        return Integer.parseInt(rawRsp.substring(9, 12));
+    }
 }
