@@ -147,6 +147,11 @@ public final class HttpHelper {
     }
 
     public static int responseStatus(String rawRsp) {
-        return Integer.parseInt(rawRsp.substring(9, 12));
+        try {
+            return Integer.parseInt(rawRsp.substring(9, 12));
+        } catch (Exception ignore) {
+            return 0;
+        }
+
     }
 }
