@@ -151,13 +151,16 @@ public class BackupResolver {
                         .fallback2Local(false)
                         .build();
                 LookupResult result = dns.lookup(lookupParameters);
-                List<String> mergeList = new ArrayList<>();
-                List<String> threeNets = Arrays.asList(result.ipSet.ips);
-                List<String> backUpIps = getBackUpIps();
-                DnsLog.d("ThreeNets dnsIps: " + dnsIps);
-//            mergeList.addAll(threeNets);
-                mergeList.addAll(backUpIps);
-                dnsIps = mergeList;
+                if(result.stat.lookupSuccess()){
+                    List<String> mergeList = new ArrayList<>();
+                    List<String> threeNets = Arrays.asList(result.ipSet.ips);
+                    List<String> backUpIps = getBackUpIps();
+                    DnsLog.d("ThreeNets dnsIps: " + dnsIps);
+                    mergeList.addAll(threeNets);
+                    mergeList.addAll(backUpIps);
+                    dnsIps = mergeList;
+                    mIpIndex = 0;
+                }
             } catch (Exception e) {
                 DnsLog.w(e, "getThreeNets failed");
             }
