@@ -39,12 +39,6 @@ public final class Response {
 
         this.clientIp = clientIp;
         this.ips = ips;
-//        if (Const.MAX_IP_COUNT >= ips.length) {
-//            this.ips = ips;
-//        } else {
-//            this.ips = new String[Const.MAX_IP_COUNT];
-//            System.arraycopy(ips, 0, this.ips, 0, Const.MAX_IP_COUNT);
-//        }
         this.ttl = ttl;
     }
 
