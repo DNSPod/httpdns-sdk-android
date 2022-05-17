@@ -48,10 +48,13 @@ public final class DnsManager {
         registerDns(new LocalDns());
         registerDns(new DesHttpDns(DnsDescription.Family.INET));
         registerDns(new DesHttpDns(DnsDescription.Family.INET6));
+        registerDns(new DesHttpDns(DnsDescription.Family.UN_SPECIFIC));
         registerDns(new AesHttpDns(DnsDescription.Family.INET));
         registerDns(new AesHttpDns(DnsDescription.Family.INET6));
+        registerDns(new AesHttpDns(DnsDescription.Family.UN_SPECIFIC));
         registerDns(new HttpsDns(DnsDescription.Family.INET));
         registerDns(new HttpsDns(DnsDescription.Family.INET6));
+        registerDns(new HttpsDns(DnsDescription.Family.UN_SPECIFIC));
     }
 
     @SuppressWarnings("WeakerAccess")
@@ -382,7 +385,12 @@ public final class DnsManager {
         int curNetStack = lookupContext.currentNetworkStack();
         int family = lookupContext.family();
         boolean ignoreCurNetStack = lookupContext.ignoreCurrentNetworkStack();
-        if (null != dnsGroup.mInet6Dns || null != dnsGroup.mInetDns) {
+
+        if (null != dnsGroup.mUnspecDns &&
+                (ignoreCurNetStack || 0 != (curNetStack & NetworkStack.DUAL_STACK))) {
+            //noinspection unchecked
+            prepareTask((IDns<LookupExtra>) dnsGroup.mUnspecDns, lookupContext);
+        } else if (null != dnsGroup.mInet6Dns || null != dnsGroup.mInetDns) {
             // AAAA first
             if (null != dnsGroup.mInet6Dns &&
                     0 != (family & DnsDescription.Family.INET6) &&
@@ -398,10 +406,6 @@ public final class DnsManager {
                 //noinspection unchecked
                 prepareTask((IDns<LookupExtra>) dnsGroup.mInetDns, lookupContext);
             }
-        } else if (null != dnsGroup.mUnspecDns &&
-                (ignoreCurNetStack || 0 != (curNetStack & NetworkStack.DUAL_STACK))) {
-            //noinspection unchecked
-            prepareTask((IDns<LookupExtra>) dnsGroup.mUnspecDns, lookupContext);
         }
     }
 

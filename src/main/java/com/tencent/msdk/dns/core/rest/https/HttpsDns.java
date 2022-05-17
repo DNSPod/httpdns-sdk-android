@@ -32,9 +32,17 @@ public final class HttpsDns extends AbsHttpDns {
 
     @Override
     public String getTargetUrl(String dnsIp, String hostname, LookupExtra lookupExtra) {
-        String reqContent = DnsDescription.Family.INET == mFamily ?
-                RequestBuilder.buildHttpsInetRequest(hostname, lookupExtra.bizId, lookupExtra.token) :
-                RequestBuilder.buildHttpsInet6Request(hostname, lookupExtra.bizId, lookupExtra.token);
+        String reqContent;
+        switch (mFamily) {
+            case DnsDescription.Family.INET:
+                reqContent = RequestBuilder.buildHttpsInetRequest(hostname, lookupExtra.bizId, lookupExtra.token); break;
+            case DnsDescription.Family.INET6:
+                reqContent = RequestBuilder.buildHttpsInet6Request(hostname, lookupExtra.bizId, lookupExtra.token); break;
+            case DnsDescription.Family.UN_SPECIFIC:
+                reqContent = RequestBuilder.buildHttpsDoubRequest(hostname, lookupExtra.bizId, lookupExtra.token); break;
+            default:
+                throw new IllegalStateException("Unexpected value: " + mFamily);
+        }
         return mHttpDnsConfig.getTargetUrl(dnsIp, reqContent);
     }
 

@@ -31,8 +31,9 @@ public abstract class AbsHttpDns extends AbsRestDns {
     protected final DnsDescription mDescription;
 
     public AbsHttpDns(int family) {
+        mFamily = family;
         // NOTE: 区分inet和inet6, 不允许unspecific
-        mFamily = DnsDescription.Family.INET6 == family ? family : DnsDescription.Family.INET;
+//        mFamily = DnsDescription.Family.INET6 == family ? family : DnsDescription.Family.INET;
         mDescription = new DnsDescription(getDescriptionChannel(), mFamily);
     }
 

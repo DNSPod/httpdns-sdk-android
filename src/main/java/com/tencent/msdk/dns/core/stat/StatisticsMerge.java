@@ -107,6 +107,10 @@ public final class StatisticsMerge implements IStatisticsMerge<LookupExtra> {
             restInetDnsStat = (AbsRestDns.Statistics) stat;
         } else if (DnsDescription.Family.INET6 == dnsDesc.family) {
             restInet6DnsStat = (AbsRestDns.Statistics) stat;
+        } else {
+            restInetDnsStat = (AbsRestDns.Statistics) stat;
+            restInet6DnsStat = (AbsRestDns.Statistics) stat;
+            // sara todo: 合并ipv4,ipv6统计处理
         }
     }
 
