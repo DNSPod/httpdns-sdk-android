@@ -123,8 +123,6 @@ public final class ResponseParser {
                         }
                     }
 
-
-                    String[] tmpIps = rspMatcher.group(2).split(IP_SPLITTER);
                     //  将域名和ip组装为 host:ip的形式存入clientIp
                     for (int n = 0; n < inet4Ips.length; n++) {
                         inet4IpsList.add(host + ":" + inet4Ips[n]);

@@ -223,8 +223,8 @@ public final class ReportHelper {
                 String.valueOf(statMerge.restInet6DnsStat.ttl));
         lookupMethodCalledEventMap.put(ReportConst.REST_INET6_LOOKUP_CLIENT_IP_KEY,
                 statMerge.restInet6DnsStat.clientIp);
-//        lookupMethodCalledEventMap.put(ReportConst.REST_INET6_LOOKUP_COST_TIME_MILLS_KEY,
-//                String.valueOf(statMerge.restInet6DnsStat.costTimeMills));
+        lookupMethodCalledEventMap.put(ReportConst.REST_INET6_LOOKUP_COST_TIME_MILLS_KEY,
+                String.valueOf(statMerge.restInet6DnsStat.costTimeMills));
         lookupMethodCalledEventMap.put(ReportConst.REST_INET6_LOOKUP_RETRY_TIMES_KEY,
                 String.valueOf(statMerge.restInet6DnsStat.retryTimes));
 
