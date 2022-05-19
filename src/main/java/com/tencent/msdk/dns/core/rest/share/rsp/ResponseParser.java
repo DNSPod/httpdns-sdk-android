@@ -16,9 +16,9 @@ public final class ResponseParser {
     private static final int RSP_GROUP_COUNT = 3;
     private static final int RSP_GROUP_COUNT_BATCH = 4;
     private static final Pattern RSP_PATTERN = Pattern.compile("(.*),(.*)\\|(.*)");
-    private static final Pattern RSP_PATTERN_BATCH = Pattern.compile("(.*).:(.*),(.*)\\|(.*)");
+    private static final Pattern RSP_PATTERN_BATCH = Pattern.compile("(.*)\\.:(.*),(.*)\\|(.*)");
     private static final Pattern RSP_UNSPECIFIC_PATTERN = Pattern.compile("(.*)-(.*)\\|(.*)");
-    private static final Pattern RSP_UNSPECIFIC_BATCH = Pattern.compile("(.*).:(.*)\\|(.*)");
+    private static final Pattern RSP_UNSPECIFIC_BATCH = Pattern.compile("(.*)\\.:(.*)\\|(.*)");
 
     private static final String IP_SPLITTER = ";";
 

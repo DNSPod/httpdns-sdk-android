@@ -393,34 +393,8 @@ public final class DnsManager {
         int curNetStack = lookupContext.currentNetworkStack();
         int family = lookupContext.family();
         boolean ignoreCurNetStack = lookupContext.ignoreCurrentNetworkStack();
-// sara todo: 验证
-//        if (null != dnsGroup.mUnspecDns &&
-//                (ignoreCurNetStack || 0 != (curNetStack & NetworkStack.DUAL_STACK))) {
-//            //noinspection unchecked
-//            prepareTask((IDns<LookupExtra>) dnsGroup.mUnspecDns, lookupContext);
-//        } else if (null != dnsGroup.mInet6Dns || null != dnsGroup.mInetDns) {
-//            // AAAA first
-//            if (null != dnsGroup.mInet6Dns &&
-//                    0 != (family & DnsDescription.Family.INET6) &&
-//                    // 异步解析不关注当前网络栈
-//                    (ignoreCurNetStack || 0 != (curNetStack & NetworkStack.IPV6_ONLY))) {
-//                //noinspection unchecked
-//                prepareTask((IDns<LookupExtra>) dnsGroup.mInet6Dns, lookupContext);
-//            }
-//            if (null != dnsGroup.mInetDns &&
-//                    0 != (family & DnsDescription.Family.INET) &&
-//                    // 异步解析不关注当前网络栈
-//                    (ignoreCurNetStack || 0 != (curNetStack & NetworkStack.IPV4_ONLY))) {
-//                //noinspection unchecked
-//                prepareTask((IDns<LookupExtra>) dnsGroup.mInetDns, lookupContext);
-//            }
-//        }
 
-        if (null != dnsGroup.mUnspecDns &&
-                (ignoreCurNetStack || curNetStack == NetworkStack.DUAL_STACK)) {
-            //noinspection unchecked
-            prepareTask((IDns<LookupExtra>) dnsGroup.mUnspecDns, lookupContext);
-        } else if (null != dnsGroup.mInet6Dns &&
+        if (null != dnsGroup.mInet6Dns &&
                 // 异步解析不关注当前网络栈
                 (ignoreCurNetStack || curNetStack == NetworkStack.IPV6_ONLY)) {
             //noinspection unchecked
@@ -430,6 +404,10 @@ public final class DnsManager {
                 (ignoreCurNetStack || curNetStack == NetworkStack.IPV4_ONLY)) {
             //noinspection unchecked
             prepareTask((IDns<LookupExtra>) dnsGroup.mInetDns, lookupContext);
+        } else if (null != dnsGroup.mUnspecDns &&
+                (ignoreCurNetStack || 0 != (curNetStack & NetworkStack.DUAL_STACK))) {
+            //noinspection unchecked
+            prepareTask((IDns<LookupExtra>) dnsGroup.mUnspecDns, lookupContext);
         }
 
     }
