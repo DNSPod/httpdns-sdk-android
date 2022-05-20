@@ -273,8 +273,8 @@ public final class DnsManager {
             if (null == selector) {
                 DnsLog.d("selector is null");
                 // 仅阻塞解析
-                // NOTE: 临时方案 HDNS有返回时不被LocalDNS阻塞 TODO: CountDownLatch改为Semaphore
-                while (!(dnses.isEmpty() || (countDownLatch.getCount() == 1 && dnses.contains(localDnsGroup.mUnspecDns))) &&
+                // NOTE: 非localDNS解析进行countDownLatch,HDNS不被localDNS阻塞
+                while (countDownLatch.getCount() > 0 &&
                         SystemClock.elapsedRealtime() - startTimeMills < timeoutMills) {
                     try {
                         countDownLatch.await(waitTimeMills, TimeUnit.MILLISECONDS);
@@ -282,7 +282,7 @@ public final class DnsManager {
                     } catch (Exception e) {
                         DnsLog.d(e, "sessions not empty, but exception");
                     }
-                    if (!dnses.isEmpty() && // 需要重试
+                    if (countDownLatch.getCount() > 0 && // 需要重试
                             canRetry(startTimeMills, timeoutMills, maxRetryTimes, retriedTimes)) {
                         retriedTimes++;
                         remainTimeMills = timeoutMills -
@@ -339,11 +339,7 @@ public final class DnsManager {
                 if (sessions.size() > 0) {
                     DnsLog.d("selector wait for last timeout if sessions is not empty, sessions:%d, mills:%d", sessions.size(), waitTimeMills);
                 }
-                // NOTE: 临时方案 HDNS有返回时不被LocalDNS阻塞，TODO：CountDownLatch改为Semaphore
-                while (!(countDownLatch.getCount() == 0 || (countDownLatch.getCount() == 1 && dnses.contains(localDnsGroup.mUnspecDns) || (SystemClock.elapsedRealtime() - startTimeMills < timeoutMills)))) {
-                    countDownLatch.await(100, TimeUnit.MILLISECONDS);
-                }
-
+                countDownLatch.await(remainTimeMills, TimeUnit.MILLISECONDS);
             } catch (Exception ignored) {
             }
             IpSet ipSet = sorter.sort();
