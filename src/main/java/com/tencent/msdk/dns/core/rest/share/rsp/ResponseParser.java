@@ -15,10 +15,12 @@ public final class ResponseParser {
 
     private static final int RSP_GROUP_COUNT = 3;
     private static final int RSP_GROUP_COUNT_BATCH = 4;
+    private static final int RSP_GROUP_UNSPECIFIC_COUNT = 5;
+    private static final int RSP_GROUP_UNSPECIFIC_COUNT_BATCH = 6;
     private static final Pattern RSP_PATTERN = Pattern.compile("(.*),(.*)\\|(.*)");
     private static final Pattern RSP_PATTERN_BATCH = Pattern.compile("(.*)\\.:(.*),(.*)\\|(.*)");
-    private static final Pattern RSP_UNSPECIFIC_PATTERN = Pattern.compile("(.*)-(.*)\\|(.*)");
-    private static final Pattern RSP_UNSPECIFIC_BATCH = Pattern.compile("(.*)\\.:(.*)\\|(.*)");
+    private static final Pattern RSP_UNSPECIFIC = Pattern.compile("(.*),(.*)-(.*),(.*)\\|(.*)");
+    private static final Pattern RSP_UNSPECIFIC_BATCH = Pattern.compile("(.*)\\.:(.*),(.*)-(.*),(.*)\\|(.*)");
 
     private static final String IP_SPLITTER = ";";
 
@@ -99,29 +101,18 @@ public final class ResponseParser {
             for (String rsp : rspList) {
                 //  批量情况会携带域名信息
                 Matcher rspMatcher = RSP_UNSPECIFIC_BATCH.matcher(rsp);
-                if (!rspMatcher.matches() || RSP_GROUP_COUNT_BATCH != rspMatcher.groupCount()) {
-//                    return Response.EMPTY;
+                if (!rspMatcher.matches() || RSP_GROUP_UNSPECIFIC_COUNT_BATCH != rspMatcher.groupCount()) {
                     continue;
                 }
                 try {
                     //  批量情况会携带域名信息
                     String host = rspMatcher.group(1);
-                    clientIp = rspMatcher.group(3) + ",";
+                    clientIp = rspMatcher.group(6) + ",";
 
-                    int i = 0;
-                    String[] inet4Ips = new String[0];
-                    String[] inet6Ips = new String[0];
-                    for (String ipItem : rspMatcher.group(2).split("-")) {
-                        String[] ips2 = ipItem.split(",");
-                        if (i == 0) {
-                            i++;
-                            inet4Ips = ips2[0].split(IP_SPLITTER);
-                            // todo：ttl先按ipv4的获取
-                            ttl = Integer.parseInt(ips2[1]);
-                        } else {
-                            inet6Ips = ips2[0].split(IP_SPLITTER);
-                        }
-                    }
+                    String[] inet4Ips = rspMatcher.group(2).split(IP_SPLITTER);
+                    String[] inet6Ips = rspMatcher.group(4).split(IP_SPLITTER);
+                    // todo：ttl先按ipv4的获取
+                    ttl = Integer.parseInt(rspMatcher.group(3));
 
                     //  将域名和ip组装为 host:ip的形式存入clientIp
                     for (int n = 0; n < inet4Ips.length; n++) {
@@ -145,23 +136,17 @@ public final class ResponseParser {
         } else {
             try {
                 // format: ip;ip;...;ip,ttl-ip;ip;...;ip,ttl|client ip
-                String[] rspList1 = rspList[0].split("\\|");
-                String clientIp = rspList1[1];
-                int i = 0;
-                int ttl = 0;
-                String[] inet4Ips = new String[0];
-                String[] inet6Ips = new String[0];
-                for (String ipItem : rspList1[0].split("-")) {
-                    String[] ips2 = ipItem.split(",");
-                    if (i == 0) {
-                        i++;
-                        inet4Ips = ips2[0].split(";");
-                        // todo：ttl先按ipv4的获取
-                        ttl = Integer.parseInt(ips2[1]);
-                    } else {
-                        inet6Ips = ips2[0].split(";");
-                    }
+                Matcher rspMatcher = RSP_UNSPECIFIC.matcher(rspList[0]);
+                if (!rspMatcher.matches() || RSP_GROUP_UNSPECIFIC_COUNT != rspMatcher.groupCount()) {
+                    return Response.EMPTY;
                 }
+
+                String clientIp = rspMatcher.group(5);
+                String[] inet4Ips = rspMatcher.group(1).split(IP_SPLITTER);
+                String[] inet6Ips = rspMatcher.group(3).split(IP_SPLITTER);
+                // todo：ttl先按ipv4的获取
+                int ttl = Integer.parseInt(rspMatcher.group(2));
+
                 return new Response(clientIp, inet4Ips, inet6Ips, ttl);
             } catch (Exception e) {
                 return Response.EMPTY;
