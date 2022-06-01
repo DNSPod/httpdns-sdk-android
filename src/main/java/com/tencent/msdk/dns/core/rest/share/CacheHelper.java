@@ -106,6 +106,7 @@ public final class CacheHelper {
         AbsRestDns.Statistics stat = new AbsRestDns.Statistics(rsp.ips, rsp.clientIp, rsp.ttl);
         stat.errorCode = ErrorCode.SUCCESS;
         mCache.add(lookupParams.hostname, new LookupResult<>(rsp.ips, stat));
+        cacheUpdateTask(lookupParams, rsp, lookupParams.hostname);
     }
 
     private void cacheUpdateTask(LookupParameters<LookupExtra> lookupParams, Response rsp, final String hostname) {
