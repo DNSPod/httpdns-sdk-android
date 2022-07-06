@@ -34,6 +34,7 @@ public final class DnsConfig {
     /* @Nullable */ public final Set<WildcardDomain> protectedDomains;
     /* @Nullable */ public final Set<String> preLookupDomains;
     /* @Nullable */ public final Set<String> persistentCacheDomains;
+    public boolean enablePersistentCache;
 
     public final String channel;
     public final boolean enableReport;
@@ -56,7 +57,9 @@ public final class DnsConfig {
                       String dnsIp, String dnsId, String dnsKey, String token,
                       int timeoutMills,
                       Set<WildcardDomain> protectedDomains,
-                      Set<String> preLookupDomains, Set<String> persistentCacheDomains,
+                      Set<String> preLookupDomains,
+                      boolean enablePersistentCache,
+                      Set<String> persistentCacheDomains,
                       String channel, boolean enableReport, boolean blockFirst,
                       int customNetStack, DnsExecutors.ExecutorSupplier executorSupplier,
                       ILookedUpListener lookedUpListener, List<ILogNode> logNodes,
@@ -70,6 +73,7 @@ public final class DnsConfig {
         this.timeoutMills = timeoutMills;
         this.protectedDomains = protectedDomains;
         this.preLookupDomains = preLookupDomains;
+        this.enablePersistentCache = enablePersistentCache;
         this.persistentCacheDomains = persistentCacheDomains;
         this.channel = channel;
         this.enableReport = enableReport;
@@ -107,6 +111,7 @@ public final class DnsConfig {
                 ", timeoutMills=" + timeoutMills +
                 ", protectedDomains=" + CommonUtils.toString(protectedDomains) +
                 ", preLookupDomains=" + CommonUtils.toString(preLookupDomains) +
+                ", enablePersistentCache=" + enablePersistentCache +
                 ", persistentCacheDomains=" + CommonUtils.toString(persistentCacheDomains) +
                 ", channel='" + channel + '\'' +
                 ", enableReport='" + enableReport + '\'' +
@@ -185,6 +190,7 @@ public final class DnsConfig {
         private Set<WildcardDomain> mProtectedDomains = null;
         private Set<String> mPreLookupDomains = null;
         private Set<String> mPersistentCacheDomains = null;
+        private boolean mEnablePersistentCache = true;
 
         private String mChannel = Const.DES_HTTP_CHANNEL;
         private boolean mEnableReport = false;
@@ -245,6 +251,17 @@ public final class DnsConfig {
                 throw new IllegalArgumentException("userId".concat(Const.EMPTY_TIPS));
             }
             mUserId = userId;
+            return this;
+        }
+
+        /**
+         * 启停缓存自动刷新功能, 默认开启
+         *
+         * @param enablePersistentCache, 启停缓存自动刷新功能
+         * @return 当前Builder实例, 方便链式调用
+         */
+        public Builder enablePersistentCache(boolean enablePersistentCache) {
+            mEnablePersistentCache = enablePersistentCache;
             return this;
         }
 
@@ -479,7 +496,6 @@ public final class DnsConfig {
          * 不设置时, 默认不会进行提前解析
          *
          * @param domains 保活域名
-         *
          * @return 当前Builder实例, 方便链式调用
          * @throws IllegalArgumentException domains为空时抛出
          */
@@ -629,7 +645,7 @@ public final class DnsConfig {
             return new DnsConfig(mLogLevel,
                     mAppId, mUserId, mInitBuiltInReporters, mDnsIp, mDnsId, mDnsKey, mToken,
                     mTimeoutMills,
-                    mProtectedDomains, mPreLookupDomains, mPersistentCacheDomains,
+                    mProtectedDomains, mPreLookupDomains, mEnablePersistentCache, mPersistentCacheDomains,
                     mChannel, mEnableReport, mBlockFirst,
                     mCustomNetStack, mExecutorSupplier,
                     mLookedUpListener, mLogNodes,

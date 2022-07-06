@@ -113,6 +113,18 @@ public final class DnsService {
         sConfig.userId = userId;
     }
 
+    /**
+     * 启停缓存自动刷新功能
+     * @param mEnablePersistentCache false：关闭，true：开启
+     * @throws IllegalStateException    没有初始化时抛出
+     */
+    public static synchronized void enablePersistentCache(boolean mEnablePersistentCache) {
+        if (!sInited) {
+            throw new IllegalStateException("DnsService".concat(Const.NOT_INIT_TIPS));
+        }
+        sConfig.enablePersistentCache = mEnablePersistentCache;
+    }
+
     public static String getDnsDetail(String hostname) {
         String dnsIp = BackupResolver.getInstance().getDnsIp();
         LookupResult<IStatisticsMerge> lookupResult = DnsManager.getResultFromCache(new LookupParameters.Builder<LookupExtra>()
