@@ -70,6 +70,12 @@ public final class LookupHelper {
 
             }
         };
-        lookupContext.transaction().addTask(blockLookupTask);
+
+        // 只有非localDNS进入countDownLatch阻塞任务
+        if (!Const.LOCAL_CHANNEL.equals(dns.getDescription().channel)) {
+            lookupContext.transaction().addTask(blockLookupTask);
+        } else {
+            lookupContext.transaction().addTask(blockLookupTask, true);
+        }
     }
 }

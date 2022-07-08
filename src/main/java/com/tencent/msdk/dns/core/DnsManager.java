@@ -48,10 +48,13 @@ public final class DnsManager {
         registerDns(new LocalDns());
         registerDns(new DesHttpDns(DnsDescription.Family.INET));
         registerDns(new DesHttpDns(DnsDescription.Family.INET6));
+        registerDns(new DesHttpDns(DnsDescription.Family.UN_SPECIFIC));
         registerDns(new AesHttpDns(DnsDescription.Family.INET));
         registerDns(new AesHttpDns(DnsDescription.Family.INET6));
+        registerDns(new AesHttpDns(DnsDescription.Family.UN_SPECIFIC));
         registerDns(new HttpsDns(DnsDescription.Family.INET));
         registerDns(new HttpsDns(DnsDescription.Family.INET6));
+        registerDns(new HttpsDns(DnsDescription.Family.UN_SPECIFIC));
     }
 
     @SuppressWarnings("WeakerAccess")
@@ -131,7 +134,15 @@ public final class DnsManager {
             lookupContext.statisticsMerge()
                     .merge(restDnsGroup.mInet6Dns, inet6Result.stat);
         }
-        if (inetResult.stat.lookupSuccess() || inet6Result.stat.lookupSuccess()) {
+        @SuppressWarnings("unchecked") LookupResult unspecResult = restDnsGroup.mUnspecDns.getResultFromCache(lookupParams);
+        if (unspecResult.stat.lookupSuccess()) {
+            DnsLog.d("getResultFromCache by unspec:" + Arrays
+                    .toString(unspecResult.ipSet.ips));
+            lookupContext.sorter().put(restDnsGroup.mUnspecDns, unspecResult.ipSet.ips);
+            lookupContext.statisticsMerge()
+                    .merge(restDnsGroup.mUnspecDns, unspecResult.stat);
+        }
+        if (inetResult.stat.lookupSuccess() || inet6Result.stat.lookupSuccess() || unspecResult.stat.lookupSuccess()) {
             IpSet ipSet = sorter.sort();
             statMerge.statResult(ipSet);
             LookupResult<IStatisticsMerge> lookupResult =
@@ -262,8 +273,8 @@ public final class DnsManager {
             if (null == selector) {
                 DnsLog.d("selector is null");
                 // 仅阻塞解析
-                // NOTE: 临时方案 HDNS有返回时不被LocalDNS阻塞 TODO: CountDownLatch改为Semaphore
-                while (!(dnses.isEmpty() || (countDownLatch.getCount() == 1 && dnses.contains(localDnsGroup.mUnspecDns))) &&
+                // NOTE: 非localDNS解析进行countDownLatch,HDNS不被localDNS阻塞
+                while (countDownLatch.getCount() > 0 &&
                         SystemClock.elapsedRealtime() - startTimeMills < timeoutMills) {
                     try {
                         countDownLatch.await(waitTimeMills, TimeUnit.MILLISECONDS);
@@ -271,7 +282,7 @@ public final class DnsManager {
                     } catch (Exception e) {
                         DnsLog.d(e, "sessions not empty, but exception");
                     }
-                    if (!dnses.isEmpty() && // 需要重试
+                    if (countDownLatch.getCount() > 0 && // 需要重试
                             canRetry(startTimeMills, timeoutMills, maxRetryTimes, retriedTimes)) {
                         retriedTimes++;
                         remainTimeMills = timeoutMills -
@@ -328,11 +339,7 @@ public final class DnsManager {
                 if (sessions.size() > 0) {
                     DnsLog.d("selector wait for last timeout if sessions is not empty, sessions:%d, mills:%d", sessions.size(), waitTimeMills);
                 }
-                // NOTE: 临时方案 HDNS有返回时不被LocalDNS阻塞，TODO：CountDownLatch改为Semaphore
-                while (!(countDownLatch.getCount() == 0 || (countDownLatch.getCount() == 1 && dnses.contains(localDnsGroup.mUnspecDns) || (SystemClock.elapsedRealtime() - startTimeMills < timeoutMills)))) {
-                    countDownLatch.await(100, TimeUnit.MILLISECONDS);
-                }
-
+                countDownLatch.await(remainTimeMills, TimeUnit.MILLISECONDS);
             } catch (Exception ignored) {
             }
             IpSet ipSet = sorter.sort();
@@ -382,27 +389,23 @@ public final class DnsManager {
         int curNetStack = lookupContext.currentNetworkStack();
         int family = lookupContext.family();
         boolean ignoreCurNetStack = lookupContext.ignoreCurrentNetworkStack();
-        if (null != dnsGroup.mInet6Dns || null != dnsGroup.mInetDns) {
-            // AAAA first
-            if (null != dnsGroup.mInet6Dns &&
-                    0 != (family & DnsDescription.Family.INET6) &&
-                    // 异步解析不关注当前网络栈
-                    (ignoreCurNetStack || 0 != (curNetStack & NetworkStack.IPV6_ONLY))) {
-                //noinspection unchecked
-                prepareTask((IDns<LookupExtra>) dnsGroup.mInet6Dns, lookupContext);
-            }
-            if (null != dnsGroup.mInetDns &&
-                    0 != (family & DnsDescription.Family.INET) &&
-                    // 异步解析不关注当前网络栈
-                    (ignoreCurNetStack || 0 != (curNetStack & NetworkStack.IPV4_ONLY))) {
-                //noinspection unchecked
-                prepareTask((IDns<LookupExtra>) dnsGroup.mInetDns, lookupContext);
-            }
+
+        if (null != dnsGroup.mInet6Dns &&
+                // 异步解析不关注当前网络栈
+                (ignoreCurNetStack || curNetStack == NetworkStack.IPV6_ONLY)) {
+            //noinspection unchecked
+            prepareTask((IDns<LookupExtra>) dnsGroup.mInet6Dns, lookupContext);
+        } else if (null != dnsGroup.mInetDns &&
+                // 异步解析不关注当前网络栈
+                (ignoreCurNetStack || curNetStack == NetworkStack.IPV4_ONLY)) {
+            //noinspection unchecked
+            prepareTask((IDns<LookupExtra>) dnsGroup.mInetDns, lookupContext);
         } else if (null != dnsGroup.mUnspecDns &&
                 (ignoreCurNetStack || 0 != (curNetStack & NetworkStack.DUAL_STACK))) {
             //noinspection unchecked
             prepareTask((IDns<LookupExtra>) dnsGroup.mUnspecDns, lookupContext);
         }
+
     }
 
     private static <LookupExtra extends IDns.ILookupExtra>
