@@ -137,6 +137,7 @@ public final class DnsService {
                 .fallback2Local(true)
                 .blockFirst(sConfig.blockFirst)
                 .enableAsyncLookup(false)
+                .customNetStack(sConfig.customNetStack)
                 .build());
         StatisticsMerge statMerge = (StatisticsMerge) lookupResult.stat;
         return statMerge.toJsonResult();
