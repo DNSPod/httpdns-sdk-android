@@ -1,6 +1,8 @@
 package com.tencent.msdk.dns.core.rest.share;
 
 import android.text.TextUtils;
+
+import com.tencent.msdk.dns.DnsService;
 import com.tencent.msdk.dns.base.compat.CollectionCompat;
 import com.tencent.msdk.dns.base.executor.DnsExecutors;
 import com.tencent.msdk.dns.base.log.DnsLog;
@@ -13,7 +15,11 @@ import com.tencent.msdk.dns.core.IDns;
 import com.tencent.msdk.dns.core.LookupParameters;
 import com.tencent.msdk.dns.core.LookupResult;
 import com.tencent.msdk.dns.core.rest.share.rsp.Response;
+
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -70,50 +76,69 @@ public final class CacheHelper {
             return;
         }
 
-        final String hostname = lookupParams.hostname;
+        final String[] hostnameArr = lookupParams.hostname.split(",");
+        Map<String, List<String>> ipsWithHostname = new HashMap<String, List<String>>();
+        if (hostnameArr.length > 1) {
+            // 对批量域名返回值做处理
+            for(String ips: rsp.ips) {
+                final String[] arr = ips.split(":");
+                if (!ipsWithHostname.containsKey(arr[0])) {
+                    ipsWithHostname.put(arr[0], new ArrayList<String>());
+                    List<String> ips0 = ipsWithHostname.get(arr[0]);
+                }
+                ipsWithHostname.get(arr[0]).add(arr[1]);
+            }
+        } else {
+            ipsWithHostname.put(hostnameArr[0], Arrays.asList(rsp.ips));
+        }
+
+
+        for(final String hostname: hostnameArr) {
+            String[] ips = ipsWithHostname.get(hostname).toArray(new String[0]);
+            AbsRestDns.Statistics stat = new AbsRestDns.Statistics(ips, rsp.clientIp, rsp.ttl);
+            stat.errorCode = ErrorCode.SUCCESS;
+            mCache.add(hostname, new LookupResult<>(ips, stat));
+
+            cacheUpdateTask(lookupParams, rsp, hostname);
+        }
+
+        // todo:批量域名的存储逻辑仍先保留。批量域名解析查询缓存仍以整个hostname为索引。
         AbsRestDns.Statistics stat = new AbsRestDns.Statistics(rsp.ips, rsp.clientIp, rsp.ttl);
         stat.errorCode = ErrorCode.SUCCESS;
-        mCache.add(hostname, new LookupResult<>(rsp.ips, stat));
+        mCache.add(lookupParams.hostname, new LookupResult<>(rsp.ips, stat));
+        cacheUpdateTask(lookupParams, rsp, lookupParams.hostname);
+    }
 
+    private void cacheUpdateTask(LookupParameters<LookupExtra> lookupParams, Response rsp, final String hostname) {
         PendingTasks pendingTasks = mHostnamePendingTasksMap.get(hostname);
         if (null != pendingTasks) {
             if (null != pendingTasks.removeExpiredCacheTask) {
+                mPendingTasks.remove(pendingTasks.removeExpiredCacheTask);
                 DnsExecutors.MAIN.cancel(pendingTasks.removeExpiredCacheTask);
                 pendingTasks.removeExpiredCacheTask = null;
             }
             if (null != pendingTasks.asyncLookupTask) {
+                mPendingTasks.remove(pendingTasks.asyncLookupTask);
                 DnsExecutors.MAIN.cancel(pendingTasks.asyncLookupTask);
                 pendingTasks.asyncLookupTask = null;
             }
         } else {
             pendingTasks = new PendingTasks();
         }
-        final Runnable removeExpiredCacheTask = new Runnable() {
-            @Override
-            public void run() {
-                DnsLog.d("Cache of %s(%d) expired", hostname, mDns.getDescription().family);
-                mCache.delete(hostname);
-                mPendingTasks.remove(this);
-            }
-        };
-        pendingTasks.removeExpiredCacheTask = removeExpiredCacheTask;
-        mPendingTasks.add(removeExpiredCacheTask);
-        DnsExecutors.MAIN.schedule(removeExpiredCacheTask, (long) (rsp.ttl * 1000));
-        if (lookupParams.enableAsyncLookup) {
-            int origLookUpFamily = lookupParams.family;
+
+        final Set<String> persistentCacheDomains = DnsService.getDnsConfig().persistentCacheDomains;
+        // 创建缓存更新任务
+        if (persistentCacheDomains != null && persistentCacheDomains.contains(hostname)) {
             final int lookupFamily = mDns.getDescription().family;
             final LookupParameters<LookupExtra> newLookupParams;
-            if (!lookupParams.fallback2Local && origLookUpFamily == lookupFamily &&
-                    !lookupParams.netChangeLookup) {
-                newLookupParams = lookupParams;
-            } else {
-                newLookupParams =
-                        new LookupParameters.Builder<>(lookupParams)
-                                .fallback2Local(false)
-                                .family(lookupFamily)
-                                .networkChangeLookup(false)
-                                .build();
-            }
+            newLookupParams =
+                    new LookupParameters.Builder<>(lookupParams)
+                            .hostname(hostname)
+                            .enableAsyncLookup(true)
+                            .fallback2Local(false)
+                            .family(lookupFamily)
+                            .networkChangeLookup(false)
+                            .build();
             mAsyncLookupParamsSet.add(newLookupParams);
             final Runnable asyncLookupTask = new Runnable() {
                 @Override
@@ -125,11 +150,6 @@ public final class CacheHelper {
                         public void run() {
                             LookupResult lookupResult = DnsManager.lookupWrapper(newLookupParams);
                             AsyncLookupResultQueue.enqueue(lookupResult);
-                            if (lookupResult.stat.lookupSuccess() || lookupResult.stat.lookupFailed()) {
-                                // 异步解析成功取消对应的缓存清理任务
-                                DnsExecutors.MAIN.cancel(removeExpiredCacheTask);
-                                mPendingTasks.remove(removeExpiredCacheTask);
-                            }
                         }
                     });
                     mPendingTasks.remove(this);
@@ -139,7 +159,20 @@ public final class CacheHelper {
             mPendingTasks.add(asyncLookupTask);
             DnsExecutors.MAIN.schedule(
                     asyncLookupTask, (long) (ASYNC_LOOKUP_FACTOR * rsp.ttl * 1000));
+        } else {
+            final Runnable removeExpiredCacheTask = new Runnable() {
+                @Override
+                public void run() {
+                    DnsLog.d("Cache of %s(%d) expired", hostname, mDns.getDescription().family);
+                    mCache.delete(hostname);
+                    mPendingTasks.remove(this);
+                }
+            };
+            pendingTasks.removeExpiredCacheTask = removeExpiredCacheTask;
+            mPendingTasks.add(removeExpiredCacheTask);
+            DnsExecutors.MAIN.schedule(removeExpiredCacheTask, (long) (rsp.ttl * 1000));
         }
+
         if (!mHostnamePendingTasksMap.containsKey(hostname)) {
             mHostnamePendingTasksMap.put(hostname, pendingTasks);
         }

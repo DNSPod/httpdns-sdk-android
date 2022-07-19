@@ -107,6 +107,10 @@ public final class StatisticsMerge implements IStatisticsMerge<LookupExtra> {
             restInetDnsStat = (AbsRestDns.Statistics) stat;
         } else if (DnsDescription.Family.INET6 == dnsDesc.family) {
             restInet6DnsStat = (AbsRestDns.Statistics) stat;
+        } else {
+            restInetDnsStat = (AbsRestDns.Statistics) stat;
+            restInet6DnsStat = (AbsRestDns.Statistics) stat;
+            // sara todo: 合并ipv4,ipv6统计处理
         }
     }
 
@@ -149,10 +153,12 @@ public final class StatisticsMerge implements IStatisticsMerge<LookupExtra> {
     public String toJsonResult() {
         JSONObject jsonObject = new JSONObject();
         try {
-            jsonObject.put("v4_ips", CommonUtils.toStringList(restInetDnsStat.ips, ","));
+//            jsonObject.put("v4_ips", CommonUtils.toStringList(restInetDnsStat.ips, ","));
+            jsonObject.put("v4_ips", CommonUtils.toStringList(ipSet.v4Ips, ","));
             jsonObject.put("v4_ttl", String.valueOf(restInetDnsStat.ttl));
             jsonObject.put("v4_client_ip", String.valueOf(restInetDnsStat.clientIp));
-            jsonObject.put("v6_ips", CommonUtils.toStringList(restInet6DnsStat.ips, ","));
+//            jsonObject.put("v6_ips", CommonUtils.toStringList(restInet6DnsStat.ips, ","));
+            jsonObject.put("v6_ips", CommonUtils.toStringList(ipSet.v6Ips, ","));
             jsonObject.put("v6_ttl", Const.DEFAULT_TIME_INTERVAL == restInet6DnsStat.ttl ? "" : String.valueOf(restInet6DnsStat.ttl));
             jsonObject.put("v6_client_ip", Const.INVALID_IP.equals(restInet6DnsStat.clientIp) ? "" : String.valueOf(restInet6DnsStat.clientIp));
             return jsonObject.toString();

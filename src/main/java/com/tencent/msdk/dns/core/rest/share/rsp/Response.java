@@ -6,6 +6,9 @@ import com.tencent.msdk.dns.base.utils.IpValidator;
 import com.tencent.msdk.dns.core.Const;
 import com.tencent.msdk.dns.core.DnsDescription;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 public final class Response {
 
     public static final Response EMPTY =
@@ -39,6 +42,33 @@ public final class Response {
 
         this.clientIp = clientIp;
         this.ips = ips;
+        this.ttl = ttl;
+    }
+
+    Response(String clientIp, String[] inet4Ips, String[] inet6Ips, int ttl) {
+        // NOTE: 允许unspecific
+        if (TextUtils.isEmpty(clientIp)) {
+            throw new IllegalArgumentException("clientIp".concat(Const.EMPTY_TIPS));
+        }
+        // NOTE: ips为空即为无效响应
+        if (CommonUtils.isEmpty(inet4Ips) && CommonUtils.isEmpty(inet6Ips)) {
+            throw new IllegalArgumentException("ips".concat(Const.EMPTY_TIPS));
+        }
+        // NOTE: 前面先进行一次参数校验, 再尝试处理后台返回(格式正确但)内容不符预期情况
+        inet4Ips = fixIps(DnsDescription.Family.INET, inet4Ips);
+        inet6Ips = fixIps(DnsDescription.Family.INET6, inet6Ips);
+
+        if (isTtlInvalid(ttl)) {
+            throw new IllegalArgumentException("ttl".concat(Const.INVALID_TIPS));
+        }
+        int inet4IpsLength = inet4Ips.length;
+        int inet6IpsLength = inet6Ips.length;
+
+        inet4Ips = Arrays.copyOf(inet4Ips, inet4IpsLength + inet6IpsLength);
+        System.arraycopy(inet6Ips, 0 , inet4Ips, inet4IpsLength, inet6IpsLength);
+
+        this.clientIp = clientIp;
+        this.ips = inet4Ips;
         this.ttl = ttl;
     }
 

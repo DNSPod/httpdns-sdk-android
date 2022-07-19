@@ -10,18 +10,24 @@ public final class RequestBuilder {
 
     private static final String INET_REQUEST_FORMAT = "dn=%s&clientip=1&ttl=1&id=%s";
     private static final String INET6_REQUEST_FORMAT = "dn=%s&clientip=1&ttl=1&id=%s&type=aaaa";
+    private static final String DOUB_REQUEST_FORMAT = "dn=%s&clientip=1&ttl=1&id=%s&type=addrs";
     private static final String HTTPS_INET_REQUEST_FORMAT = "dn=%s&clientip=1&ttl=1&id=%s&token=%s";
     private static final String HTTPS_INET6_REQUEST_FORMAT = "dn=%s&clientip=1&ttl=1&id=%s&token=%s&type=aaaa";
+    private static final String HTTPS_DOUB_REQUEST_FORMAT = "dn=%s&clientip=1&ttl=1&id=%s&token=%s&type=addrs";
 
     public static String buildInetRequest(String encryptedHostname, String bizId) {
-        return buildRequest(encryptedHostname, bizId, true);
+        return buildRequest(encryptedHostname, bizId, INET_REQUEST_FORMAT);
     }
 
     public static String buildInet6Request(String encryptedHostname, String bizId) {
-        return buildRequest(encryptedHostname, bizId, false);
+        return buildRequest(encryptedHostname, bizId, INET6_REQUEST_FORMAT);
     }
 
-    private static String buildRequest(String encryptedHostname, String bizId, boolean inet) {
+    public static String buildDoubRequest(String encryptedHostname, String bizId) {
+        return buildRequest(encryptedHostname, bizId, DOUB_REQUEST_FORMAT);
+    }
+
+    private static String buildRequest(String encryptedHostname, String bizId, String format) {
         if (TextUtils.isEmpty(bizId)) {
             throw new IllegalArgumentException("bizId".concat(Const.EMPTY_TIPS));
         }
@@ -30,18 +36,22 @@ public final class RequestBuilder {
             return "";
         }
         return String.format(Locale.US,
-                inet ? INET_REQUEST_FORMAT : INET6_REQUEST_FORMAT, encryptedHostname, bizId);
+                format, encryptedHostname, bizId);
     }
 
     public static String buildHttpsInetRequest(String encryptedHostname, String bizId, String token) {
-        return buildHttpsRequest(encryptedHostname, bizId, token, true);
+        return buildHttpsRequest(encryptedHostname, bizId, token, HTTPS_INET_REQUEST_FORMAT);
     }
 
     public static String buildHttpsInet6Request(String encryptedHostname, String bizId, String token) {
-        return buildHttpsRequest(encryptedHostname, bizId, token, false);
+        return buildHttpsRequest(encryptedHostname, bizId, token, HTTPS_INET6_REQUEST_FORMAT);
     }
 
-    private static String buildHttpsRequest(String encryptedHostname, String bizId, String token, boolean inet) {
+    public static String buildHttpsDoubRequest(String encryptedHostname, String bizId, String token) {
+        return buildHttpsRequest(encryptedHostname, bizId, token, HTTPS_DOUB_REQUEST_FORMAT);
+    }
+
+    private static String buildHttpsRequest(String encryptedHostname, String bizId, String token, String format) {
         if (TextUtils.isEmpty(bizId)) {
             throw new IllegalArgumentException("bizId".concat(Const.EMPTY_TIPS));
         }
@@ -54,6 +64,6 @@ public final class RequestBuilder {
             return "";
         }
         return String.format(Locale.US,
-                inet ? HTTPS_INET_REQUEST_FORMAT : HTTPS_INET6_REQUEST_FORMAT, encryptedHostname, bizId, token);
+                format, encryptedHostname, bizId, token);
     }
 }

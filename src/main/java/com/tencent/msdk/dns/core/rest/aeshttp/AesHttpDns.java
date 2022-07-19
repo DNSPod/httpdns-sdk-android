@@ -33,9 +33,17 @@ public final class AesHttpDns extends AbsHttpDns {
     @Override
     public String getTargetUrl(String dnsIp, String hostname, LookupExtra lookupExtra) {
         String encryptHostname = AesCipherSuite.encrypt(hostname, lookupExtra.bizKey);
-        String reqContent = DnsDescription.Family.INET == mFamily ?
-            RequestBuilder.buildInetRequest(encryptHostname, lookupExtra.bizId) :
-            RequestBuilder.buildInet6Request(encryptHostname, lookupExtra.bizId);
+        String reqContent;
+        switch (mFamily) {
+            case DnsDescription.Family.INET:
+                reqContent = RequestBuilder.buildInetRequest(encryptHostname, lookupExtra.bizId); break;
+            case DnsDescription.Family.INET6:
+                reqContent = RequestBuilder.buildInet6Request(encryptHostname, lookupExtra.bizId); break;
+            case DnsDescription.Family.UN_SPECIFIC:
+                reqContent = RequestBuilder.buildDoubRequest(encryptHostname, lookupExtra.bizId); break;
+            default:
+                throw new IllegalStateException("Unexpected value: " + mFamily);
+        }
         return mHttpDnsConfig.getTargetUrl(dnsIp, reqContent);
     }
 
