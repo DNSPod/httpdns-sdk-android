@@ -130,11 +130,11 @@ public final class ReportHelper {
                 String dnsIp = backupInfo.getDnsIp();
                 //  上报a解析失败
                 if (((StatisticsMerge) lookupResult.stat).restInetDnsStat.errorCode != 0) {
-                    DnsExecutors.MAIN.execute(AttaHelper.report(carrierCode, ((StatisticsMerge) lookupResult.stat).netType, sDnsConfig.lookupExtra.bizId, sDnsConfig.channel, "HttpDnsfail", System.currentTimeMillis(), dnsIp, BuildConfig.VERSION_NAME, AttaHelper.getSystemModel(), "Andriod", AttaHelper.getSystemVersion(), ((StatisticsMerge) lookupResult.stat).restInetDnsStat.costTimeMills, ((StatisticsMerge) lookupResult.stat).hostname, "a", sDnsConfig.timeoutMills, ((StatisticsMerge) lookupResult.stat).restInetDnsStat.ttl, ((StatisticsMerge) lookupResult.stat).restInetDnsStat.errorCode));
+                    DnsExecutors.MAIN.execute(AttaHelper.report(carrierCode, ((StatisticsMerge) lookupResult.stat).netType, sDnsConfig.lookupExtra.bizId, sDnsConfig.channel, "HttpDnsfail", System.currentTimeMillis(), dnsIp, BuildConfig.VERSION_NAME, AttaHelper.getSystemModel(), "Andriod", AttaHelper.getSystemVersion(), ((StatisticsMerge) lookupResult.stat).restInetDnsStat.costTimeMills, ((StatisticsMerge) lookupResult.stat).hostname, "a", sDnsConfig.timeoutMills, ((StatisticsMerge) lookupResult.stat).restInetDnsStat.ttl, ((StatisticsMerge) lookupResult.stat).restInetDnsStat.errorCode, ((StatisticsMerge) lookupResult.stat).restInetDnsStat.statusCode));
                 }
                 //  上报4a解析失败
                 if (((StatisticsMerge) lookupResult.stat).restInet6DnsStat.errorCode != 0) {
-                    DnsExecutors.MAIN.execute(AttaHelper.report(carrierCode, ((StatisticsMerge) lookupResult.stat).netType, sDnsConfig.lookupExtra.bizId, sDnsConfig.channel, "HttpDnsfail", System.currentTimeMillis(), dnsIp, BuildConfig.VERSION_NAME, AttaHelper.getSystemModel(), "Andriod", AttaHelper.getSystemVersion(), ((StatisticsMerge) lookupResult.stat).restInet6DnsStat.costTimeMills, ((StatisticsMerge) lookupResult.stat).hostname, "aaaa", sDnsConfig.timeoutMills, ((StatisticsMerge) lookupResult.stat).restInet6DnsStat.ttl, ((StatisticsMerge) lookupResult.stat).restInet6DnsStat.errorCode));
+                    DnsExecutors.MAIN.execute(AttaHelper.report(carrierCode, ((StatisticsMerge) lookupResult.stat).netType, sDnsConfig.lookupExtra.bizId, sDnsConfig.channel, "HttpDnsfail", System.currentTimeMillis(), dnsIp, BuildConfig.VERSION_NAME, AttaHelper.getSystemModel(), "Andriod", AttaHelper.getSystemVersion(), ((StatisticsMerge) lookupResult.stat).restInet6DnsStat.costTimeMills, ((StatisticsMerge) lookupResult.stat).hostname, "aaaa", sDnsConfig.timeoutMills, ((StatisticsMerge) lookupResult.stat).restInet6DnsStat.ttl, ((StatisticsMerge) lookupResult.stat).restInet6DnsStat.errorCode, ((StatisticsMerge) lookupResult.stat).restInetDnsStat.statusCode));
                 }
             }
             // 报错记录+1
@@ -156,11 +156,11 @@ public final class ReportHelper {
                 String dnsIp = backupInfo.getDnsIp();
                 //  a记录解析耗时上报
                 if (((StatisticsMerge) lookupResult.stat).restInetDnsStat.errorCode == 0) {
-                    DnsExecutors.MAIN.execute(AttaHelper.report(carrierCode, ((StatisticsMerge) lookupResult.stat).netType, sDnsConfig.lookupExtra.bizId, sDnsConfig.channel, "HttpDnsSpend", System.currentTimeMillis(), dnsIp, BuildConfig.VERSION_NAME, AttaHelper.getSystemModel(), "Andriod", AttaHelper.getSystemVersion(), ((StatisticsMerge) lookupResult.stat).restInetDnsStat.costTimeMills, ((StatisticsMerge) lookupResult.stat).hostname, "a", sDnsConfig.timeoutMills, ((StatisticsMerge) lookupResult.stat).restInetDnsStat.ttl, ((StatisticsMerge) lookupResult.stat).restInetDnsStat.errorCode));
+                    DnsExecutors.MAIN.execute(AttaHelper.report(carrierCode, ((StatisticsMerge) lookupResult.stat).netType, sDnsConfig.lookupExtra.bizId, sDnsConfig.channel, "HttpDnsSpend", System.currentTimeMillis(), dnsIp, BuildConfig.VERSION_NAME, AttaHelper.getSystemModel(), "Andriod", AttaHelper.getSystemVersion(), ((StatisticsMerge) lookupResult.stat).restInetDnsStat.costTimeMills, ((StatisticsMerge) lookupResult.stat).hostname, "a", sDnsConfig.timeoutMills, ((StatisticsMerge) lookupResult.stat).restInetDnsStat.ttl, ((StatisticsMerge) lookupResult.stat).restInetDnsStat.errorCode, ((StatisticsMerge) lookupResult.stat).restInetDnsStat.statusCode));
                 }
                 //  4a记录解析耗时上报
                 if (((StatisticsMerge) lookupResult.stat).restInet6DnsStat.errorCode == 0) {
-                    DnsExecutors.MAIN.execute(AttaHelper.report(carrierCode, ((StatisticsMerge) lookupResult.stat).netType, sDnsConfig.lookupExtra.bizId, sDnsConfig.channel, "HttpDnsSpend", System.currentTimeMillis(), dnsIp, BuildConfig.VERSION_NAME, AttaHelper.getSystemModel(), "Andriod", AttaHelper.getSystemVersion(), ((StatisticsMerge) lookupResult.stat).restInet6DnsStat.costTimeMills, ((StatisticsMerge) lookupResult.stat).hostname, "aaaa", sDnsConfig.timeoutMills, ((StatisticsMerge) lookupResult.stat).restInet6DnsStat.ttl, ((StatisticsMerge) lookupResult.stat).restInet6DnsStat.errorCode));
+                    DnsExecutors.MAIN.execute(AttaHelper.report(carrierCode, ((StatisticsMerge) lookupResult.stat).netType, sDnsConfig.lookupExtra.bizId, sDnsConfig.channel, "HttpDnsSpend", System.currentTimeMillis(), dnsIp, BuildConfig.VERSION_NAME, AttaHelper.getSystemModel(), "Andriod", AttaHelper.getSystemVersion(), ((StatisticsMerge) lookupResult.stat).restInet6DnsStat.costTimeMills, ((StatisticsMerge) lookupResult.stat).hostname, "aaaa", sDnsConfig.timeoutMills, ((StatisticsMerge) lookupResult.stat).restInet6DnsStat.ttl, ((StatisticsMerge) lookupResult.stat).restInet6DnsStat.errorCode, ((StatisticsMerge) lookupResult.stat).restInetDnsStat.statusCode));
                 }
                 // 记录正常解析上报的时间
                 spendReport.setLastReportTime(System.currentTimeMillis());
@@ -227,6 +227,8 @@ public final class ReportHelper {
                 String.valueOf(statMerge.restInet6DnsStat.costTimeMills));
         lookupMethodCalledEventMap.put(ReportConst.REST_INET6_LOOKUP_RETRY_TIMES_KEY,
                 String.valueOf(statMerge.restInet6DnsStat.retryTimes));
+        lookupMethodCalledEventMap.put(ReportConst.LOOKUP_RESPONSE_STATUS_CODE,
+                String.valueOf(statMerge.restInet6DnsStat.statusCode));
 
         addCommonConfigInfo(lookupMethodCalledEventMap);
 

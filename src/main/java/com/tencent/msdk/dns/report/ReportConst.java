@@ -78,4 +78,5 @@ interface ReportConst {
     String BATCH_REST_LOOKUP_CLIENT_IP_KEY = "hdns_client_ips";
     String BATCH_REST_LOOKUP_COST_TIME_MILLS_KEY = "hdns_time_mses";
     String BATCH_REST_LOOKUP_RETRY_TIMES_KEY = "hdns_retrys";
+    String LOOKUP_RESPONSE_STATUS_CODE = "status_code";
 }

@@ -355,6 +355,8 @@ public abstract class AbsRestDns implements IDns<LookupExtra> {
          */
         public boolean netChangeLookup = false;
 
+        public int statusCode;
+
         public Statistics() {
         }
 
@@ -379,6 +381,7 @@ public abstract class AbsRestDns implements IDns<LookupExtra> {
             return "Statistics{" +
                     "errorCode=" + errorCode +
                     ", errorMsg='" + errorMsg + '\'' +
+                    ", statusCode=" + statusCode +
                     ", clientIp='" + clientIp + '\'' +
                     ", ttl=" + ttl +
                     ", retryTimes=" + retryTimes +

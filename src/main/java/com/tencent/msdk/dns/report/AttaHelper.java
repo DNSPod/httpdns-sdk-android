@@ -17,13 +17,13 @@ public class AttaHelper {
     private static final String ATTA_ID = "0f500064192";
     private static final String ATTA_TOKEN = "4725229671";
 
-    public static Runnable report(final String carrier, final String networkType, final String dnsId, final String encryptType, final String eventName, final long eventTime, final String dnsIp, final String sdkVersion, final String deviceName, final String systemName, final String systemVersion, final long spend, final String req_dn, final String req_type, final long req_timeout, final int req_ttl, final long errorCode) {
+    public static Runnable report(final String carrier, final String networkType, final String dnsId, final String encryptType, final String eventName, final long eventTime, final String dnsIp, final String sdkVersion, final String deviceName, final String systemName, final String systemVersion, final long spend, final String req_dn, final String req_type, final long req_timeout, final int req_ttl, final long errorCode, final int statusCode) {
         return new Runnable() {
             @Override
             public void run() {
                 HttpURLConnection connection = null;
                 try {
-                    URL url = new URL(ATTA_URL + "?attaid=" + ATTA_ID + "&token=" + ATTA_TOKEN + "&carrier=" + carrier + "&networkType=" + networkType + "&dnsId=" + dnsId + "&encryptType=" + encryptType + "&eventName=" + eventName + "&eventTime=" + eventTime + "&dnsIp=" + dnsIp + "&sdkVersion=" + sdkVersion + "&deviceName=" + deviceName + "&systemName=" + systemName + "&systemVersion=" + systemVersion + "&spend=" + spend + "&req_dn=" + req_dn + "&req_type=" + req_type + "&req_timeout=" + req_timeout + "&req_ttl=" + req_ttl + "&errorCode=" + errorCode);
+                    URL url = new URL(ATTA_URL + "?attaid=" + ATTA_ID + "&token=" + ATTA_TOKEN + "&carrier=" + carrier + "&networkType=" + networkType + "&dnsId=" + dnsId + "&encryptType=" + encryptType + "&eventName=" + eventName + "&eventTime=" + eventTime + "&dnsIp=" + dnsIp + "&sdkVersion=" + sdkVersion + "&deviceName=" + deviceName + "&systemName=" + systemName + "&systemVersion=" + systemVersion + "&spend=" + spend + "&req_dn=" + req_dn + "&req_type=" + req_type + "&req_timeout=" + req_timeout + "&req_ttl=" + req_ttl + "&errorCode=" + errorCode + "&statusCode=" + statusCode);
                     DnsLog.d("开始Atta上报：" + url);
                     connection = (HttpURLConnection) url.openConnection();
                     //设置请求方法
