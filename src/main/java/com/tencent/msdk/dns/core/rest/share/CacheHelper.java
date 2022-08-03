@@ -64,6 +64,14 @@ public final class CacheHelper {
         return mCache.get(hostname);
     }
 
+    public void update(String hostname, LookupResult lookupResult) {
+        if (TextUtils.isEmpty(hostname)) {
+            throw new IllegalArgumentException("hostname".concat(Const.EMPTY_TIPS));
+        }
+
+        mCache.add(hostname, lookupResult);
+    }
+
     public void put(LookupParameters<LookupExtra> lookupParams, Response rsp) {
         if (null == lookupParams) {
             throw new IllegalArgumentException("lookupParams".concat(Const.NULL_POINTER_TIPS));

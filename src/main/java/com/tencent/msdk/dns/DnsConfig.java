@@ -9,6 +9,7 @@ import com.tencent.msdk.dns.base.log.ILogNode;
 import com.tencent.msdk.dns.base.report.IReporter;
 import com.tencent.msdk.dns.base.utils.CommonUtils;
 import com.tencent.msdk.dns.core.Const;
+import com.tencent.msdk.dns.core.ipRank.IpRankItem;
 import com.tencent.msdk.dns.core.rest.share.LookupExtra;
 
 import java.util.ArrayList;
@@ -35,6 +36,8 @@ public final class DnsConfig {
     /* @Nullable */ public final Set<String> preLookupDomains;
     /* @Nullable */ public final Set<String> persistentCacheDomains;
 
+    /* @Nullable */ public final Set<IpRankItem> ipRankItems;
+
     public final String channel;
     public final boolean enableReport;
     public final boolean blockFirst;
@@ -57,7 +60,7 @@ public final class DnsConfig {
                       int timeoutMills,
                       Set<WildcardDomain> protectedDomains,
                       Set<String> preLookupDomains, Set<String> persistentCacheDomains,
-                      String channel, boolean enableReport, boolean blockFirst,
+                      Set<IpRankItem> ipRankItems, String channel, boolean enableReport, boolean blockFirst,
                       int customNetStack, DnsExecutors.ExecutorSupplier executorSupplier,
                       ILookedUpListener lookedUpListener, List<ILogNode> logNodes,
                       List<IReporter> reporters) {
@@ -66,6 +69,7 @@ public final class DnsConfig {
         this.userId = userId;
         this.initBuiltInReporters = initBuiltInReporters;
         this.dnsIp = dnsIp;
+        this.ipRankItems = ipRankItems;
         this.lookupExtra = new LookupExtra(dnsId, dnsKey, token);
         this.timeoutMills = timeoutMills;
         this.protectedDomains = protectedDomains;
@@ -108,6 +112,7 @@ public final class DnsConfig {
                 ", protectedDomains=" + CommonUtils.toString(protectedDomains) +
                 ", preLookupDomains=" + CommonUtils.toString(preLookupDomains) +
                 ", persistentCacheDomains=" + CommonUtils.toString(persistentCacheDomains) +
+                ", IpRankItems=" + CommonUtils.toString(ipRankItems) +
                 ", channel='" + channel + '\'' +
                 ", enableReport='" + enableReport + '\'' +
                 ", blockFirst=" + blockFirst +
@@ -185,6 +190,7 @@ public final class DnsConfig {
         private Set<WildcardDomain> mProtectedDomains = null;
         private Set<String> mPreLookupDomains = null;
         private Set<String> mPersistentCacheDomains = null;
+        private Set<IpRankItem> mIpRankItems = null;
 
         private String mChannel = Const.DES_HTTP_CHANNEL;
         private boolean mEnableReport = false;
@@ -503,6 +509,11 @@ public final class DnsConfig {
             return this;
         }
 
+        public Builder ipRankItems(Set<IpRankItem> ipRankItems) {
+            mIpRankItems = ipRankItems;
+            return this;
+        }
+
         public Builder channel(String channel) {
             mChannel = channel;
             return this;
@@ -630,7 +641,7 @@ public final class DnsConfig {
                     mAppId, mUserId, mInitBuiltInReporters, mDnsIp, mDnsId, mDnsKey, mToken,
                     mTimeoutMills,
                     mProtectedDomains, mPreLookupDomains, mPersistentCacheDomains,
-                    mChannel, mEnableReport, mBlockFirst,
+                    mIpRankItems, mChannel, mEnableReport, mBlockFirst,
                     mCustomNetStack, mExecutorSupplier,
                     mLookedUpListener, mLogNodes,
                     mReporters);

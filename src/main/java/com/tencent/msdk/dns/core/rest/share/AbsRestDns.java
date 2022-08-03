@@ -9,6 +9,10 @@ import com.tencent.msdk.dns.core.LookupContext;
 import com.tencent.msdk.dns.core.LookupParameters;
 import com.tencent.msdk.dns.core.LookupResult;
 import com.tencent.msdk.dns.core.cache.Cache;
+import com.tencent.msdk.dns.core.ipRank.IpRankCallback;
+import com.tencent.msdk.dns.core.ipRank.IpRankHelper;
+import com.tencent.msdk.dns.core.ipRank.IpRankItem;
+import com.tencent.msdk.dns.core.ipRank.IpRankTask;
 import com.tencent.msdk.dns.core.rest.share.rsp.Response;
 import com.tencent.msdk.dns.core.stat.AbsStatistics;
 import java.nio.channels.SelectionKey;
@@ -166,6 +170,20 @@ public abstract class AbsRestDns implements IDns<LookupExtra> {
                 if (rsp != Response.EMPTY && rsp != Response.NEED_CONTINUE){
                     mStat.errorCode = ErrorCode.SUCCESS;
                     mCacheHelper.put(mLookupContext.asLookupParameters(), rsp);
+
+                    // 发起IP优选服务
+                    new IpRankHelper().ipv4Rank(mLookupContext.hostname(), rsp.ips, new IpRankCallback() {
+                        @Override
+                        public void onResult(String hostname, String[] sortedIps) {
+//                            LookupResult cacheResult = mCacheHelper.get(hostname);
+                            // 根据排序的ip结果来对缓存结果排序
+//                            LookupResult sortedResult = sortResultByIps(sortedIps, cacheResult);
+//                            mCacheHelper.update(hostname, sortedResult);
+                            DnsLog.d("hello"+sortedIps[0].toString());
+                        }
+                    });
+
+
                 }
                 mStat.clientIp = rsp.clientIp;
                 mStat.ttl = rsp.ttl;
