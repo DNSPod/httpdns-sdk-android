@@ -3,8 +3,10 @@ package com.tencent.msdk.dns.core.ipRank;
 import com.tencent.msdk.dns.DnsService;
 import com.tencent.msdk.dns.base.utils.IpValidator;
 import com.tencent.msdk.dns.core.LookupResult;
+import com.tencent.msdk.dns.core.rest.share.AbsRestDns;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -22,12 +24,9 @@ public class IpRankHelper {
             return;
         }
         List<String> ipv4Lists = new ArrayList<>();
-        List<String> ipv6Lists = new ArrayList<>();
         for (String ip : ips) {
             if (IpValidator.isV4Ip(ip)) {
                 ipv4Lists.add(ip);
-            } else if (IpValidator.isV6Ip(ip)) {
-                ipv6Lists.add(ip);
             }
         }
         // v4长度小于2，不进行优选服务
@@ -40,27 +39,40 @@ public class IpRankHelper {
         rankHosts.add(hostname);
         IpRankItem ipRankItem = getIpRankItem(hostname);
 
-        // 发起IP测速线程任务
-        new Thread(new IpRankTask(hostname, ipv4Lists.toArray(new String[ipv4Lists.size()]), ipRankItem, new IpRankCallback() {
-            @Override
-            public void onResult(String hostname, String[] sortedIps) {
-                if (ipRankCallback != null) {
-                    rankHosts.remove(hostname);
-                    ipRankCallback.onResult(hostname, sortedIps);
+        if (ipRankItem != null) {
+            // 发起IP测速线程任务
+            new Thread(new IpRankTask(hostname, ipv4Lists.toArray(new String[ipv4Lists.size()]), ipRankItem, new IpRankCallback() {
+                @Override
+                public void onResult(String hostname, String[] sortedIps) {
+                    if (ipRankCallback != null) {
+                        rankHosts.remove(hostname);
+                        ipRankCallback.onResult(hostname, sortedIps);
+                    }
                 }
-            }
-        })).start();
-
+            })).start();
+        }
     }
 
     public LookupResult sortResultByIps(String[] sortedIps, LookupResult lookupResult) {
-        return lookupResult;
+        String[] resultIps = lookupResult.ipSet.ips;
+        // 将测速排序的v4ip和v6ip组合
+        List<String> sortedAllIps = new ArrayList<>(Arrays.asList(sortedIps));
+        for (String ip : resultIps) {
+            if (IpValidator.isV6Ip(ip)) {
+                sortedAllIps.add(ip);
+            }
+        }
+        String[] ips = sortedAllIps.toArray(new String[sortedAllIps.size()]);
+        AbsRestDns.Statistics cachedStat = (AbsRestDns.Statistics) lookupResult.stat;
+        cachedStat.ips = ips;
+        LookupResult rankLookupResult = new LookupResult<>(ips, cachedStat);
+        return rankLookupResult;
     }
 
     private IpRankItem getIpRankItem(String hostname) {
-        if (ipRankItems !=null && ipRankItems.size() >0) {
-            for(IpRankItem item: ipRankItems) {
-                if(hostname.equals(item.getHostName())) {
+        if (ipRankItems != null && ipRankItems.size() > 0) {
+            for (IpRankItem item : ipRankItems) {
+                if (hostname.equals(item.getHostName())) {
                     return item;
                 }
             }
