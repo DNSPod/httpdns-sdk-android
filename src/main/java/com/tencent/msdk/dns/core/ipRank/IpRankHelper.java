@@ -17,7 +17,10 @@ public class IpRankHelper {
 
     /**
      * ipv4优选
-     **/
+     * @param hostname -域名
+     * @param ips -解析的ip结果（含ipv4, ipv6）
+     * @param ipRankCallback -优选完成后的回调方法
+     */
     public void ipv4Rank(String hostname, String[] ips, final IpRankCallback ipRankCallback) {
         // 未配置IP优选，或者当前ip结果长度小于2，不进行优选服务
         if (ipRankItems.isEmpty() || ips.length < 2) {
@@ -53,6 +56,12 @@ public class IpRankHelper {
         }
     }
 
+    /**
+     *  解析结果排序处理
+     * @param sortedIps -排序完的IP数组，当前主要对ipv4进行排序
+     * @param lookupResult -域名缓存中的解析结果
+     * @return -测速后整理的解析结果
+     */
     public LookupResult sortResultByIps(String[] sortedIps, LookupResult lookupResult) {
         String[] resultIps = lookupResult.ipSet.ips;
         // 将测速排序的v4ip和v6ip组合
@@ -69,6 +78,11 @@ public class IpRankHelper {
         return rankLookupResult;
     }
 
+    /**
+     * 当前域名是否为优选配置项
+     * @param hostname -域名
+     * @return -IpRankItem
+     */
     private IpRankItem getIpRankItem(String hostname) {
         if (ipRankItems != null && ipRankItems.size() > 0) {
             for (IpRankItem item : ipRankItems) {

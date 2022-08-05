@@ -170,22 +170,6 @@ public abstract class AbsRestDns implements IDns<LookupExtra> {
                 if (rsp != Response.EMPTY && rsp != Response.NEED_CONTINUE){
                     mStat.errorCode = ErrorCode.SUCCESS;
                     mCacheHelper.put(mLookupContext.asLookupParameters(), rsp);
-
-                    final IpRankHelper mIpRankHelper = new IpRankHelper();
-                    // 发起IP优选服务
-                    mIpRankHelper.ipv4Rank(mLookupContext.hostname(), rsp.ips, new IpRankCallback() {
-                        @Override
-                        public void onResult(String hostname, String[] sortedIps) {
-                            LookupResult cacheResult = mCacheHelper.get(hostname);
-                            // 根据排序的ip结果来对缓存结果排序
-                            if (cacheResult != null) {
-                                LookupResult sortedResult = mIpRankHelper.sortResultByIps(sortedIps, cacheResult);
-                                mCacheHelper.update(hostname, sortedResult);
-                            }
-                        }
-                    });
-
-
                 }
                 mStat.clientIp = rsp.clientIp;
                 mStat.ttl = rsp.ttl;

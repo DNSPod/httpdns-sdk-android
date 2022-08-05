@@ -38,6 +38,12 @@ public class IpRankTask implements Runnable {
         }
     }
 
+    /**
+     * ips测速排名
+     * @param ips
+     * @param speeds
+     * @return
+     */
     private String[] ipsSortedBySpeeds(String[] ips, int[] speeds) {
         ArrayList<Pair<String, Integer>> ipsSpeedsList = new ArrayList<>();
         for (int i = 0; i < ips.length; i++) {
@@ -56,12 +62,19 @@ public class IpRankTask implements Runnable {
         return sortedIps;
     }
 
+    /**
+     * ip socket连接测速任务
+     * @param ip
+     * @param port
+     * @return
+     */
     private int ipSpeedTask(String ip, int port) {
         Socket socket = new Socket();
         long start = System.currentTimeMillis();
         long end = start + MAX_CONNECT_TIME;
         SocketAddress remoteAddress = new InetSocketAddress(ip, port);
         try {
+            DnsLog.d(ip + ":" + port + "socket" + "开始请求");
             socket.connect(remoteAddress, MAX_CONNECT_TIME);
             end = System.currentTimeMillis();
         } catch (IOException e) {

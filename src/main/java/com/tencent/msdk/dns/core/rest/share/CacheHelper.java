@@ -14,6 +14,8 @@ import com.tencent.msdk.dns.core.ICache;
 import com.tencent.msdk.dns.core.IDns;
 import com.tencent.msdk.dns.core.LookupParameters;
 import com.tencent.msdk.dns.core.LookupResult;
+import com.tencent.msdk.dns.core.ipRank.IpRankCallback;
+import com.tencent.msdk.dns.core.ipRank.IpRankHelper;
 import com.tencent.msdk.dns.core.rest.share.rsp.Response;
 
 import java.util.ArrayList;
@@ -68,7 +70,7 @@ public final class CacheHelper {
         if (TextUtils.isEmpty(hostname)) {
             throw new IllegalArgumentException("hostname".concat(Const.EMPTY_TIPS));
         }
-
+        mCache.delete(hostname);
         mCache.add(hostname, lookupResult);
     }
 
@@ -88,8 +90,8 @@ public final class CacheHelper {
         Map<String, List<String>> ipsWithHostname = new HashMap<String, List<String>>();
         if (hostnameArr.length > 1) {
             // 对批量域名返回值做处理
-            for(String ips: rsp.ips) {
-                final String[] arr = ips.split(":");
+            for (String ips : rsp.ips) {
+                final String[] arr = ips.split(":", 2);
                 if (!ipsWithHostname.containsKey(arr[0])) {
                     ipsWithHostname.put(arr[0], new ArrayList<String>());
                     List<String> ips0 = ipsWithHostname.get(arr[0]);
@@ -101,13 +103,26 @@ public final class CacheHelper {
         }
 
 
-        for(final String hostname: hostnameArr) {
+        for (final String hostname : hostnameArr) {
             String[] ips = ipsWithHostname.get(hostname).toArray(new String[0]);
             AbsRestDns.Statistics stat = new AbsRestDns.Statistics(ips, rsp.clientIp, rsp.ttl);
             stat.errorCode = ErrorCode.SUCCESS;
             mCache.add(hostname, new LookupResult<>(ips, stat));
-
             cacheUpdateTask(lookupParams, rsp, hostname);
+
+            // 发起IP优选服务
+            final IpRankHelper mIpRankHelper = new IpRankHelper();
+            mIpRankHelper.ipv4Rank(hostname, ips, new IpRankCallback() {
+                @Override
+                public void onResult(String hostname, String[] sortedIps) {
+                    LookupResult cacheResult = get(hostname);
+                    // 根据排序的ip结果来对缓存结果排序
+                    if (cacheResult != null) {
+                        LookupResult sortedResult = mIpRankHelper.sortResultByIps(sortedIps, cacheResult);
+                        update(hostname, sortedResult);
+                    }
+                }
+            });
         }
 
         // todo:批量域名的存储逻辑仍先保留。批量域名解析查询缓存仍以整个hostname为索引。

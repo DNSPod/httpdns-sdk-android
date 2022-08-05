@@ -13,6 +13,7 @@ import com.tencent.msdk.dns.core.ipRank.IpRankItem;
 import com.tencent.msdk.dns.core.rest.share.LookupExtra;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -167,6 +168,7 @@ public final class DnsConfig {
     public static final class Builder {
 
         private static final int DEFAULT_MAX_NUM_OF_PRE_LOOKUP_DOMAINS = 10;
+        private static final int DEFAULT_MAX_NUM_OF_IP_RANK_ITEMS = 10;
 
         private int mLogLevel = Log.WARN;
 
@@ -184,6 +186,7 @@ public final class DnsConfig {
         private int mTimeoutMills = 1000;
 
         private int mMaxNumOfPreLookupDomains = DEFAULT_MAX_NUM_OF_PRE_LOOKUP_DOMAINS;
+        private int mMaxNumOfIpRankItems = DEFAULT_MAX_NUM_OF_IP_RANK_ITEMS;
 
         // mPreLookupDomains包含于mProtectedDomains
 
@@ -485,7 +488,6 @@ public final class DnsConfig {
          * 不设置时, 默认不会进行提前解析
          *
          * @param domains 保活域名
-         *
          * @return 当前Builder实例, 方便链式调用
          * @throws IllegalArgumentException domains为空时抛出
          */
@@ -509,8 +511,12 @@ public final class DnsConfig {
             return this;
         }
 
-        public Builder ipRankItems(Set<IpRankItem> ipRankItems) {
-            mIpRankItems = ipRankItems;
+        public Builder ipRankItems(List<IpRankItem> ipRankItems) {
+            if (ipRankItems.size() > mMaxNumOfIpRankItems) {
+                mIpRankItems = new HashSet<>(ipRankItems.subList(0, mMaxNumOfIpRankItems));
+            } else {
+                mIpRankItems = new HashSet<>(ipRankItems);
+            }
             return this;
         }
 
