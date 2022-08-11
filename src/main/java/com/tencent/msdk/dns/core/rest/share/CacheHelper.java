@@ -88,14 +88,13 @@ public final class CacheHelper {
         }
 
         final String[] hostnameArr = lookupParams.hostname.split(",");
-        Map<String, List<String>> ipsWithHostname = new HashMap<String, List<String>>();
+        Map<String, List<String>> ipsWithHostname = new HashMap<>();
         if (hostnameArr.length > 1) {
             // 对批量域名返回值做处理
             for (String ips : rsp.ips) {
                 final String[] arr = ips.split(":", 2);
                 if (!ipsWithHostname.containsKey(arr[0])) {
                     ipsWithHostname.put(arr[0], new ArrayList<String>());
-                    List<String> ips0 = ipsWithHostname.get(arr[0]);
                 }
                 ipsWithHostname.get(arr[0]).add(arr[1]);
             }
@@ -150,8 +149,9 @@ public final class CacheHelper {
         }
 
         final Set<String> persistentCacheDomains = DnsService.getDnsConfig().persistentCacheDomains;
+        final boolean enablePersistentCache = DnsService.getDnsConfig().enablePersistentCache;
         // 创建缓存更新任务
-        if (persistentCacheDomains != null && persistentCacheDomains.contains(hostname)) {
+        if (enablePersistentCache && persistentCacheDomains != null && persistentCacheDomains.contains(hostname)) {
             final int lookupFamily = mDns.getDescription().family;
             final LookupParameters<LookupExtra> newLookupParams;
             newLookupParams =
@@ -214,27 +214,31 @@ public final class CacheHelper {
                             }
                         }
 
-                        synchronized (mAsyncLookupParamsSet) {
-                            DnsLog.d("Network changed, enable async lookup");
-                            Iterator<LookupParameters<LookupExtra>> asyncLookupParamsIterator =
-                                    mAsyncLookupParamsSet.iterator();
-                            while (asyncLookupParamsIterator.hasNext()) {
-                                LookupParameters<LookupExtra> asyncLookupParams =
-                                        asyncLookupParamsIterator.next();
-                                DnsLog.d("Async lookup for %s start",
-                                        asyncLookupParams.hostname);
-                                final LookupParameters<LookupExtra> newLookupParams =
-                                        new LookupParameters.Builder<>(asyncLookupParams)
-                                                .networkChangeLookup(true)
-                                                .build();
-                                DnsExecutors.WORK.execute(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        AsyncLookupResultQueue.enqueue(
-                                                DnsManager.lookupWrapper(newLookupParams));
-                                    }
-                                });
-                                asyncLookupParamsIterator.remove();
+                        // 开启自动刷新缓存后，切换网络，刷新配置域名的缓存
+                        final boolean enablePersistentCache = DnsService.getDnsConfig().enablePersistentCache;
+                        if (enablePersistentCache) {
+                            synchronized (mAsyncLookupParamsSet) {
+                                DnsLog.d("Network changed, enable async lookup");
+                                Iterator<LookupParameters<LookupExtra>> asyncLookupParamsIterator =
+                                        mAsyncLookupParamsSet.iterator();
+                                while (asyncLookupParamsIterator.hasNext()) {
+                                    LookupParameters<LookupExtra> asyncLookupParams =
+                                            asyncLookupParamsIterator.next();
+                                    DnsLog.d("Async lookup for %s start",
+                                            asyncLookupParams.hostname);
+                                    final LookupParameters<LookupExtra> newLookupParams =
+                                            new LookupParameters.Builder<>(asyncLookupParams)
+                                                    .networkChangeLookup(true)
+                                                    .build();
+                                    DnsExecutors.WORK.execute(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            AsyncLookupResultQueue.enqueue(
+                                                    DnsManager.lookupWrapper(newLookupParams));
+                                        }
+                                    });
+                                    asyncLookupParamsIterator.remove();
+                                }
                             }
                         }
                     }
