@@ -1,6 +1,7 @@
 package com.tencent.msdk.dns.core.ipRank;
 
 import com.tencent.msdk.dns.DnsService;
+import com.tencent.msdk.dns.base.log.DnsLog;
 import com.tencent.msdk.dns.base.utils.IpValidator;
 import com.tencent.msdk.dns.core.LookupResult;
 import com.tencent.msdk.dns.core.rest.share.AbsRestDns;
@@ -13,7 +14,7 @@ import java.util.Set;
 
 public class IpRankHelper {
     private final Set<IpRankItem> ipRankItems = DnsService.getDnsConfig().ipRankItems;
-    private Set<String> rankHosts = new HashSet<>();
+    private static Set<String> rankHosts = new HashSet<>();
 
     /**
      * ipv4优选

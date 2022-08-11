@@ -44,6 +44,7 @@ public final class CacheHelper {
 
     private final IDns<LookupExtra> mDns;
     private final ICache mCache;
+    private final IpRankHelper mIpRankHelper = new IpRankHelper();
 
     CacheHelper(IDns<LookupExtra> dns, ICache cache) {
         if (null == dns) {
@@ -111,7 +112,6 @@ public final class CacheHelper {
             cacheUpdateTask(lookupParams, rsp, hostname);
 
             // 发起IP优选服务
-            final IpRankHelper mIpRankHelper = new IpRankHelper();
             mIpRankHelper.ipv4Rank(hostname, ips, new IpRankCallback() {
                 @Override
                 public void onResult(String hostname, String[] sortedIps) {
