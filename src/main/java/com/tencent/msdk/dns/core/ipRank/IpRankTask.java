@@ -74,7 +74,6 @@ public class IpRankTask implements Runnable {
         long end = start + MAX_CONNECT_TIME;
         SocketAddress remoteAddress = new InetSocketAddress(ip, port);
         try {
-            DnsLog.d(ip + ":" + port + "socket" + "开始请求");
             socket.connect(remoteAddress, MAX_CONNECT_TIME);
             end = System.currentTimeMillis();
         } catch (IOException e) {
