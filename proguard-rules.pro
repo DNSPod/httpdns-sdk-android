@@ -36,6 +36,7 @@
 # 对外接口类
 -keep public class com.tencent.msdk.dns.DnsService {*;}
 -keep public class com.tencent.msdk.dns.core.IpSet {*;}
+-keep public class com.tencent.msdk.dns.core.ipRank.IpRankItem {*;}
 -keep public class com.tencent.msdk.dns.DnsConfig {*;}
 -keep public class com.tencent.msdk.dns.DnsConfig$Builder {*;}
 -keep public class com.tencent.msdk.dns.base.executor.DnsExecutors$ExecutorSupplier {*;}

@@ -17,6 +17,7 @@ import com.tencent.msdk.dns.core.rest.share.rsp.ResponseParser;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
 import java.net.SocketAddress;
 import java.net.URL;
 import java.net.URLConnection;
@@ -78,6 +79,7 @@ public abstract class AbsHttpDns extends AbsRestDns {
             stat.endLookup();
             return new LookupResult<>(stat.ips, stat);
         }
+
         //  缓冲区，用来写SocketChannel
         BufferedReader reader = null;
         try {
@@ -92,7 +94,7 @@ public abstract class AbsHttpDns extends AbsRestDns {
             String lineTxt = "";
             try {
                 //  发起请求
-                URLConnection connection = new URL(urlStr).openConnection();
+                HttpURLConnection connection = (HttpURLConnection) new URL(urlStr).openConnection();
                 connection.setConnectTimeout(timeoutMills);
                 connection.setReadTimeout(timeoutMills);
                 //  noinspection CharsetObjectCanBeUsed
@@ -108,6 +110,7 @@ public abstract class AbsHttpDns extends AbsRestDns {
                 // 去除最后的"\n"字符避免干扰 ResponseParser 区分批量查询的结果
                 rawRspContent = rawRspContent.length() > 0 ? rawRspContent.substring(0, rawRspContent.length() - 2) : "";
                 reader.close();
+                stat.statusCode = connection.getResponseCode();
             } catch (Exception e) {
                 stat.errorCode = ErrorCode.RESPONSE_FAILED_FOR_EXCEPTION_ERROR_CODE;
                 stat.errorMsg = e.getMessage();
@@ -411,6 +414,8 @@ public abstract class AbsHttpDns extends AbsRestDns {
             DnsLog.v(getTag() + "receive rspHttpRsp:{\n%s}", rspHttpRsp);
             String rspBody = HttpHelper.responseBody(rspHttpRsp);
             String rspContent = decrypt(rspBody, lookupExtra.bizKey);
+            int rspStatus = HttpHelper.responseStatus(rspHttpRsp);
+            mStat.statusCode =rspStatus;
             DnsLog.d(getTag() + "receive rawLen:%d, raw:[%s], rsp body content:[%s]", totalLen, rspBody, rspContent);
             if (TextUtils.isEmpty(rspContent)) {
                 mStat.isGetEmptyResponse = true;

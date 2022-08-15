@@ -176,6 +176,15 @@ public class MSDKDnsResolver {
     }
 
     /**
+     * 启停缓存自动刷新功能
+     * @param enablePersistentCache false：关闭，true：开启
+     */
+    public void  enablePersistentCache(boolean enablePersistentCache) {
+        DnsService.enablePersistentCache(enablePersistentCache);
+        DnsLog.d("MSDKDnsResolver.enablePersistentCache(%s) called", new Boolean(enablePersistentCache).toString());
+    }
+
+    /**
      * 设置UserId, 进行数据上报时区分用户, 出现问题时, 依赖该Id进行单用户问题排查
      *
      * @param openId 用户的唯一标识符, 腾讯业务建议直接使用OpenId, 腾讯云客户建议传入长度50位以内, 由字母数字下划线组合而成的字符串

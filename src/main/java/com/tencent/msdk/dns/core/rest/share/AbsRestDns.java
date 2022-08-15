@@ -9,6 +9,10 @@ import com.tencent.msdk.dns.core.LookupContext;
 import com.tencent.msdk.dns.core.LookupParameters;
 import com.tencent.msdk.dns.core.LookupResult;
 import com.tencent.msdk.dns.core.cache.Cache;
+import com.tencent.msdk.dns.core.ipRank.IpRankCallback;
+import com.tencent.msdk.dns.core.ipRank.IpRankHelper;
+import com.tencent.msdk.dns.core.ipRank.IpRankItem;
+import com.tencent.msdk.dns.core.ipRank.IpRankTask;
 import com.tencent.msdk.dns.core.rest.share.rsp.Response;
 import com.tencent.msdk.dns.core.stat.AbsStatistics;
 import java.nio.channels.SelectionKey;
@@ -355,6 +359,8 @@ public abstract class AbsRestDns implements IDns<LookupExtra> {
          */
         public boolean netChangeLookup = false;
 
+        public int statusCode;
+
         public Statistics() {
         }
 
@@ -379,6 +385,7 @@ public abstract class AbsRestDns implements IDns<LookupExtra> {
             return "Statistics{" +
                     "errorCode=" + errorCode +
                     ", errorMsg='" + errorMsg + '\'' +
+                    ", statusCode=" + statusCode +
                     ", clientIp='" + clientIp + '\'' +
                     ", ttl=" + ttl +
                     ", retryTimes=" + retryTimes +
