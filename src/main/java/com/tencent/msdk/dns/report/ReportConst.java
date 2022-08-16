@@ -24,23 +24,14 @@ interface ReportConst {
     String LOCAL_LOOKUP_IPS_KEY = "ldns_ip";
     String LOCAL_LOOKUP_COST_TIME_MILLS_KEY = "ldns_time";
 
-    String REST_INET_LOOKUP_ERROR_CODE_KEY = "hdns_a_err_code";
-    String REST_INET_LOOKUP_ERROR_MESSAGE_KEY = "hdns_a_err_msg";
-    String REST_INET_LOOKUP_IPS_KEY = "hdns_ip";
-    String REST_INET_LOOKUP_TTL_KEY = "ttl";
-    String REST_INET_LOOKUP_CLIENT_IP_KEY = "clientIP";
-    String REST_INET_LOOKUP_COST_TIME_MILLS_KEY = "hdns_time";
-    String REST_INET_LOOKUP_RETRY_TIMES_KEY = "hdns_a_retry";
-    String REST_INET_LOOKUP_CACHE_HIT_KEY = "isCache";
-
-    String REST_INET6_LOOKUP_ERROR_CODE_KEY = "hdns_4a_err_code";
-    String REST_INET6_LOOKUP_ERROR_MESSAGE_KEY = "hdns_4a_err_msg";
-    String REST_INET6_LOOKUP_IPS_KEY = "hdns_4a_ips";
-    String REST_INET6_LOOKUP_TTL_KEY = "hdns_4a_ttl";
-    String REST_INET6_LOOKUP_CLIENT_IP_KEY = "hdns_4a_client_ip";
-    String REST_INET6_LOOKUP_COST_TIME_MILLS_KEY = "hdns_4a_time_ms";
-    String REST_INET6_LOOKUP_RETRY_TIMES_KEY = "hdns_4a_retry";
-    String REST_INET6_LOOKUP_CACHE_HIT_KEY = "hdns_4a_cache_hit";
+    String REST_LOOKUP_ERROR_CODE_KEY = "hdns_err_code";
+    String REST_LOOKUP_ERROR_MESSAGE_KEY = "hdns_err_msg";
+    String REST_LOOKUP_IPS_KEY = "hdns_ip";
+    String REST_LOOKUP_TTL_KEY = "ttl";
+    String REST_LOOKUP_CLIENT_IP_KEY = "clientIP";
+    String REST_LOOKUP_COST_TIME_MILLS_KEY = "hdns_time";
+    String REST_LOOKUP_RETRY_TIMES_KEY = "hdns_retry";
+    String REST_LOOKUP_CACHE_HIT_KEY = "isCache";
 
     String INET_LOOKUP_IPS_KEY = "dns_ips";
     String INET6_LOOKUP_IPS_KEY = "dns_4a_ips";
@@ -51,22 +42,6 @@ interface ReportConst {
 
     String BATCH_HOSTNAME_KEY = "domains";
     String BATCH_NETWORK_STACK_KEY = "net_stacks";
-
-    String BATCH_REST_INET_LOOKUP_ERROR_CODE_KEY = "hdns_a_err_codes";
-    String BATCH_REST_INET_LOOKUP_ERROR_MESSAGE_KEY = "hdns_a_err_msgs";
-    String BATCH_REST_INET_LOOKUP_IPS_KEY = "hdns_a_ipses";
-    String BATCH_REST_INET_LOOKUP_TTL_KEY = "hdns_a_ttls";
-    String BATCH_REST_INET_LOOKUP_CLIENT_IP_KEY = "hdns_a_client_ips";
-    String BATCH_REST_INET_LOOKUP_COST_TIME_MILLS_KEY = "hdns_a_time_mses";
-    String BATCH_REST_INET_LOOKUP_RETRY_TIMES_KEY = "hdns_a_retrys";
-
-    String BATCH_REST_INET6_LOOKUP_ERROR_CODE_KEY = "hdns_4a_err_codes";
-    String BATCH_REST_INET6_LOOKUP_ERROR_MESSAGE_KEY = "hdns_4a_err_msgs";
-    String BATCH_REST_INET6_LOOKUP_IPS_KEY = "hdns_4a_ipses";
-    String BATCH_REST_INET6_LOOKUP_TTL_KEY = "hdns_4a_ttls";
-    String BATCH_REST_INET6_LOOKUP_CLIENT_IP_KEY = "hdns_4a_client_ips";
-    String BATCH_REST_INET6_LOOKUP_COST_TIME_MILLS_KEY = "hdns_4a_time_mses";
-    String BATCH_REST_INET6_LOOKUP_RETRY_TIMES_KEY = "hdns_4a_retrys";
 
     String BATCH_NETWORK_CHANGE_KEY = "net_changes";
     String BATCH_LOOKUP_TIME_MILLS_KEY = "lookup_time_mses";

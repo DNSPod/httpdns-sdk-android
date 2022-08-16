@@ -48,15 +48,10 @@ public final class StatisticsMerge implements IStatisticsMerge<LookupExtra> {
      */
     public LocalDns.Statistics localDnsStat = LocalDns.Statistics.NOT_LOOKUP;
     /**
-     * A记录解析统计数据
+     * HTTPDNS解析统计数据(A记录/AAAA记录)
      * 参见{@link AbsRestDns.Statistics}
      */
-    public AbsRestDns.Statistics restInetDnsStat = AbsRestDns.Statistics.NOT_LOOKUP;
-    /**
-     * AAAA记录解析统计数据
-     * 参见{@link AbsRestDns.Statistics}
-     */
-    public AbsRestDns.Statistics restInet6DnsStat = AbsRestDns.Statistics.NOT_LOOKUP;
+    public AbsRestDns.Statistics restDnsStat = AbsRestDns.Statistics.NOT_LOOKUP;
 
     /**
      * 域名解析结果IP集合
@@ -103,14 +98,8 @@ public final class StatisticsMerge implements IStatisticsMerge<LookupExtra> {
         DnsDescription dnsDesc = dns.getDescription();
         if (Const.LOCAL_CHANNEL.equals(dnsDesc.channel)) {
             localDnsStat = (LocalDns.Statistics) stat;
-        } else if (DnsDescription.Family.INET == dnsDesc.family) {
-            restInetDnsStat = (AbsRestDns.Statistics) stat;
-        } else if (DnsDescription.Family.INET6 == dnsDesc.family) {
-            restInet6DnsStat = (AbsRestDns.Statistics) stat;
         } else {
-            restInetDnsStat = (AbsRestDns.Statistics) stat;
-            restInet6DnsStat = (AbsRestDns.Statistics) stat;
-            // sara todo: 合并ipv4,ipv6统计处理
+            restDnsStat = (AbsRestDns.Statistics) stat;
         }
     }
 
@@ -153,14 +142,12 @@ public final class StatisticsMerge implements IStatisticsMerge<LookupExtra> {
     public String toJsonResult() {
         JSONObject jsonObject = new JSONObject();
         try {
-//            jsonObject.put("v4_ips", CommonUtils.toStringList(restInetDnsStat.ips, ","));
             jsonObject.put("v4_ips", CommonUtils.toStringList(ipSet.v4Ips, ","));
-            jsonObject.put("v4_ttl", String.valueOf(restInetDnsStat.ttl));
-            jsonObject.put("v4_client_ip", String.valueOf(restInetDnsStat.clientIp));
-//            jsonObject.put("v6_ips", CommonUtils.toStringList(restInet6DnsStat.ips, ","));
             jsonObject.put("v6_ips", CommonUtils.toStringList(ipSet.v6Ips, ","));
-            jsonObject.put("v6_ttl", Const.DEFAULT_TIME_INTERVAL == restInet6DnsStat.ttl ? "" : String.valueOf(restInet6DnsStat.ttl));
-            jsonObject.put("v6_client_ip", Const.INVALID_IP.equals(restInet6DnsStat.clientIp) ? "" : String.valueOf(restInet6DnsStat.clientIp));
+            jsonObject.put("ttl", String.valueOf(restDnsStat.ttl));
+            jsonObject.put("client_ip", String.valueOf(restDnsStat.clientIp));
+            jsonObject.put("expired_time", String.valueOf(System.currentTimeMillis() + restDnsStat.ttl * 1000));
+
             return jsonObject.toString();
         } catch (Exception ignore){
         }
@@ -175,8 +162,7 @@ public final class StatisticsMerge implements IStatisticsMerge<LookupExtra> {
                 ", channel='" + channel + '\'' +
                 ", curNetStack=" + curNetStack +
                 ", localDnsStat=" + localDnsStat +
-                ", restInetDnsStat=" + restInetDnsStat +
-                ", restInet6DnsStat=" + restInet6DnsStat +
+                ", restDnsStat=" + restDnsStat +
                 ", ipSet=" + ipSet +
                 ", lookupSuccess=" + lookupSuccess +
                 ", lookupGetEmptyResponse=" + lookupFailed +
