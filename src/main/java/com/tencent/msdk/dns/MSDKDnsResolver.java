@@ -9,6 +9,8 @@ import com.tencent.msdk.dns.base.log.ILogNode;
 import com.tencent.msdk.dns.base.utils.CommonUtils;
 import com.tencent.msdk.dns.core.Const;
 import com.tencent.msdk.dns.core.IpSet;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public class MSDKDnsResolver {
     public static final String DES_HTTP_CHANNEL = Const.DES_HTTP_CHANNEL;
@@ -264,6 +266,58 @@ public class MSDKDnsResolver {
                 }
             }
         });
+    }
+
+    public String getAddrByNameEnableExpired(final String domain){
+        return getAddrByNamesEnableExpired(domain, true);
+    }
+
+    private String getAddrByNamesEnableExpired(final String domain, boolean useExpiredIpEnable) {
+        String result = MSDKDnsResolver.getInstance().getDnsDetail((domain));
+        String EMPTY = "0;0";
+        DnsLog.d("enable expired look up result----" + result);
+        final String tag = String.valueOf(System.currentTimeMillis());
+        // 设置允许使用过期缓存
+        DnsService.setUseExpiredIpEnable(useExpiredIpEnable);
+
+        if (result.isEmpty()) {
+            result = EMPTY;
+            DnsExecutors.WORK.execute(new Runnable() {
+                @Override
+                public void run() {
+                    String result = getAddrByName(domain);
+                }
+            });
+        } else {
+            try {
+                JSONObject temp = new JSONObject(result);
+                long expiredTime = Long.valueOf(temp.get("expired_time").toString());
+                long current = System.currentTimeMillis();
+                if (expiredTime < current) {
+                    // 异步请求
+                    DnsExecutors.WORK.execute(new Runnable() {
+                        @Override
+                        public void run() {
+                            DnsLog.d("async look up send");
+                            DnsService.getAddrsByName(domain, true, true);
+                        }
+                    });
+                    // 缓存过期且不允许使用过期缓存
+                    if (!DnsService.getDnsConfig().useExpiredIpEnable) {
+                        return EMPTY;
+                    }
+                }
+                String v4Ips = temp.get("v4_ips").toString().split(",")[0];
+                String v6Ips = temp.get("v6_ips").toString().split(",")[0];
+                v4Ips = v4Ips.equals("") ? "0": v4Ips;
+                v6Ips = v6Ips.equals("") ? "0": v6Ips;
+                result = v4Ips + ";" + v6Ips;
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+        }
+        return result;
     }
 
     /**

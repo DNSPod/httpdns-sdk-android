@@ -124,11 +124,13 @@ public final class CacheHelper {
             });
         }
 
-        // todo:批量域名的存储逻辑仍先保留。批量域名解析查询缓存仍以整个hostname为索引。
-        AbsRestDns.Statistics stat = new AbsRestDns.Statistics(rsp.ips, rsp.clientIp, rsp.ttl);
-        stat.errorCode = ErrorCode.SUCCESS;
-        mCache.add(lookupParams.hostname, new LookupResult<>(rsp.ips, stat));
-        cacheUpdateTask(lookupParams, rsp, lookupParams.hostname);
+        if (hostnameArr.length > 1) {
+            // todo:批量域名的存储逻辑仍先保留。批量域名解析查询缓存仍以整个hostname为索引。
+            AbsRestDns.Statistics stat = new AbsRestDns.Statistics(rsp.ips, rsp.clientIp, rsp.ttl);
+            stat.errorCode = ErrorCode.SUCCESS;
+            mCache.add(lookupParams.hostname, new LookupResult<>(rsp.ips, stat));
+            cacheUpdateTask(lookupParams, rsp, lookupParams.hostname);
+        }
     }
 
     private void cacheUpdateTask(LookupParameters<LookupExtra> lookupParams, Response rsp, final String hostname) {
@@ -183,17 +185,21 @@ public final class CacheHelper {
             DnsExecutors.MAIN.schedule(
                     asyncLookupTask, (long) (ASYNC_LOOKUP_FACTOR * rsp.ttl * 1000));
         } else {
-            final Runnable removeExpiredCacheTask = new Runnable() {
-                @Override
-                public void run() {
-                    DnsLog.d("Cache of %s(%d) expired", hostname, mDns.getDescription().family);
-                    mCache.delete(hostname);
-                    mPendingTasks.remove(this);
-                }
-            };
-            pendingTasks.removeExpiredCacheTask = removeExpiredCacheTask;
-            mPendingTasks.add(removeExpiredCacheTask);
-            DnsExecutors.MAIN.schedule(removeExpiredCacheTask, (long) (rsp.ttl * 1000));
+            final boolean useExpiredIpEnable = DnsService.getDnsConfig().useExpiredIpEnable;
+            // 允许使用过期缓存，不下发清空缓存任务
+            if (!useExpiredIpEnable) {
+                final Runnable removeExpiredCacheTask = new Runnable() {
+                    @Override
+                    public void run() {
+                        DnsLog.d("Cache of %s(%d) expired", hostname, mDns.getDescription().family);
+                        mCache.delete(hostname);
+                        mPendingTasks.remove(this);
+                    }
+                };
+                pendingTasks.removeExpiredCacheTask = removeExpiredCacheTask;
+                mPendingTasks.add(removeExpiredCacheTask);
+                DnsExecutors.MAIN.schedule(removeExpiredCacheTask, (long) (rsp.ttl * 1000));
+            }
         }
 
         if (!mHostnamePendingTasksMap.containsKey(hostname)) {
@@ -206,8 +212,12 @@ public final class CacheHelper {
                 new IOnNetworkChangeListener() {
                     @Override
                     public void onNetworkChange() {
-                        DnsLog.d("Network changed, clear caches");
-                        mCache.clear();
+                        final boolean useExpiredIpEnable = DnsService.getDnsConfig().useExpiredIpEnable;
+                        // 允许使用过期缓存，不清除缓存
+                        if (!useExpiredIpEnable) {
+                            DnsLog.d("Network changed, clear caches");
+                            mCache.clear();
+                        }
                         synchronized (mPendingTasks) {
                             for (Runnable task : mPendingTasks) {
                                 DnsExecutors.MAIN.cancel(task);

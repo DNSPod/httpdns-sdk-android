@@ -146,7 +146,7 @@ public final class StatisticsMerge implements IStatisticsMerge<LookupExtra> {
             jsonObject.put("v6_ips", CommonUtils.toStringList(ipSet.v6Ips, ","));
             jsonObject.put("ttl", String.valueOf(restDnsStat.ttl));
             jsonObject.put("client_ip", String.valueOf(restDnsStat.clientIp));
-            jsonObject.put("expired_time", String.valueOf(System.currentTimeMillis() + restDnsStat.ttl * 1000));
+            jsonObject.put("expired_time", String.valueOf(restDnsStat.expiredTime));
 
             return jsonObject.toString();
         } catch (Exception ignore){

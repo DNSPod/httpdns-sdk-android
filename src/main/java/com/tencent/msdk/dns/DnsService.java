@@ -125,6 +125,18 @@ public final class DnsService {
         sConfig.enablePersistentCache = mEnablePersistentCache;
     }
 
+    /**
+     * 设置是否使用过期缓存IP（乐观DNS）
+     * @param mUseExpiredIpEnable false：不使用过期（默认），true：使用过期缓存
+     * @throws IllegalStateException    没有初始化时抛出
+     */
+    public static synchronized void setUseExpiredIpEnable(boolean mUseExpiredIpEnable) {
+        if (!sInited) {
+            throw new IllegalStateException("DnsService".concat(Const.NOT_INIT_TIPS));
+        }
+        sConfig.useExpiredIpEnable = mUseExpiredIpEnable;
+    }
+
     public static String getDnsDetail(String hostname) {
         String dnsIp = BackupResolver.getInstance().getDnsIp();
         LookupResult<IStatisticsMerge> lookupResult = DnsManager.getResultFromCache(new LookupParameters.Builder<LookupExtra>()
@@ -181,7 +193,7 @@ public final class DnsService {
      * @return {@link IpSet}实例, 即解析得到的Ip集合
      * @throws IllegalStateException 没有初始化时抛出
      */
-    private static IpSet getAddrsByName(
+    public static IpSet getAddrsByName(
             /* @Nullable */String hostname, boolean fallback2Local, boolean enableAsyncLookup) {
         return getAddrsByName(hostname, sConfig.channel, fallback2Local, enableAsyncLookup);
     }

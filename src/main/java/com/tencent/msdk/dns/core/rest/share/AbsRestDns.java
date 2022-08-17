@@ -53,6 +53,7 @@ public abstract class AbsRestDns implements IDns<LookupExtra> {
             stat.errorCode = ErrorCode.SUCCESS;
             stat.clientIp = cachedStat.clientIp;
             stat.ttl = cachedStat.ttl;
+            stat.expiredTime = cachedStat.expiredTime;
             stat.ips = ips;
             stat.cached = true;
             DnsLog.d("Lookup for %s, cache hit", hostname);
@@ -173,6 +174,7 @@ public abstract class AbsRestDns implements IDns<LookupExtra> {
                 }
                 mStat.clientIp = rsp.clientIp;
                 mStat.ttl = rsp.ttl;
+                mStat.expiredTime = System.currentTimeMillis() + rsp.ttl * 1000;
                 mStat.ips = rsp.ips;
             } finally {
                 if (rsp != Response.NEED_CONTINUE) {
@@ -341,6 +343,8 @@ public abstract class AbsRestDns implements IDns<LookupExtra> {
          * 解析结果TTL(缓存有效时间), 单位s
          */
         public int ttl = Const.DEFAULT_TIME_INTERVAL;
+
+        public long expiredTime = 0;
         /**
          * 域名解析重试次数
          */
@@ -378,6 +382,8 @@ public abstract class AbsRestDns implements IDns<LookupExtra> {
             this.ips = ips;
             this.clientIp = clientIp;
             this.ttl = ttl;
+            this.expiredTime = System.currentTimeMillis() + ttl * 1000;
+            DnsLog.d("hello---222 " + String.valueOf(this.expiredTime));
         }
 
         @Override
@@ -388,6 +394,7 @@ public abstract class AbsRestDns implements IDns<LookupExtra> {
                     ", statusCode=" + statusCode +
                     ", clientIp='" + clientIp + '\'' +
                     ", ttl=" + ttl +
+                    ", expiredTime=" + expiredTime +
                     ", retryTimes=" + retryTimes +
                     ", cached=" + cached +
                     ", asyncLookup=" + asyncLookup +
