@@ -390,20 +390,21 @@ public final class DnsManager {
         int family = lookupContext.family();
         boolean ignoreCurNetStack = lookupContext.ignoreCurrentNetworkStack();
 
-        if (null != dnsGroup.mInet6Dns &&
-                // 异步解析不关注当前网络栈
-                (ignoreCurNetStack || curNetStack == NetworkStack.IPV6_ONLY)) {
+        // ignoreCurNetStack = true / localdns, 双栈同时请求
+        if (null != dnsGroup.mUnspecDns &&
+                (ignoreCurNetStack || curNetStack == NetworkStack.DUAL_STACK || dnsGroup.mUnspecDns instanceof LocalDns)) {
             //noinspection unchecked
-            prepareTask((IDns<LookupExtra>) dnsGroup.mInet6Dns, lookupContext);
+            prepareTask((IDns<LookupExtra>) dnsGroup.mUnspecDns, lookupContext);
         } else if (null != dnsGroup.mInetDns &&
                 // 异步解析不关注当前网络栈
                 (ignoreCurNetStack || curNetStack == NetworkStack.IPV4_ONLY)) {
             //noinspection unchecked
             prepareTask((IDns<LookupExtra>) dnsGroup.mInetDns, lookupContext);
-        } else if (null != dnsGroup.mUnspecDns &&
-                (ignoreCurNetStack || 0 != (curNetStack & NetworkStack.DUAL_STACK))) {
+        } else if (null != dnsGroup.mInet6Dns &&
+                // 异步解析不关注当前网络栈
+                (ignoreCurNetStack || curNetStack == NetworkStack.IPV6_ONLY)) {
             //noinspection unchecked
-            prepareTask((IDns<LookupExtra>) dnsGroup.mUnspecDns, lookupContext);
+            prepareTask((IDns<LookupExtra>) dnsGroup.mInet6Dns, lookupContext);
         }
 
     }
