@@ -2,6 +2,7 @@ package com.tencent.msdk.dns;
 
 import android.content.Context;
 import android.util.Log;
+
 import com.tencent.msdk.dns.base.executor.DnsExecutors;
 import com.tencent.msdk.dns.base.jni.JniWrapper;
 import com.tencent.msdk.dns.base.log.DnsLog;
@@ -9,6 +10,7 @@ import com.tencent.msdk.dns.base.log.ILogNode;
 import com.tencent.msdk.dns.base.utils.CommonUtils;
 import com.tencent.msdk.dns.core.Const;
 import com.tencent.msdk.dns.core.IpSet;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -122,18 +124,18 @@ public class MSDKDnsResolver {
     }
 
     /**
-    * 初始化 HTTPDNS（自选加密方式）
-    *
-    * @param context 应用上下文，最好传入 ApplicationContext
-    * @param appID 业务 appkey，即 SDK AppID，腾讯云官网（https://console.cloud.tencent.com/httpdns）申请获得，用于上报
-    * @param dnsId dns解析id，即授权id，腾讯云官网（https://console.cloud.tencent.com/httpdns）申请获得，用于域名解析鉴权
-    * @param dnsKey dns解析key，即授权id对应的 key（加密密钥），在申请 SDK 后的邮箱里，腾讯云官网（https://console.cloud.tencent.com/httpdns）申请获得，用于域名解析鉴权
-    * @param dnsIp 由外部传入的dnsIp，可选："119.29.29.98"（仅支持 http 请求），"119.29.29.99"（仅支持 https 请求）以腾讯云文档（https://cloud.tencent.com/document/product/379/54976）提供的 IP 为准
-    * @param debug 是否开启 debug 日志，true 为打开，false 为关闭，建议测试阶段打开，正式上线时关闭
-    * @param timeout dns请求超时时间，单位ms，建议设置1000
-    * @param channel 设置 channel，可选：DesHttp（默认）, AesHttp, Https
-    * @param token 腾讯云官网（https://console.cloud.tencent.com/httpdns）申请获得，用于 HTTPS 校验
-    */
+     * 初始化 HTTPDNS（自选加密方式）
+     *
+     * @param context 应用上下文，最好传入 ApplicationContext
+     * @param appID   业务 appkey，即 SDK AppID，腾讯云官网（https://console.cloud.tencent.com/httpdns）申请获得，用于上报
+     * @param dnsId   dns解析id，即授权id，腾讯云官网（https://console.cloud.tencent.com/httpdns）申请获得，用于域名解析鉴权
+     * @param dnsKey  dns解析key，即授权id对应的 key（加密密钥），在申请 SDK 后的邮箱里，腾讯云官网（https://console.cloud.tencent.com/httpdns）申请获得，用于域名解析鉴权
+     * @param dnsIp   由外部传入的dnsIp，可选："119.29.29.98"（仅支持 http 请求），"119.29.29.99"（仅支持 https 请求）以腾讯云文档（https://cloud.tencent.com/document/product/379/54976）提供的 IP 为准
+     * @param debug   是否开启 debug 日志，true 为打开，false 为关闭，建议测试阶段打开，正式上线时关闭
+     * @param timeout dns请求超时时间，单位ms，建议设置1000
+     * @param channel 设置 channel，可选：DesHttp（默认）, AesHttp, Https
+     * @param token   腾讯云官网（https://console.cloud.tencent.com/httpdns）申请获得，用于 HTTPS 校验
+     */
     public void init(Context context, String appID, String dnsId, String dnsKey, String dnsIp, boolean debug,
                      int timeout, String channel, String token, boolean enableReport) {
         DnsConfig.Builder dnsConfigBuilder =
@@ -172,18 +174,28 @@ public class MSDKDnsResolver {
         DnsLog.d("MSDKDnsResolver.init() called, ver:%s, channel:%s", BuildConfig.VERSION_NAME, channel);
     }
 
-    public void init(Context context, DnsConfig dnsConfig){
+    public void init(Context context, DnsConfig dnsConfig) {
         DnsService.init(context, dnsConfig);
         DnsLog.d("MSDKDnsResolver.init() called, ver:%s, channel:%s", BuildConfig.VERSION_NAME, dnsConfig.channel);
     }
 
     /**
      * 启停缓存自动刷新功能
+     *
      * @param enablePersistentCache false：关闭，true：开启
      */
-    public void  enablePersistentCache(boolean enablePersistentCache) {
+    public void enablePersistentCache(boolean enablePersistentCache) {
         DnsService.enablePersistentCache(enablePersistentCache);
         DnsLog.d("MSDKDnsResolver.enablePersistentCache(%s) called", new Boolean(enablePersistentCache).toString());
+    }
+
+    /**
+     * 是否使用过期 IP 缓存
+     *
+     * @param useExpiredIpEnable false：关闭，true：开启
+     */
+    public void setUseExpiredIpEnable(boolean useExpiredIpEnable) {
+        DnsService.setUseExpiredIpEnable(useExpiredIpEnable);
     }
 
     /**
@@ -231,15 +243,8 @@ public class MSDKDnsResolver {
             ipSet = DnsService.getAddrsByName(domain, fallback2Local);
         } catch (Exception ignored) {
         }
-        String v4Ip = "0";
-        if (!CommonUtils.isEmpty(ipSet.v4Ips)) {
-            v4Ip = ipSet.v4Ips[0];
-        }
-        String v6Ip = "0";
-        if (!CommonUtils.isEmpty(ipSet.v6Ips)) {
-            v6Ip = ipSet.v6Ips[0];
-        }
-        return v4Ip + ";" + v6Ip;
+
+        return CommonUtils.getIpfromSet(ipSet);
     }
 
     /**
@@ -268,24 +273,22 @@ public class MSDKDnsResolver {
         });
     }
 
-    public String getAddrByNameEnableExpired(final String domain){
-        return getAddrByNamesEnableExpired(domain, true);
+    public String getAddrByNameEnableExpired(final String domain) {
+        IpSet ipSet = getAddrsByNamesEnableExpired(domain);
+        return CommonUtils.getIpfromSet(ipSet);
     }
 
-    private String getAddrByNamesEnableExpired(final String domain, boolean useExpiredIpEnable) {
+    public IpSet getAddrsByNamesEnableExpired(final String domain) {
         String result = MSDKDnsResolver.getInstance().getDnsDetail((domain));
-        String EMPTY = "0;0";
+        IpSet ipSetReslut = IpSet.EMPTY;
         DnsLog.d("enable expired look up result----" + result);
-        final String tag = String.valueOf(System.currentTimeMillis());
-        // 设置允许使用过期缓存
-        DnsService.setUseExpiredIpEnable(useExpiredIpEnable);
 
         if (result.isEmpty()) {
-            result = EMPTY;
             DnsExecutors.WORK.execute(new Runnable() {
                 @Override
                 public void run() {
-                    String result = getAddrByName(domain);
+                    // 下发解析请求
+                    getAddrByName(domain);
                 }
             });
         } else {
@@ -304,20 +307,20 @@ public class MSDKDnsResolver {
                     });
                     // 缓存过期且不允许使用过期缓存
                     if (!DnsService.getDnsConfig().useExpiredIpEnable) {
-                        return EMPTY;
+                        return ipSetReslut;
                     }
                 }
-                String v4Ips = temp.get("v4_ips").toString().split(",")[0];
-                String v6Ips = temp.get("v6_ips").toString().split(",")[0];
-                v4Ips = v4Ips.equals("") ? "0": v4Ips;
-                v6Ips = v6Ips.equals("") ? "0": v6Ips;
-                result = v4Ips + ";" + v6Ips;
+                String v4IpsStr = temp.get("v4_ips").toString();
+                String v6IpsStr = temp.get("v6_ips").toString();
+                String[] v4Ips = v4IpsStr.isEmpty() ? new String[0] : v4IpsStr.split(",");
+                String[] v6Ips = v6IpsStr.isEmpty() ? new String[0] : v6IpsStr.split(",");
+                ipSetReslut = new IpSet(v4Ips, v6Ips);
             } catch (JSONException e) {
                 e.printStackTrace();
             }
 
         }
-        return result;
+        return ipSetReslut;
     }
 
     /**

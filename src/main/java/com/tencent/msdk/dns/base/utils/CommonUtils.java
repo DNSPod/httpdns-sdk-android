@@ -3,6 +3,7 @@ package com.tencent.msdk.dns.base.utils;
 import android.text.TextUtils;
 
 import com.tencent.msdk.dns.base.log.DnsLog;
+import com.tencent.msdk.dns.core.IpSet;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -83,5 +84,17 @@ public final class CommonUtils {
         System.arraycopy(data1, 0, data3, 0, data1.length);
         System.arraycopy(data2, 0, data3, data1.length, data2.length);
         return data3;
+    }
+
+    public static String getIpfromSet(IpSet ipSet) {
+        String v4Ip = "0";
+        if (!CommonUtils.isEmpty(ipSet.v4Ips)) {
+            v4Ip = ipSet.v4Ips[0];
+        }
+        String v6Ip = "0";
+        if (!CommonUtils.isEmpty(ipSet.v6Ips)) {
+            v6Ip = ipSet.v6Ips[0];
+        }
+        return v4Ip + ";" + v6Ip;
     }
 }

@@ -383,7 +383,6 @@ public abstract class AbsRestDns implements IDns<LookupExtra> {
             this.clientIp = clientIp;
             this.ttl = ttl;
             this.expiredTime = System.currentTimeMillis() + ttl * 1000;
-            DnsLog.d("hello---222 " + String.valueOf(this.expiredTime));
         }
 
         @Override
