@@ -228,7 +228,7 @@ public final class CacheHelper {
                         final boolean enablePersistentCache = DnsService.getDnsConfig().enablePersistentCache;
                         if (enablePersistentCache) {
                             synchronized (mAsyncLookupParamsSet) {
-                                DnsLog.d("Network changed, enable async lookup");
+                                DnsLog.d("Network changed, enable persistent async lookup");
                                 Iterator<LookupParameters<LookupExtra>> asyncLookupParamsIterator =
                                         mAsyncLookupParamsSet.iterator();
                                 while (asyncLookupParamsIterator.hasNext()) {

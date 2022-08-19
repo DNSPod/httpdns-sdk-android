@@ -25,11 +25,11 @@ int NetworkStack::get() {
     int curNetworkStackType = NetworkStack::NONE;
 
     if (isSupportIPv4()) {
-        DEBUG("support IPv4");
+//        DEBUG("support IPv4");
         curNetworkStackType |= NetworkStack::IPV4_ONLY;
     }
     if (isSupportIPv6()) {
-        DEBUG("support IPv6");
+//        DEBUG("support IPv6");
         curNetworkStackType |= NetworkStack::IPV6_ONLY;
     }
 

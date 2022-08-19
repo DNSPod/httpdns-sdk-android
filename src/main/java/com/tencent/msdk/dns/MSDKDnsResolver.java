@@ -273,11 +273,26 @@ public class MSDKDnsResolver {
         });
     }
 
+    /**
+     * 乐观DNS解析
+     * @param domain 域名
+     * @return 解析结果 IPv4;IPv6
+     * 本地为IPv4 Only网络时, 最多返回一个IPv4结果IP
+     * 本地为IPv6 Only网络时, 最多返回一个IPv6结果IP
+     * 本地为Dual Stack网络时, 最多返回一个IPv4结果IP和一个IPv6结果IP
+     */
     public String getAddrByNameEnableExpired(final String domain) {
         IpSet ipSet = getAddrsByNamesEnableExpired(domain);
         return CommonUtils.getIpfromSet(ipSet);
     }
 
+    /**
+     *  乐观DNS解析（批量）
+     * @param domain 域名
+     * @return 解析结果
+     * 单独接口查询情况返回：IpSet{v4Ips=[xx.xx.xx.xx], v6Ips=[xxx], ips=null}
+     * 多域名批量查询返回：IpSet{v4Ips=[youtube.com:31.13.73.1, qq.com:123.151.137.18, qq.com:183.3.226.35, qq.com:61.129.7.47], v6Ips=[youtube.com.:2001::42d:9141], ips=null}
+     */
     public IpSet getAddrsByNamesEnableExpired(final String domain) {
         String result = MSDKDnsResolver.getInstance().getDnsDetail((domain));
         IpSet ipSetReslut = IpSet.EMPTY;
@@ -297,7 +312,7 @@ public class MSDKDnsResolver {
                 long expiredTime = Long.valueOf(temp.get("expired_time").toString());
                 long current = System.currentTimeMillis();
                 if (expiredTime < current) {
-                    // 异步请求
+                    // 缓存过期，发起异步请求
                     DnsExecutors.WORK.execute(new Runnable() {
                         @Override
                         public void run() {
