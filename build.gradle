@@ -65,7 +65,8 @@ dependencies {
     androidTestImplementation('com.android.support.test.espresso:espresso-core:3.0.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
-
+    implementation 'android.arch.persistence.room:runtime:2.1.1'
+    annotationProcessor 'android.arch.persistence.room:compiler:1.1.1'
 
    doclava 'com.google.doclava:doclava:1.0.6'
 }

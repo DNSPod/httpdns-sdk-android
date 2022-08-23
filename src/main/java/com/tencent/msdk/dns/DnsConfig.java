@@ -58,6 +58,8 @@ public final class DnsConfig {
 
     public boolean useExpiredIpEnable = false;
 
+    public boolean cachedIpEnable = false;
+
     private DnsConfig(int logLevel,
                       String appId, String userId, boolean initBuiltInReporters,
                       String dnsIp, String dnsId, String dnsKey, String token,

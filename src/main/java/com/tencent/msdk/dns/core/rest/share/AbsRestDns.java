@@ -1,14 +1,18 @@
 package com.tencent.msdk.dns.core.rest.share;
 
 import android.text.TextUtils;
+
+import com.tencent.msdk.dns.DnsService;
 import com.tencent.msdk.dns.base.log.DnsLog;
 import com.tencent.msdk.dns.base.utils.CommonUtils;
 import com.tencent.msdk.dns.core.Const;
+import com.tencent.msdk.dns.core.ICache;
 import com.tencent.msdk.dns.core.IDns;
 import com.tencent.msdk.dns.core.LookupContext;
 import com.tencent.msdk.dns.core.LookupParameters;
 import com.tencent.msdk.dns.core.LookupResult;
 import com.tencent.msdk.dns.core.cache.Cache;
+import com.tencent.msdk.dns.core.cache.Database;
 import com.tencent.msdk.dns.core.ipRank.IpRankCallback;
 import com.tencent.msdk.dns.core.ipRank.IpRankHelper;
 import com.tencent.msdk.dns.core.ipRank.IpRankItem;
@@ -29,7 +33,9 @@ public abstract class AbsRestDns implements IDns<LookupExtra> {
     protected static final int TCP_CONTINUOUS_RCV_BUF_SIZE = 1024;
     protected static final int RCV_ZERO_MAX = 128;
 
-    protected final CacheHelper mCacheHelper = new CacheHelper(this, new Cache());
+    static ICache cache = DnsService.getDnsConfig().cachedIpEnable ? new Database() : new Cache();
+
+    protected final CacheHelper mCacheHelper = new CacheHelper(this, cache);
 
     // NOTE: stat: 结果参数
     protected boolean tryGetResultFromCache(
