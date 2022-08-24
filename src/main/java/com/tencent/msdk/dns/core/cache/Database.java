@@ -2,20 +2,17 @@ package com.tencent.msdk.dns.core.cache;
 
 import android.text.TextUtils;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.tencent.msdk.dns.DnsService;
 import com.tencent.msdk.dns.base.log.DnsLog;
 import com.tencent.msdk.dns.core.Const;
 import com.tencent.msdk.dns.core.ICache;
-import com.tencent.msdk.dns.core.IpSet;
 import com.tencent.msdk.dns.core.LookupResult;
 import com.tencent.msdk.dns.core.cache.database.LookupCache;
 import com.tencent.msdk.dns.core.cache.database.LookupCacheDao;
 import com.tencent.msdk.dns.core.cache.database.LookupCacheDatabase;
 import com.tencent.msdk.dns.core.rest.share.AbsRestDns;
-import com.tencent.msdk.dns.core.stat.StatisticsMerge;
-
-import org.json.JSONException;
-import org.json.JSONObject;
 
 public class Database implements ICache {
     LookupCacheDao lookupCacheDao = LookupCacheDatabase.getInstance(DnsService.getAppContext()).lookupCacheDao();
@@ -29,13 +26,13 @@ public class Database implements ICache {
         String lookupResultStr = lookupCacheDao.get(hostname);
         try {
             if (lookupResultStr != null) {
-                JSONObject json = new JSONObject(lookupResultStr);
-                IpSet ipSet= (IpSet)json.get("ipSet");
-                AbsRestDns.Statistics statistics = (AbsRestDns.Statistics)json.get("stat");
-                return new LookupResult(ipSet, statistics);
-
+                Gson gson = new Gson();
+                java.lang.reflect.Type type = new TypeToken<LookupResult<AbsRestDns.Statistics>>() {
+                }.getType();
+                LookupResult lookupResult = gson.fromJson(lookupResultStr, type);
+                return lookupResult;
             }
-        } catch (JSONException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return null;
@@ -52,7 +49,13 @@ public class Database implements ICache {
 
         DnsLog.d("hello-----add");
 
-        lookupCacheDao.insertLookupCache(new LookupCache(hostname, lookupResult.toString()));
+//        lookupCacheDao.clear();
+
+        if (lookupCacheDao.get(hostname) != null) {
+            lookupCacheDao.updateLookupCache(new LookupCache(hostname, lookupResult.toJsonString()));
+        }
+        Gson gson = new Gson();
+        lookupCacheDao.insertLookupCache(new LookupCache(hostname, gson.toJson(lookupResult)));
     }
 
     @Override

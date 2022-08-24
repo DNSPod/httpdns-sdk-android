@@ -1,5 +1,7 @@
 package com.tencent.msdk.dns.core;
 
+import com.google.gson.Gson;
+
 /**
  * 域名解析结果类
  *
@@ -47,5 +49,10 @@ public final class LookupResult<Statistics extends IDns.IStatistics> {
                 "ipSet=" + ipSet +
                 ", stat=" + stat +
                 '}';
+    }
+
+    public String toJsonString() {
+        Gson gson = new Gson();
+        return gson.toJson(this);
     }
 }

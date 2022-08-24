@@ -3,6 +3,7 @@ package com.tencent.msdk.dns.core.cache.database;
 import androidx.room.Dao;
 import androidx.room.Delete;
 import androidx.room.Insert;
+import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
 import androidx.room.Update;
 
@@ -22,7 +23,7 @@ public interface LookupCacheDao {
 //    @Query("Select * from lookupcache where domain in(:domain)")
 //    LookupCache getLookupResultByHostname(String domain);
 
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insertLookupCache(LookupCache lookupCache);
 
     @Update
