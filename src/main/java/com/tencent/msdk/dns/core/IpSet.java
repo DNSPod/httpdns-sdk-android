@@ -1,11 +1,12 @@
 package com.tencent.msdk.dns.core;
 
+import java.io.Serializable;
 import java.util.Arrays;
 
 /**
  * 域名解析结果类
  */
-public class IpSet {
+public class IpSet implements Serializable {
 
     public static final IpSet EMPTY = new IpSet(Const.EMPTY_IPS, Const.EMPTY_IPS);
 

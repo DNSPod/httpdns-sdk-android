@@ -275,6 +275,7 @@ public class MSDKDnsResolver {
 
     /**
      * 乐观DNS解析
+     *
      * @param domain 域名
      * @return 解析结果 IPv4;IPv6
      * 本地为IPv4 Only网络时, 最多返回一个IPv4结果IP
@@ -287,7 +288,8 @@ public class MSDKDnsResolver {
     }
 
     /**
-     *  乐观DNS解析（批量）
+     * 乐观DNS解析（批量）
+     *
      * @param domain 域名
      * @return 解析结果
      * 单独接口查询情况返回：IpSet{v4Ips=[xx.xx.xx.xx], v6Ips=[xxx], ips=null}

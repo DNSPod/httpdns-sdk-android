@@ -1,13 +1,13 @@
 package com.tencent.msdk.dns.core;
 
-import com.google.gson.Gson;
+import java.io.Serializable;
 
 /**
  * 域名解析结果类
  *
  * @param <Statistics> 域名解析的统计数据
  */
-public final class LookupResult<Statistics extends IDns.IStatistics> {
+public final class LookupResult<Statistics extends IDns.IStatistics> implements Serializable {
 
     /**
      * 域名解析结果IP集合
@@ -49,10 +49,5 @@ public final class LookupResult<Statistics extends IDns.IStatistics> {
                 "ipSet=" + ipSet +
                 ", stat=" + stat +
                 '}';
-    }
-
-    public String toJsonString() {
-        Gson gson = new Gson();
-        return gson.toJson(this);
     }
 }

@@ -19,6 +19,8 @@ import com.tencent.msdk.dns.core.ipRank.IpRankItem;
 import com.tencent.msdk.dns.core.ipRank.IpRankTask;
 import com.tencent.msdk.dns.core.rest.share.rsp.Response;
 import com.tencent.msdk.dns.core.stat.AbsStatistics;
+
+import java.io.Serializable;
 import java.nio.channels.SelectionKey;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -324,7 +326,7 @@ public abstract class AbsRestDns implements IDns<LookupExtra> {
     /**
      * HTTPDNS域名解析统计数据类
      */
-    public static class Statistics extends AbsStatistics {
+    public static class Statistics extends AbsStatistics implements Serializable {
 
         public static final Statistics NOT_LOOKUP = new Statistics();
 

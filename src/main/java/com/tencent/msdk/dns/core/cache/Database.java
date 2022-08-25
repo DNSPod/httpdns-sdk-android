@@ -2,8 +2,6 @@ package com.tencent.msdk.dns.core.cache;
 
 import android.text.TextUtils;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import com.tencent.msdk.dns.DnsService;
 import com.tencent.msdk.dns.base.log.DnsLog;
 import com.tencent.msdk.dns.core.Const;
@@ -14,6 +12,12 @@ import com.tencent.msdk.dns.core.cache.database.LookupCacheDao;
 import com.tencent.msdk.dns.core.cache.database.LookupCacheDatabase;
 import com.tencent.msdk.dns.core.rest.share.AbsRestDns;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+
 public class Database implements ICache {
     LookupCacheDao lookupCacheDao = LookupCacheDatabase.getInstance(DnsService.getAppContext()).lookupCacheDao();
 
@@ -23,18 +27,36 @@ public class Database implements ICache {
             throw new IllegalArgumentException("hostname".concat(Const.EMPTY_TIPS));
         }
 
-        String lookupResultStr = lookupCacheDao.get(hostname);
-        try {
-            if (lookupResultStr != null) {
-                Gson gson = new Gson();
-                java.lang.reflect.Type type = new TypeToken<LookupResult<AbsRestDns.Statistics>>() {
-                }.getType();
-                LookupResult lookupResult = gson.fromJson(lookupResultStr, type);
+        long start = System.currentTimeMillis();
+        byte[] lookupResultByteArr = lookupCacheDao.get(hostname);
+        DnsLog.d("database waste time1: " + String.valueOf(System.currentTimeMillis() - start));
+        if (lookupResultByteArr != null) {
+            ByteArrayInputStream bais = null;
+            ObjectInputStream ois = null;
+            try {
+                bais = new ByteArrayInputStream(lookupResultByteArr);
+                ois = new ObjectInputStream(bais);
+                LookupResult lookupResult = (LookupResult<AbsRestDns.Statistics>) ois.readObject();
+                DnsLog.d("database waste time2: " + String.valueOf(System.currentTimeMillis() - start));
                 return lookupResult;
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            } finally {
+                try {
+                    if (bais != null) {
+                        bais.close();
+                    }
+                    if (ois != null) {
+                        ois.close();
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
-        } catch (Exception e) {
-            e.printStackTrace();
         }
+
         return null;
     }
 
@@ -46,16 +68,31 @@ public class Database implements ICache {
         if (null == lookupResult) {
             throw new IllegalArgumentException("lookupResult".concat(Const.NULL_POINTER_TIPS));
         }
-
-        DnsLog.d("hello-----add");
-
-//        lookupCacheDao.clear();
-
-        if (lookupCacheDao.get(hostname) != null) {
-            lookupCacheDao.updateLookupCache(new LookupCache(hostname, lookupResult.toJsonString()));
+//        if (lookupCacheDao.get(hostname) != null) {
+//            lookupCacheDao.updateLookupCache(new LookupCache(hostname, lookupResult.toJsonString()));
+//        }
+        ByteArrayOutputStream baos = null;
+        ObjectOutputStream oos = null;
+        try {
+            baos = new ByteArrayOutputStream();
+            oos = new ObjectOutputStream(baos);
+            oos.writeObject(lookupResult);
+            oos.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (baos != null) {
+                    baos.close();
+                }
+                if (oos != null) {
+                    oos.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
-        Gson gson = new Gson();
-        lookupCacheDao.insertLookupCache(new LookupCache(hostname, gson.toJson(lookupResult)));
+        lookupCacheDao.insertLookupCache(new LookupCache(hostname, baos.toByteArray()));
     }
 
     @Override

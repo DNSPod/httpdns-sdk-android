@@ -67,7 +67,6 @@ dependencies {
     })
     implementation 'android.arch.persistence.room:runtime:2.1.1'
     annotationProcessor 'android.arch.persistence.room:compiler:1.1.1'
-    implementation 'com.google.code.gson:gson:2.9.1'
 
    doclava 'com.google.doclava:doclava:1.0.6'
 }
