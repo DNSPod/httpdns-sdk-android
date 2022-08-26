@@ -141,7 +141,7 @@ public final class DnsService {
     }
 
     /**
-     * 设置是否使用本地缓存（乐观DNS）
+     * 设置是否使用本地缓存
      * @param mCachedIpEnable false：不使用过期（默认），true：使用过期缓存
      * @throws IllegalStateException    没有初始化时抛出
      */

@@ -194,7 +194,7 @@ public class MSDKDnsResolver {
      *
      * @param useExpiredIpEnable false：关闭，true：开启
      */
-    public void setUseExpiredIpEnable(boolean useExpiredIpEnable) {
+    private void setUseExpiredIpEnable(boolean useExpiredIpEnable) {
         DnsService.setUseExpiredIpEnable(useExpiredIpEnable);
     }
 
@@ -232,6 +232,20 @@ public class MSDKDnsResolver {
      * @return 解析结果, 以';'分隔, ';'前为IPv4, ';'后为IPv6, 对应位置没有解析结果则为'0'
      */
     public String getAddrByName(String domain) {
+        if (!DnsService.getDnsConfig().useExpiredIpEnable) {
+            return getAddrByNameNormal(domain);
+        } else {
+            return getAddrByNameEnableExpired(domain);
+        }
+    }
+
+    /**
+     * 常规DNS解析逻辑
+     *
+     * @param domain
+     * @return
+     */
+    private String getAddrByNameNormal(String domain) {
         return getAddrByName(domain, true);
     }
 
@@ -259,18 +273,26 @@ public class MSDKDnsResolver {
      * @param tag
      */
     public void getAddrByNameAsync(final String domain, final String tag) {
-        DnsExecutors.WORK.execute(new Runnable() {
-            @Override
-            public void run() {
-                String result = getAddrByName(domain);
-                if (sHttpDnsResponseObserver != null) {
-                    sHttpDnsResponseObserver.onHttpDnsResponse(tag, domain, result);
-                } else {
-                    // try to send to unity
-                    JniWrapper.sendToUnity(tag);
+        if (!DnsService.getDnsConfig().useExpiredIpEnable) {
+            DnsExecutors.WORK.execute(new Runnable() {
+                @Override
+                public void run() {
+                    String result = getAddrByNameNormal(domain);
+                    if (sHttpDnsResponseObserver != null) {
+                        sHttpDnsResponseObserver.onHttpDnsResponse(tag, domain, result);
+                    } else {
+                        // try to send to unity
+                        JniWrapper.sendToUnity(tag);
+                    }
                 }
+            });
+        } else {
+            try {
+                throw new IllegalAccessException("getAddrByNameAsync cannot be used when useExpiredIpEnable is set to true.");
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
             }
-        });
+        }
     }
 
     /**
@@ -282,7 +304,7 @@ public class MSDKDnsResolver {
      * 本地为IPv6 Only网络时, 最多返回一个IPv6结果IP
      * 本地为Dual Stack网络时, 最多返回一个IPv4结果IP和一个IPv6结果IP
      */
-    public String getAddrByNameEnableExpired(final String domain) {
+    private String getAddrByNameEnableExpired(final String domain) {
         IpSet ipSet = getAddrsByNamesEnableExpired(domain);
         return CommonUtils.getIpfromSet(ipSet);
     }
@@ -295,7 +317,7 @@ public class MSDKDnsResolver {
      * 单独接口查询情况返回：IpSet{v4Ips=[xx.xx.xx.xx], v6Ips=[xxx], ips=null}
      * 多域名批量查询返回：IpSet{v4Ips=[youtube.com:31.13.73.1, qq.com:123.151.137.18, qq.com:183.3.226.35, qq.com:61.129.7.47], v6Ips=[youtube.com.:2001::42d:9141], ips=null}
      */
-    public IpSet getAddrsByNamesEnableExpired(final String domain) {
+    private IpSet getAddrsByNamesEnableExpired(final String domain) {
         String result = MSDKDnsResolver.getInstance().getDnsDetail((domain));
         IpSet ipSetReslut = IpSet.EMPTY;
         DnsLog.d("enable expired look up result----" + result);
@@ -305,7 +327,7 @@ public class MSDKDnsResolver {
                 @Override
                 public void run() {
                     // 下发解析请求
-                    getAddrByName(domain);
+                    getAddrByNameNormal(domain);
                 }
             });
         } else {
@@ -350,6 +372,20 @@ public class MSDKDnsResolver {
      * @return 解析结果, 以';'分隔, ';'前为IPv4, ';'后为IPv6, 对应位置没有解析结果则为'0'
      */
     public IpSet getAddrsByName(String domain) {
+        if (!DnsService.getDnsConfig().useExpiredIpEnable) {
+            return getAddrsByNameNormal(domain);
+        } else {
+            return getAddrsByNamesEnableExpired(domain);
+        }
+    }
+
+    /**
+     * 常规域名解析（批量）
+     *
+     * @param domain
+     * @return
+     */
+    private IpSet getAddrsByNameNormal(String domain) {
         return getAddrsByName(domain, true);
     }
 
@@ -377,18 +413,26 @@ public class MSDKDnsResolver {
      * @param tag
      */
     public void getAddrsByNameAsync(final String domain, final String tag) {
-        DnsExecutors.WORK.execute(new Runnable() {
-            @Override
-            public void run() {
-                IpSet result = getAddrsByName(domain);
-                if (sHttpDnsResponseObserver != null) {
-                    sHttpDnsResponseObserver.onHttpDnsResponse(tag, domain, result);
-                } else {
-                    // try to send to unity
-                    JniWrapper.sendToUnity(tag);
+        if (!DnsService.getDnsConfig().useExpiredIpEnable) {
+            DnsExecutors.WORK.execute(new Runnable() {
+                @Override
+                public void run() {
+                    IpSet result = getAddrsByNameNormal(domain);
+                    if (sHttpDnsResponseObserver != null) {
+                        sHttpDnsResponseObserver.onHttpDnsResponse(tag, domain, result);
+                    } else {
+                        // try to send to unity
+                        JniWrapper.sendToUnity(tag);
+                    }
                 }
+            });
+        } else {
+            try {
+                throw new IllegalAccessException("getAddrsByNameAsync cannot be used when useExpiredIpEnable is set to true.");
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
             }
-        });
+        }
     }
 
     public String getDnsDetail(String domain) {

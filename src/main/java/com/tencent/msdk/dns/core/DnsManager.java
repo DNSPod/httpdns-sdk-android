@@ -1,7 +1,6 @@
 package com.tencent.msdk.dns.core;
 
 import android.os.SystemClock;
-import android.util.Log;
 
 import com.tencent.msdk.dns.base.compat.CollectionCompat;
 import com.tencent.msdk.dns.base.log.DnsLog;
@@ -18,7 +17,6 @@ import com.tencent.msdk.dns.core.stat.StatisticsMergeFactory;
 import java.io.IOException;
 import java.nio.channels.Selector;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -110,7 +108,8 @@ public final class DnsManager {
             lookupContext.currentNetworkStack(NetworkStack.get());
         }
 
-        ISorter sorter = sSorterFactory.create(lookupContext.currentNetworkStack());
+        int currentNetworkStack = lookupContext.currentNetworkStack();
+        ISorter sorter = sSorterFactory.create(currentNetworkStack);
         lookupContext.sorter(sorter);
         // snapshot
         @SuppressWarnings("unchecked") IStatisticsMerge<LookupExtra> statMerge =
@@ -118,31 +117,27 @@ public final class DnsManager {
                         (Class<LookupExtra>) lookupExtra.getClass(), lookupParams.appContext);
         lookupContext.statisticsMerge(statMerge);
 
-        @SuppressWarnings("unchecked") LookupResult inetResult = restDnsGroup.mInetDns.getResultFromCache(lookupParams);
-        if (inetResult.stat.lookupSuccess()) {
-            DnsLog.d("getResultFromCache by ipv4:" + Arrays
-                    .toString(inetResult.ipSet.ips));
-            lookupContext.sorter().put(restDnsGroup.mInetDns, inetResult.ipSet.ips);
-            lookupContext.statisticsMerge()
-                    .merge(restDnsGroup.mInetDns, inetResult.stat);
+        IDns dns;
+        switch (currentNetworkStack) {
+            case 1:
+                dns = restDnsGroup.mInetDns;
+                break;
+            case 2:
+                dns = restDnsGroup.mInet6Dns;
+                break;
+            default:
+                dns = restDnsGroup.mUnspecDns;
+                break;
         }
-        @SuppressWarnings("unchecked") LookupResult inet6Result = restDnsGroup.mInet6Dns.getResultFromCache(lookupParams);
-        if (inet6Result.stat.lookupSuccess()) {
-            DnsLog.d("getResultFromCache by ipv6:" + Arrays
-                    .toString(inet6Result.ipSet.ips));
-            lookupContext.sorter().put(restDnsGroup.mInet6Dns, inet6Result.ipSet.ips);
+
+        LookupResult lookupResultFromCache = dns.getResultFromCache(lookupParams);
+        if (lookupResultFromCache.stat.lookupSuccess()) {
+            lookupContext.sorter().put(dns, lookupResultFromCache.ipSet.ips);
             lookupContext.statisticsMerge()
-                    .merge(restDnsGroup.mInet6Dns, inet6Result.stat);
+                    .merge(dns, lookupResultFromCache.stat);
         }
-        @SuppressWarnings("unchecked") LookupResult unspecResult = restDnsGroup.mUnspecDns.getResultFromCache(lookupParams);
-        if (unspecResult.stat.lookupSuccess()) {
-            DnsLog.d("getResultFromCache by unspec:" + Arrays
-                    .toString(unspecResult.ipSet.ips));
-            lookupContext.sorter().put(restDnsGroup.mUnspecDns, unspecResult.ipSet.ips);
-            lookupContext.statisticsMerge()
-                    .merge(restDnsGroup.mUnspecDns, unspecResult.stat);
-        }
-        if (inetResult.stat.lookupSuccess() || inet6Result.stat.lookupSuccess() || unspecResult.stat.lookupSuccess()) {
+
+        if (lookupResultFromCache.stat.lookupSuccess()) {
             IpSet ipSet = sorter.sort();
             statMerge.statResult(ipSet);
             LookupResult<IStatisticsMerge> lookupResult =
