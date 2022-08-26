@@ -26,38 +26,10 @@ public class Database implements ICache {
         if (TextUtils.isEmpty(hostname)) {
             throw new IllegalArgumentException("hostname".concat(Const.EMPTY_TIPS));
         }
-
         long start = System.currentTimeMillis();
-        byte[] lookupResultByteArr = lookupCacheDao.get(hostname);
+        LookupResult lookupResult = lookupCacheDao.get(hostname);
         DnsLog.d("database waste time1: " + String.valueOf(System.currentTimeMillis() - start));
-        if (lookupResultByteArr != null) {
-            ByteArrayInputStream bais = null;
-            ObjectInputStream ois = null;
-            try {
-                bais = new ByteArrayInputStream(lookupResultByteArr);
-                ois = new ObjectInputStream(bais);
-                LookupResult lookupResult = (LookupResult<AbsRestDns.Statistics>) ois.readObject();
-                DnsLog.d("database waste time2: " + String.valueOf(System.currentTimeMillis() - start));
-                return lookupResult;
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (ClassNotFoundException e) {
-                e.printStackTrace();
-            } finally {
-                try {
-                    if (bais != null) {
-                        bais.close();
-                    }
-                    if (ois != null) {
-                        ois.close();
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-
-        return null;
+        return lookupResult;
     }
 
     @Override
@@ -68,31 +40,9 @@ public class Database implements ICache {
         if (null == lookupResult) {
             throw new IllegalArgumentException("lookupResult".concat(Const.NULL_POINTER_TIPS));
         }
-//        if (lookupCacheDao.get(hostname) != null) {
-//            lookupCacheDao.updateLookupCache(new LookupCache(hostname, lookupResult.toJsonString()));
-//        }
-        ByteArrayOutputStream baos = null;
-        ObjectOutputStream oos = null;
-        try {
-            baos = new ByteArrayOutputStream();
-            oos = new ObjectOutputStream(baos);
-            oos.writeObject(lookupResult);
-            oos.flush();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                if (baos != null) {
-                    baos.close();
-                }
-                if (oos != null) {
-                    oos.close();
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        lookupCacheDao.insertLookupCache(new LookupCache(hostname, baos.toByteArray()));
+
+        lookupCacheDao.insertLookupCache(new LookupCache(hostname, lookupResult));
+
     }
 
     @Override
@@ -102,7 +52,6 @@ public class Database implements ICache {
         }
 
         lookupCacheDao.delete(hostname);
-//        lookupCacheDao.delete(new LookupCache(hostname, lookupCacheDao.get(hostname)));
     }
 
     @Override

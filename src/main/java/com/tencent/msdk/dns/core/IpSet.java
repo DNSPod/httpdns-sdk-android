@@ -7,6 +7,7 @@ import java.util.Arrays;
  * 域名解析结果类
  */
 public class IpSet implements Serializable {
+    private static final long serialVersionUID = 7854385648054627327L;
 
     public static final IpSet EMPTY = new IpSet(Const.EMPTY_IPS, Const.EMPTY_IPS);
 

@@ -186,7 +186,7 @@ public class MSDKDnsResolver {
      */
     public void enablePersistentCache(boolean enablePersistentCache) {
         DnsService.enablePersistentCache(enablePersistentCache);
-        DnsLog.d("MSDKDnsResolver.enablePersistentCache(%s) called", new Boolean(enablePersistentCache).toString());
+        DnsLog.d("MSDKDnsResolver.enablePersistentCache(%s) called", Boolean.toString(enablePersistentCache));
     }
 
     /**
@@ -242,7 +242,7 @@ public class MSDKDnsResolver {
     /**
      * 常规DNS解析逻辑
      *
-     * @param domain
+     * @param domain 域名
      * @return
      */
     private String getAddrByNameNormal(String domain) {
@@ -269,7 +269,7 @@ public class MSDKDnsResolver {
      * 本地为Dual Stack网络时, 最多返回一个IPv4结果IP和一个IPv6结果IP
      * 注意需要先通过setHttpDnsResponseObserver设置回调的监听
      *
-     * @param domain
+     * @param domain 域名
      * @param tag
      */
     public void getAddrByNameAsync(final String domain, final String tag) {
@@ -320,7 +320,6 @@ public class MSDKDnsResolver {
     private IpSet getAddrsByNamesEnableExpired(final String domain) {
         String result = MSDKDnsResolver.getInstance().getDnsDetail((domain));
         IpSet ipSetReslut = IpSet.EMPTY;
-        DnsLog.d("enable expired look up result----" + result);
 
         if (result.isEmpty()) {
             DnsExecutors.WORK.execute(new Runnable() {
@@ -333,7 +332,7 @@ public class MSDKDnsResolver {
         } else {
             try {
                 JSONObject temp = new JSONObject(result);
-                long expiredTime = Long.valueOf(temp.get("expired_time").toString());
+                long expiredTime = Long.parseLong(temp.get("expired_time").toString());
                 long current = System.currentTimeMillis();
                 if (expiredTime < current) {
                     // 缓存过期，发起异步请求

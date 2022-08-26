@@ -22,6 +22,7 @@ import com.tencent.msdk.dns.core.IStatisticsMerge;
 import com.tencent.msdk.dns.core.IpSet;
 import com.tencent.msdk.dns.core.LookupParameters;
 import com.tencent.msdk.dns.core.LookupResult;
+import com.tencent.msdk.dns.core.cache.database.LookupCacheDatabase;
 import com.tencent.msdk.dns.core.rest.share.LookupExtra;
 import com.tencent.msdk.dns.core.stat.StatisticsMerge;
 import com.tencent.msdk.dns.report.ReportHelper;
@@ -79,6 +80,10 @@ public final class DnsService {
         SpendReportResolver.getInstance().init();
         NetworkChangeManager.install(appContext);
         ActivityLifecycleDetector.install(appContext);
+        // Room 初始化
+        if (config.cachedIpEnable == true) {
+            LookupCacheDatabase.creat(sAppContext);
+        }
         // NOTE: 当前版本暂时不会提供为OneSdk版本, 默认使用灯塔上报
         ReportManager.init(ReportManager.Channel.BEACON);
         if (config.initBuiltInReporters) {
@@ -150,6 +155,9 @@ public final class DnsService {
             throw new IllegalStateException("DnsService".concat(Const.NOT_INIT_TIPS));
         }
         sConfig.cachedIpEnable = mCachedIpEnable;
+        if (mCachedIpEnable == true) {
+            LookupCacheDatabase.creat(sAppContext);
+        }
     }
 
     public static String getDnsDetail(String hostname) {

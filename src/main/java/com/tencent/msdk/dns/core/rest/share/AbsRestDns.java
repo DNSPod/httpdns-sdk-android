@@ -327,6 +327,7 @@ public abstract class AbsRestDns implements IDns<LookupExtra> {
      * HTTPDNS域名解析统计数据类
      */
     public static class Statistics extends AbsStatistics implements Serializable {
+        private static final long serialVersionUID = 8621285648054627787L;
 
         public static final Statistics NOT_LOOKUP = new Statistics();
 

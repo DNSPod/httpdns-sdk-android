@@ -5,9 +5,12 @@ import android.content.Context;
 import androidx.room.Database;
 import androidx.room.Room;
 import androidx.room.RoomDatabase;
-import androidx.room.TypeConverter;
+import androidx.room.TypeConverters;
 
-@Database(entities = {LookupCache.class}, version = 3, exportSchema = false)
+import com.tencent.msdk.dns.base.log.DnsLog;
+
+@Database(entities = {LookupCache.class}, version = 4, exportSchema = false)
+@TypeConverters(LookupResultConverter.class)
 public abstract class LookupCacheDatabase extends RoomDatabase {
     private static final String DB_NAME = "lookup_result_db";
 
@@ -17,11 +20,14 @@ public abstract class LookupCacheDatabase extends RoomDatabase {
 
     public static synchronized LookupCacheDatabase getInstance(Context context) {
         if (instance == null) {
-            instance = Room.databaseBuilder(context.getApplicationContext(), LookupCacheDatabase.class, DB_NAME)
-                    .fallbackToDestructiveMigration()
-                    .build();
+            creat(context);
         }
         return instance;
     }
 
+    public static void creat(Context context) {
+        instance = Room.databaseBuilder(context.getApplicationContext(), LookupCacheDatabase.class, DB_NAME)
+                .fallbackToDestructiveMigration()
+                .build();
+    }
 }
