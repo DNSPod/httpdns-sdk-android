@@ -24,7 +24,7 @@ public class IpRankHelper {
      */
     public void ipv4Rank(String hostname, String[] ips, final IpRankCallback ipRankCallback) {
         // 未配置IP优选，或者当前ip结果长度小于2，不进行优选服务
-        if (ipRankItems.isEmpty() || ips.length < 2) {
+        if (ipRankItems == null || ipRankItems.isEmpty() || ips.length < 2) {
             return;
         }
         List<String> ipv4Lists = new ArrayList<>();
