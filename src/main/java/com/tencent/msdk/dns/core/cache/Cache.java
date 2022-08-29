@@ -11,6 +11,7 @@ import com.tencent.msdk.dns.core.cache.database.LookupCache;
 import com.tencent.msdk.dns.core.cache.database.LookupCacheDao;
 import com.tencent.msdk.dns.core.cache.database.LookupCacheDatabase;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -27,9 +28,16 @@ public final class Cache implements ICache {
 
     public static void readFromDb() {
         List<LookupCache> allCache = lookupCacheDao.getAll();
+        ArrayList<LookupCache> expired = new ArrayList<LookupCache>();
         for (LookupCache lookupCache : allCache) {
-            mHostnameIpsMap.put(lookupCache.getHostname(), lookupCache.getLookupResult());
+            mHostnameIpsMap.put(lookupCache.hostname, lookupCache.lookupResult);
+
+            if (lookupCache.isExpired()) {
+                expired.add(lookupCache);
+            }
         }
+        // 内存读取后，清空本地已过期的缓存
+        lookupCacheDao.deleteLookupCaches(expired);
     }
 
     @Override

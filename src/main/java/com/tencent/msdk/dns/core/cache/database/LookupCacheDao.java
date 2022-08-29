@@ -9,6 +9,7 @@ import androidx.room.Update;
 
 import com.tencent.msdk.dns.core.LookupResult;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Dao
@@ -26,7 +27,7 @@ public interface LookupCacheDao {
     void updateLookupCache(LookupCache lookupCache);
 
     @Delete
-    void delete(LookupCache lookupCache);
+    void deleteLookupCaches(ArrayList<LookupCache> lookupCaches);
 
     @Query("delete from lookupcache where hostname = :hostname")
     void delete(String hostname);

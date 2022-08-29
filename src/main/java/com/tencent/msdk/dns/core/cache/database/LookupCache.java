@@ -6,7 +6,9 @@ import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 import androidx.room.TypeConverters;
 
+import com.tencent.msdk.dns.base.log.DnsLog;
 import com.tencent.msdk.dns.core.LookupResult;
+import com.tencent.msdk.dns.core.rest.share.AbsRestDns;
 
 @Entity
 public class LookupCache {
@@ -25,13 +27,9 @@ public class LookupCache {
     public LookupCache() {
     }
 
-    @NonNull
-    public String getHostname() {
-        return hostname;
-    }
-
-    public LookupResult getLookupResult() {
-        return lookupResult;
+    public boolean isExpired() {
+        AbsRestDns.Statistics stat = (AbsRestDns.Statistics) lookupResult.stat;
+        return System.currentTimeMillis() > stat.expiredTime;
     }
 }
 
