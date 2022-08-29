@@ -2,17 +2,35 @@ package com.tencent.msdk.dns.core.cache;
 
 import android.text.TextUtils;
 
+import com.tencent.msdk.dns.DnsService;
 import com.tencent.msdk.dns.base.log.DnsLog;
 import com.tencent.msdk.dns.core.Const;
-import com.tencent.msdk.dns.core.LookupResult;
 import com.tencent.msdk.dns.core.ICache;
+import com.tencent.msdk.dns.core.LookupResult;
+import com.tencent.msdk.dns.core.cache.database.LookupCache;
+import com.tencent.msdk.dns.core.cache.database.LookupCacheDao;
+import com.tencent.msdk.dns.core.cache.database.LookupCacheDatabase;
 
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public final class Cache implements ICache {
 
-    private final Map<String, LookupResult> mHostnameIpsMap = new ConcurrentHashMap<>();
+    private static final Map<String, LookupResult> mHostnameIpsMap = new ConcurrentHashMap<>();
+
+    private static final LookupCacheDao lookupCacheDao = LookupCacheDatabase.getInstance(DnsService.getAppContext()).lookupCacheDao();
+
+    private boolean getCachedIpEnable() {
+        return DnsService.getDnsConfig().cachedIpEnable;
+    }
+
+    public static void readFromDb() {
+        List<LookupCache> allCache = lookupCacheDao.getAll();
+        for (LookupCache lookupCache : allCache) {
+            mHostnameIpsMap.put(lookupCache.getHostname(), lookupCache.getLookupResult());
+        }
+    }
 
     @Override
     public LookupResult get(String hostname) {
@@ -34,6 +52,9 @@ public final class Cache implements ICache {
 
         DnsLog.d("Cache %s for %s", lookupResult, hostname);
         mHostnameIpsMap.put(hostname, lookupResult);
+        if (getCachedIpEnable()) {
+            lookupCacheDao.insertLookupCache(new LookupCache(hostname, lookupResult));
+        }
     }
 
     @Override
@@ -43,10 +64,19 @@ public final class Cache implements ICache {
         }
 
         mHostnameIpsMap.remove(hostname);
+
+        if (getCachedIpEnable()) {
+            lookupCacheDao.delete(hostname);
+        }
+
     }
 
     @Override
     public void clear() {
         mHostnameIpsMap.clear();
+
+        if (getCachedIpEnable()) {
+            lookupCacheDao.clear();
+        }
     }
 }

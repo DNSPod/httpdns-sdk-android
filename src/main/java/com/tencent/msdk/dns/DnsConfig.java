@@ -131,6 +131,8 @@ public final class DnsConfig {
                 ", lookedUpListener=" + lookedUpListener +
                 ", logNodes=" + CommonUtils.toString(logNodes) +
                 ", reporters=" + CommonUtils.toString(reporters) +
+                ", useExpiredIpEnable=" + useExpiredIpEnable +
+                ", cachedIpEnable=" + cachedIpEnable +
                 '}';
     }
 
@@ -662,6 +664,7 @@ public final class DnsConfig {
 
         public Builder setUseExpiredIpEnable(boolean useExpiredIpEnable) {
             mUseExpiredIpEnable = useExpiredIpEnable;
+
             return this;
         }
 

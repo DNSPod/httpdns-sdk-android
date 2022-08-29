@@ -2,21 +2,14 @@ package com.tencent.msdk.dns.core.rest.share;
 
 import android.text.TextUtils;
 
-import com.tencent.msdk.dns.DnsService;
 import com.tencent.msdk.dns.base.log.DnsLog;
 import com.tencent.msdk.dns.base.utils.CommonUtils;
 import com.tencent.msdk.dns.core.Const;
-import com.tencent.msdk.dns.core.ICache;
 import com.tencent.msdk.dns.core.IDns;
 import com.tencent.msdk.dns.core.LookupContext;
 import com.tencent.msdk.dns.core.LookupParameters;
 import com.tencent.msdk.dns.core.LookupResult;
 import com.tencent.msdk.dns.core.cache.Cache;
-import com.tencent.msdk.dns.core.cache.Database;
-import com.tencent.msdk.dns.core.ipRank.IpRankCallback;
-import com.tencent.msdk.dns.core.ipRank.IpRankHelper;
-import com.tencent.msdk.dns.core.ipRank.IpRankItem;
-import com.tencent.msdk.dns.core.ipRank.IpRankTask;
 import com.tencent.msdk.dns.core.rest.share.rsp.Response;
 import com.tencent.msdk.dns.core.stat.AbsStatistics;
 
@@ -35,9 +28,7 @@ public abstract class AbsRestDns implements IDns<LookupExtra> {
     protected static final int TCP_CONTINUOUS_RCV_BUF_SIZE = 1024;
     protected static final int RCV_ZERO_MAX = 128;
 
-    static ICache cache = DnsService.getDnsConfig().cachedIpEnable ? new Database() : new Cache();
-
-    protected final CacheHelper mCacheHelper = new CacheHelper(this, cache);
+    protected final CacheHelper mCacheHelper = new CacheHelper(this, new Cache());
 
     // NOTE: stat: 结果参数
     protected boolean tryGetResultFromCache(
@@ -84,8 +75,7 @@ public abstract class AbsRestDns implements IDns<LookupExtra> {
     }
 
     /**
-     * @hide
-     * 负责亲子关系管理，token管理
+     * @hide 负责亲子关系管理，token管理
      * 子类负责请求响应的具体实现，channel(DatagramChannel/SocketChannel/...)的管理和session实例的创建
      */
     public abstract class AbsSession implements IDns.ISession {
@@ -138,7 +128,7 @@ public abstract class AbsRestDns implements IDns<LookupExtra> {
                 connectRes = connectInternal();
             } finally {
                 if (connectRes != NonBlockResult.NON_BLOCK_RESULT_NEED_CONTINUE &&
-                    State.ENDED != mState) {
+                        State.ENDED != mState) {
                     mState = State.WRITABLE;
                 }
             }
@@ -154,7 +144,7 @@ public abstract class AbsRestDns implements IDns<LookupExtra> {
                 requestRes = requestInternal();
             } finally {
                 if (requestRes != NonBlockResult.NON_BLOCK_RESULT_NEED_CONTINUE &&
-                    State.ENDED != mState) {
+                        State.ENDED != mState) {
                     mState = State.READABLE;
                 }
             }
@@ -176,7 +166,7 @@ public abstract class AbsRestDns implements IDns<LookupExtra> {
                     return mStat.ips;
                 }
                 rsp = responseInternal();
-                if (rsp != Response.EMPTY && rsp != Response.NEED_CONTINUE){
+                if (rsp != Response.EMPTY && rsp != Response.NEED_CONTINUE) {
                     mStat.errorCode = ErrorCode.SUCCESS;
                     mCacheHelper.put(mLookupContext.asLookupParameters(), rsp);
                 }

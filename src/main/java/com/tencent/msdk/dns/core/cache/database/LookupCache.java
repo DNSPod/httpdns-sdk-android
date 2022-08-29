@@ -9,7 +9,6 @@ import androidx.room.TypeConverters;
 import com.tencent.msdk.dns.core.LookupResult;
 
 @Entity
-//@TypeConverters(LookupResultConverter.class)
 public class LookupCache {
     @PrimaryKey
     @NonNull
@@ -24,6 +23,15 @@ public class LookupCache {
     }
 
     public LookupCache() {
+    }
+
+    @NonNull
+    public String getHostname() {
+        return hostname;
+    }
+
+    public LookupResult getLookupResult() {
+        return lookupResult;
     }
 }
 
