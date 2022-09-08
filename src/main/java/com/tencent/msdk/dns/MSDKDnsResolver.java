@@ -326,7 +326,7 @@ public class MSDKDnsResolver {
                 @Override
                 public void run() {
                     // 下发解析请求
-                    getAddrByNameNormal(domain);
+                    DnsService.getAddrsByName(domain, true, true);
                 }
             });
         } else {

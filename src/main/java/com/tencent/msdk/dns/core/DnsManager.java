@@ -135,11 +135,10 @@ public final class DnsManager {
             lookupContext.sorter().put(dns, lookupResultFromCache.ipSet.ips);
             lookupContext.statisticsMerge()
                     .merge(dns, lookupResultFromCache.stat);
-        }
 
-        if (lookupResultFromCache.stat.lookupSuccess()) {
             IpSet ipSet = sorter.sort();
             statMerge.statResult(ipSet);
+            statMerge.statContext(lookupContext);
             LookupResult<IStatisticsMerge> lookupResult =
                     new LookupResult<IStatisticsMerge>(ipSet, statMerge);
             DnsLog.d("getResultFromCache by httpdns cache:" +

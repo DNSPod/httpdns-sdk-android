@@ -43,7 +43,13 @@ public class AttaHelper {
                             + "&req_timeout=" + req_timeout
                             + "&req_ttl=" + req_ttl
                             + "&errorCode=" + errorCode
-                            + "&statusCode=" + statusCode);
+                            + "&statusCode=" + statusCode
+                            + "&sessionId=" + Session.getSessionId()
+                            + "&isCache=" + (isCache ? 1: 0)
+                            + "&count=" + count
+                            + "&ldns=" + ldns
+                            + "&hdns=" + hdns
+                    );
                     DnsLog.d("开始Atta上报：" + url);
                     connection = (HttpURLConnection) url.openConnection();
                     //设置请求方法

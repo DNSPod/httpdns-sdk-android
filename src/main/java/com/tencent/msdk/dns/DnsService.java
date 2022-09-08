@@ -183,6 +183,8 @@ public final class DnsService {
                 .enableAsyncLookup(false)
                 .customNetStack(sConfig.customNetStack)
                 .build());
+        // 上报命中缓存的数据 todo: 缓存无数据时,cached为false
+        ReportHelper.reportLookupMethodCalledEvent(lookupResult, sAppContext);
         StatisticsMerge statMerge = (StatisticsMerge) lookupResult.stat;
         return statMerge.toJsonResult();
     }
