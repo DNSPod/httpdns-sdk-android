@@ -1,11 +1,14 @@
 package com.tencent.msdk.dns.core;
 
+import java.io.Serializable;
+
 /**
  * 域名解析结果类
  *
  * @param <Statistics> 域名解析的统计数据
  */
-public final class LookupResult<Statistics extends IDns.IStatistics> {
+public final class LookupResult<Statistics extends IDns.IStatistics> implements Serializable {
+    private static final long serialVersionUID = 5421285648054627327L;
 
     /**
      * 域名解析结果IP集合

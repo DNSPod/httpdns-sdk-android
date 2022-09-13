@@ -2,6 +2,7 @@ package com.tencent.msdk.dns;
 
 import android.content.Context;
 import android.util.Log;
+
 import com.tencent.msdk.dns.base.executor.DnsExecutors;
 import com.tencent.msdk.dns.base.jni.JniWrapper;
 import com.tencent.msdk.dns.base.log.DnsLog;
@@ -9,6 +10,9 @@ import com.tencent.msdk.dns.base.log.ILogNode;
 import com.tencent.msdk.dns.base.utils.CommonUtils;
 import com.tencent.msdk.dns.core.Const;
 import com.tencent.msdk.dns.core.IpSet;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public class MSDKDnsResolver {
     public static final String DES_HTTP_CHANNEL = Const.DES_HTTP_CHANNEL;
@@ -120,18 +124,18 @@ public class MSDKDnsResolver {
     }
 
     /**
-    * 初始化 HTTPDNS（自选加密方式）
-    *
-    * @param context 应用上下文，最好传入 ApplicationContext
-    * @param appID 业务 appkey，即 SDK AppID，腾讯云官网（https://console.cloud.tencent.com/httpdns）申请获得，用于上报
-    * @param dnsId dns解析id，即授权id，腾讯云官网（https://console.cloud.tencent.com/httpdns）申请获得，用于域名解析鉴权
-    * @param dnsKey dns解析key，即授权id对应的 key（加密密钥），在申请 SDK 后的邮箱里，腾讯云官网（https://console.cloud.tencent.com/httpdns）申请获得，用于域名解析鉴权
-    * @param dnsIp 由外部传入的dnsIp，可选："119.29.29.98"（仅支持 http 请求），"119.29.29.99"（仅支持 https 请求）以腾讯云文档（https://cloud.tencent.com/document/product/379/54976）提供的 IP 为准
-    * @param debug 是否开启 debug 日志，true 为打开，false 为关闭，建议测试阶段打开，正式上线时关闭
-    * @param timeout dns请求超时时间，单位ms，建议设置1000
-    * @param channel 设置 channel，可选：DesHttp（默认）, AesHttp, Https
-    * @param token 腾讯云官网（https://console.cloud.tencent.com/httpdns）申请获得，用于 HTTPS 校验
-    */
+     * 初始化 HTTPDNS（自选加密方式）
+     *
+     * @param context 应用上下文，最好传入 ApplicationContext
+     * @param appID   业务 appkey，即 SDK AppID，腾讯云官网（https://console.cloud.tencent.com/httpdns）申请获得，用于上报
+     * @param dnsId   dns解析id，即授权id，腾讯云官网（https://console.cloud.tencent.com/httpdns）申请获得，用于域名解析鉴权
+     * @param dnsKey  dns解析key，即授权id对应的 key（加密密钥），在申请 SDK 后的邮箱里，腾讯云官网（https://console.cloud.tencent.com/httpdns）申请获得，用于域名解析鉴权
+     * @param dnsIp   由外部传入的dnsIp，可选："119.29.29.98"（仅支持 http 请求），"119.29.29.99"（仅支持 https 请求）以腾讯云文档（https://cloud.tencent.com/document/product/379/54976）提供的 IP 为准
+     * @param debug   是否开启 debug 日志，true 为打开，false 为关闭，建议测试阶段打开，正式上线时关闭
+     * @param timeout dns请求超时时间，单位ms，建议设置1000
+     * @param channel 设置 channel，可选：DesHttp（默认）, AesHttp, Https
+     * @param token   腾讯云官网（https://console.cloud.tencent.com/httpdns）申请获得，用于 HTTPS 校验
+     */
     public void init(Context context, String appID, String dnsId, String dnsKey, String dnsIp, boolean debug,
                      int timeout, String channel, String token, boolean enableReport) {
         DnsConfig.Builder dnsConfigBuilder =
@@ -170,18 +174,28 @@ public class MSDKDnsResolver {
         DnsLog.d("MSDKDnsResolver.init() called, ver:%s, channel:%s", BuildConfig.VERSION_NAME, channel);
     }
 
-    public void init(Context context, DnsConfig dnsConfig){
+    public void init(Context context, DnsConfig dnsConfig) {
         DnsService.init(context, dnsConfig);
         DnsLog.d("MSDKDnsResolver.init() called, ver:%s, channel:%s", BuildConfig.VERSION_NAME, dnsConfig.channel);
     }
 
     /**
      * 启停缓存自动刷新功能
+     *
      * @param enablePersistentCache false：关闭，true：开启
      */
-    public void  enablePersistentCache(boolean enablePersistentCache) {
+    public void enablePersistentCache(boolean enablePersistentCache) {
         DnsService.enablePersistentCache(enablePersistentCache);
-        DnsLog.d("MSDKDnsResolver.enablePersistentCache(%s) called", new Boolean(enablePersistentCache).toString());
+        DnsLog.d("MSDKDnsResolver.enablePersistentCache(%s) called", Boolean.toString(enablePersistentCache));
+    }
+
+    /**
+     * 是否使用过期 IP 缓存
+     *
+     * @param useExpiredIpEnable false：关闭，true：开启
+     */
+    private void setUseExpiredIpEnable(boolean useExpiredIpEnable) {
+        DnsService.setUseExpiredIpEnable(useExpiredIpEnable);
     }
 
     /**
@@ -218,6 +232,20 @@ public class MSDKDnsResolver {
      * @return 解析结果, 以';'分隔, ';'前为IPv4, ';'后为IPv6, 对应位置没有解析结果则为'0'
      */
     public String getAddrByName(String domain) {
+        if (!DnsService.getDnsConfig().useExpiredIpEnable) {
+            return getAddrByNameNormal(domain);
+        } else {
+            return getAddrByNameEnableExpired(domain);
+        }
+    }
+
+    /**
+     * 常规DNS解析逻辑
+     *
+     * @param domain 域名
+     * @return
+     */
+    private String getAddrByNameNormal(String domain) {
         return getAddrByName(domain, true);
     }
 
@@ -229,15 +257,8 @@ public class MSDKDnsResolver {
             ipSet = DnsService.getAddrsByName(domain, fallback2Local);
         } catch (Exception ignored) {
         }
-        String v4Ip = "0";
-        if (!CommonUtils.isEmpty(ipSet.v4Ips)) {
-            v4Ip = ipSet.v4Ips[0];
-        }
-        String v6Ip = "0";
-        if (!CommonUtils.isEmpty(ipSet.v6Ips)) {
-            v6Ip = ipSet.v6Ips[0];
-        }
-        return v4Ip + ";" + v6Ip;
+
+        return CommonUtils.getIpfromSet(ipSet);
     }
 
     /**
@@ -248,22 +269,96 @@ public class MSDKDnsResolver {
      * 本地为Dual Stack网络时, 最多返回一个IPv4结果IP和一个IPv6结果IP
      * 注意需要先通过setHttpDnsResponseObserver设置回调的监听
      *
-     * @param domain
+     * @param domain 域名
      * @param tag
      */
     public void getAddrByNameAsync(final String domain, final String tag) {
-        DnsExecutors.WORK.execute(new Runnable() {
-            @Override
-            public void run() {
-                String result = getAddrByName(domain);
-                if (sHttpDnsResponseObserver != null) {
-                    sHttpDnsResponseObserver.onHttpDnsResponse(tag, domain, result);
-                } else {
-                    // try to send to unity
-                    JniWrapper.sendToUnity(tag);
+        if (!DnsService.getDnsConfig().useExpiredIpEnable) {
+            DnsExecutors.WORK.execute(new Runnable() {
+                @Override
+                public void run() {
+                    String result = getAddrByNameNormal(domain);
+                    if (sHttpDnsResponseObserver != null) {
+                        sHttpDnsResponseObserver.onHttpDnsResponse(tag, domain, result);
+                    } else {
+                        // try to send to unity
+                        JniWrapper.sendToUnity(tag);
+                    }
                 }
+            });
+        } else {
+            try {
+                throw new IllegalAccessException("getAddrByNameAsync cannot be used when useExpiredIpEnable is set to true.");
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
             }
-        });
+        }
+    }
+
+    /**
+     * 乐观DNS解析
+     *
+     * @param domain 域名
+     * @return 解析结果 IPv4;IPv6
+     * 本地为IPv4 Only网络时, 最多返回一个IPv4结果IP
+     * 本地为IPv6 Only网络时, 最多返回一个IPv6结果IP
+     * 本地为Dual Stack网络时, 最多返回一个IPv4结果IP和一个IPv6结果IP
+     */
+    private String getAddrByNameEnableExpired(final String domain) {
+        IpSet ipSet = getAddrsByNamesEnableExpired(domain);
+        return CommonUtils.getIpfromSet(ipSet);
+    }
+
+    /**
+     * 乐观DNS解析（批量）
+     *
+     * @param domain 域名
+     * @return 解析结果
+     * 单独接口查询情况返回：IpSet{v4Ips=[xx.xx.xx.xx], v6Ips=[xxx], ips=null}
+     * 多域名批量查询返回：IpSet{v4Ips=[youtube.com:31.13.73.1, qq.com:123.151.137.18, qq.com:183.3.226.35, qq.com:61.129.7.47], v6Ips=[youtube.com.:2001::42d:9141], ips=null}
+     */
+    private IpSet getAddrsByNamesEnableExpired(final String domain) {
+        String result = MSDKDnsResolver.getInstance().getDnsDetail((domain));
+        IpSet ipSetReslut = IpSet.EMPTY;
+
+        if (result.isEmpty()) {
+            DnsExecutors.WORK.execute(new Runnable() {
+                @Override
+                public void run() {
+                    // 下发解析请求
+                    getAddrByNameNormal(domain);
+                }
+            });
+        } else {
+            try {
+                JSONObject temp = new JSONObject(result);
+                long expiredTime = Long.parseLong(temp.get("expired_time").toString());
+                long current = System.currentTimeMillis();
+                if (expiredTime < current) {
+                    // 缓存过期，发起异步请求
+                    DnsExecutors.WORK.execute(new Runnable() {
+                        @Override
+                        public void run() {
+                            DnsLog.d("async look up send");
+                            DnsService.getAddrsByName(domain, true, true);
+                        }
+                    });
+                    // 缓存过期且不允许使用过期缓存
+                    if (!DnsService.getDnsConfig().useExpiredIpEnable) {
+                        return ipSetReslut;
+                    }
+                }
+                String v4IpsStr = temp.get("v4_ips").toString();
+                String v6IpsStr = temp.get("v6_ips").toString();
+                String[] v4Ips = v4IpsStr.isEmpty() ? new String[0] : v4IpsStr.split(",");
+                String[] v6Ips = v6IpsStr.isEmpty() ? new String[0] : v6IpsStr.split(",");
+                ipSetReslut = new IpSet(v4Ips, v6Ips);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+        }
+        return ipSetReslut;
     }
 
     /**
@@ -276,6 +371,20 @@ public class MSDKDnsResolver {
      * @return 解析结果, 以';'分隔, ';'前为IPv4, ';'后为IPv6, 对应位置没有解析结果则为'0'
      */
     public IpSet getAddrsByName(String domain) {
+        if (!DnsService.getDnsConfig().useExpiredIpEnable) {
+            return getAddrsByNameNormal(domain);
+        } else {
+            return getAddrsByNamesEnableExpired(domain);
+        }
+    }
+
+    /**
+     * 常规域名解析（批量）
+     *
+     * @param domain
+     * @return
+     */
+    private IpSet getAddrsByNameNormal(String domain) {
         return getAddrsByName(domain, true);
     }
 
@@ -303,18 +412,26 @@ public class MSDKDnsResolver {
      * @param tag
      */
     public void getAddrsByNameAsync(final String domain, final String tag) {
-        DnsExecutors.WORK.execute(new Runnable() {
-            @Override
-            public void run() {
-                IpSet result = getAddrsByName(domain);
-                if (sHttpDnsResponseObserver != null) {
-                    sHttpDnsResponseObserver.onHttpDnsResponse(tag, domain, result);
-                } else {
-                    // try to send to unity
-                    JniWrapper.sendToUnity(tag);
+        if (!DnsService.getDnsConfig().useExpiredIpEnable) {
+            DnsExecutors.WORK.execute(new Runnable() {
+                @Override
+                public void run() {
+                    IpSet result = getAddrsByNameNormal(domain);
+                    if (sHttpDnsResponseObserver != null) {
+                        sHttpDnsResponseObserver.onHttpDnsResponse(tag, domain, result);
+                    } else {
+                        // try to send to unity
+                        JniWrapper.sendToUnity(tag);
+                    }
                 }
+            });
+        } else {
+            try {
+                throw new IllegalAccessException("getAddrsByNameAsync cannot be used when useExpiredIpEnable is set to true.");
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
             }
-        });
+        }
     }
 
     public String getDnsDetail(String domain) {

@@ -1,6 +1,7 @@
 package com.tencent.msdk.dns.core.rest.share;
 
 import android.text.TextUtils;
+
 import com.tencent.msdk.dns.base.log.DnsLog;
 import com.tencent.msdk.dns.base.utils.CommonUtils;
 import com.tencent.msdk.dns.core.Const;
@@ -9,12 +10,10 @@ import com.tencent.msdk.dns.core.LookupContext;
 import com.tencent.msdk.dns.core.LookupParameters;
 import com.tencent.msdk.dns.core.LookupResult;
 import com.tencent.msdk.dns.core.cache.Cache;
-import com.tencent.msdk.dns.core.ipRank.IpRankCallback;
-import com.tencent.msdk.dns.core.ipRank.IpRankHelper;
-import com.tencent.msdk.dns.core.ipRank.IpRankItem;
-import com.tencent.msdk.dns.core.ipRank.IpRankTask;
 import com.tencent.msdk.dns.core.rest.share.rsp.Response;
 import com.tencent.msdk.dns.core.stat.AbsStatistics;
+
+import java.io.Serializable;
 import java.nio.channels.SelectionKey;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -53,6 +52,7 @@ public abstract class AbsRestDns implements IDns<LookupExtra> {
             stat.errorCode = ErrorCode.SUCCESS;
             stat.clientIp = cachedStat.clientIp;
             stat.ttl = cachedStat.ttl;
+            stat.expiredTime = cachedStat.expiredTime;
             stat.ips = ips;
             stat.cached = true;
             DnsLog.d("Lookup for %s, cache hit", hostname);
@@ -75,8 +75,7 @@ public abstract class AbsRestDns implements IDns<LookupExtra> {
     }
 
     /**
-     * @hide
-     * 负责亲子关系管理，token管理
+     * @hide 负责亲子关系管理，token管理
      * 子类负责请求响应的具体实现，channel(DatagramChannel/SocketChannel/...)的管理和session实例的创建
      */
     public abstract class AbsSession implements IDns.ISession {
@@ -129,7 +128,7 @@ public abstract class AbsRestDns implements IDns<LookupExtra> {
                 connectRes = connectInternal();
             } finally {
                 if (connectRes != NonBlockResult.NON_BLOCK_RESULT_NEED_CONTINUE &&
-                    State.ENDED != mState) {
+                        State.ENDED != mState) {
                     mState = State.WRITABLE;
                 }
             }
@@ -145,7 +144,7 @@ public abstract class AbsRestDns implements IDns<LookupExtra> {
                 requestRes = requestInternal();
             } finally {
                 if (requestRes != NonBlockResult.NON_BLOCK_RESULT_NEED_CONTINUE &&
-                    State.ENDED != mState) {
+                        State.ENDED != mState) {
                     mState = State.READABLE;
                 }
             }
@@ -167,12 +166,13 @@ public abstract class AbsRestDns implements IDns<LookupExtra> {
                     return mStat.ips;
                 }
                 rsp = responseInternal();
-                if (rsp != Response.EMPTY && rsp != Response.NEED_CONTINUE){
+                if (rsp != Response.EMPTY && rsp != Response.NEED_CONTINUE) {
                     mStat.errorCode = ErrorCode.SUCCESS;
                     mCacheHelper.put(mLookupContext.asLookupParameters(), rsp);
                 }
                 mStat.clientIp = rsp.clientIp;
                 mStat.ttl = rsp.ttl;
+                mStat.expiredTime = System.currentTimeMillis() + rsp.ttl * 1000;
                 mStat.ips = rsp.ips;
             } finally {
                 if (rsp != Response.NEED_CONTINUE) {
@@ -316,7 +316,8 @@ public abstract class AbsRestDns implements IDns<LookupExtra> {
     /**
      * HTTPDNS域名解析统计数据类
      */
-    public static class Statistics extends AbsStatistics {
+    public static class Statistics extends AbsStatistics implements Serializable {
+        private static final long serialVersionUID = 8621285648054627787L;
 
         public static final Statistics NOT_LOOKUP = new Statistics();
 
@@ -341,6 +342,8 @@ public abstract class AbsRestDns implements IDns<LookupExtra> {
          * 解析结果TTL(缓存有效时间), 单位s
          */
         public int ttl = Const.DEFAULT_TIME_INTERVAL;
+
+        public long expiredTime = 0;
         /**
          * 域名解析重试次数
          */
@@ -378,6 +381,7 @@ public abstract class AbsRestDns implements IDns<LookupExtra> {
             this.ips = ips;
             this.clientIp = clientIp;
             this.ttl = ttl;
+            this.expiredTime = System.currentTimeMillis() + ttl * 1000;
         }
 
         @Override
@@ -388,6 +392,7 @@ public abstract class AbsRestDns implements IDns<LookupExtra> {
                     ", statusCode=" + statusCode +
                     ", clientIp='" + clientIp + '\'' +
                     ", ttl=" + ttl +
+                    ", expiredTime=" + expiredTime +
                     ", retryTimes=" + retryTimes +
                     ", cached=" + cached +
                     ", asyncLookup=" + asyncLookup +

@@ -56,6 +56,10 @@ public final class DnsConfig {
      */
     /* @Nullable */ public final List<IReporter> reporters;
 
+    public boolean useExpiredIpEnable = false;
+
+    public boolean cachedIpEnable = false;
+
     private DnsConfig(int logLevel,
                       String appId, String userId, boolean initBuiltInReporters,
                       String dnsIp, String dnsId, String dnsKey, String token,
@@ -65,7 +69,7 @@ public final class DnsConfig {
                       Set<IpRankItem> ipRankItems, String channel, boolean enableReport, boolean blockFirst,
                       int customNetStack, DnsExecutors.ExecutorSupplier executorSupplier,
                       ILookedUpListener lookedUpListener, List<ILogNode> logNodes,
-                      List<IReporter> reporters) {
+                      List<IReporter> reporters, boolean useExpiredIpEnable, boolean cachedIpEnable) {
         this.logLevel = logLevel;
         this.appId = appId;
         this.userId = userId;
@@ -86,6 +90,8 @@ public final class DnsConfig {
         this.lookedUpListener = lookedUpListener;
         this.logNodes = logNodes;
         this.reporters = reporters;
+        this.useExpiredIpEnable = useExpiredIpEnable;
+        this.cachedIpEnable = cachedIpEnable;
     }
 
     boolean needProtect(/* @Nullable */String hostname) {
@@ -125,6 +131,8 @@ public final class DnsConfig {
                 ", lookedUpListener=" + lookedUpListener +
                 ", logNodes=" + CommonUtils.toString(logNodes) +
                 ", reporters=" + CommonUtils.toString(reporters) +
+                ", useExpiredIpEnable=" + useExpiredIpEnable +
+                ", cachedIpEnable=" + cachedIpEnable +
                 '}';
     }
 
@@ -210,6 +218,8 @@ public final class DnsConfig {
         private List<ILogNode> mLogNodes = null;
 
         private List<IReporter> mReporters = null;
+        private boolean mUseExpiredIpEnable = false;
+        private boolean mCachedIpEnable = false;
 
         /**
          * 设置最低日志等级, 低于设置等级的日志不会输出
@@ -652,6 +662,17 @@ public final class DnsConfig {
             return this;
         }
 
+        public Builder setUseExpiredIpEnable(boolean useExpiredIpEnable) {
+            mUseExpiredIpEnable = useExpiredIpEnable;
+
+            return this;
+        }
+
+        public Builder setCachedIpEnable(boolean cachedIpEnable) {
+            mCachedIpEnable = cachedIpEnable;
+            return this;
+        }
+
         /**
          * 构建DnsConfig实例
          *
@@ -665,7 +686,7 @@ public final class DnsConfig {
                     mIpRankItems, mChannel, mEnableReport, mBlockFirst,
                     mCustomNetStack, mExecutorSupplier,
                     mLookedUpListener, mLogNodes,
-                    mReporters);
+                    mReporters, mUseExpiredIpEnable, mCachedIpEnable);
         }
     }
 }

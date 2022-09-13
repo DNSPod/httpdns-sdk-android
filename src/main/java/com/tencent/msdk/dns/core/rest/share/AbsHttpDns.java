@@ -143,6 +143,7 @@ public abstract class AbsHttpDns extends AbsRestDns {
             stat.errorCode = ErrorCode.SUCCESS;
             stat.clientIp = rsp.clientIp;
             stat.ttl = rsp.ttl;
+            stat.expiredTime = System.currentTimeMillis() + rsp.ttl * 1000;
             stat.ips = rsp.ips;
         } catch (Exception e) {
             DnsLog.d(e, getTag() + "lookup failed");

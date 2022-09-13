@@ -22,12 +22,13 @@ import com.tencent.msdk.dns.core.IStatisticsMerge;
 import com.tencent.msdk.dns.core.IpSet;
 import com.tencent.msdk.dns.core.LookupParameters;
 import com.tencent.msdk.dns.core.LookupResult;
+import com.tencent.msdk.dns.core.cache.Cache;
+import com.tencent.msdk.dns.core.cache.database.LookupCacheDatabase;
 import com.tencent.msdk.dns.core.rest.share.LookupExtra;
 import com.tencent.msdk.dns.core.stat.StatisticsMerge;
 import com.tencent.msdk.dns.report.ReportHelper;
 import com.tencent.msdk.dns.report.SpendReportResolver;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
@@ -45,6 +46,10 @@ public final class DnsService {
 
     public static DnsConfig getDnsConfig() {
         return sConfig;
+    }
+
+    public static Context getAppContext() {
+        return sAppContext;
     }
 
     /**
@@ -76,6 +81,15 @@ public final class DnsService {
         SpendReportResolver.getInstance().init();
         NetworkChangeManager.install(appContext);
         ActivityLifecycleDetector.install(appContext);
+        // Room 本地数据读取
+        if (config.cachedIpEnable == true) {
+            DnsExecutors.WORK.execute(new Runnable() {
+                @Override
+                public void run() {
+                    Cache.readFromDb();
+                }
+            });
+        }
         // NOTE: 当前版本暂时不会提供为OneSdk版本, 默认使用灯塔上报
         ReportManager.init(ReportManager.Channel.BEACON);
         if (config.initBuiltInReporters) {
@@ -115,14 +129,44 @@ public final class DnsService {
 
     /**
      * 启停缓存自动刷新功能
+     *
      * @param mEnablePersistentCache false：关闭，true：开启
-     * @throws IllegalStateException    没有初始化时抛出
+     * @throws IllegalStateException 没有初始化时抛出
      */
     public static synchronized void enablePersistentCache(boolean mEnablePersistentCache) {
         if (!sInited) {
             throw new IllegalStateException("DnsService".concat(Const.NOT_INIT_TIPS));
         }
         sConfig.enablePersistentCache = mEnablePersistentCache;
+    }
+
+    /**
+     * 设置是否使用过期缓存IP（乐观DNS）
+     *
+     * @param mUseExpiredIpEnable false：不使用过期（默认），true：使用过期缓存
+     * @throws IllegalStateException 没有初始化时抛出
+     */
+    public static synchronized void setUseExpiredIpEnable(boolean mUseExpiredIpEnable) {
+        if (!sInited) {
+            throw new IllegalStateException("DnsService".concat(Const.NOT_INIT_TIPS));
+        }
+        sConfig.useExpiredIpEnable = mUseExpiredIpEnable;
+    }
+
+    /**
+     * 设置是否使用本地缓存
+     *
+     * @param mCachedIpEnable false：不使用过期（默认），true：使用过期缓存
+     * @throws IllegalStateException 没有初始化时抛出
+     */
+    public static synchronized void setCachedIpEnable(boolean mCachedIpEnable) {
+        if (!sInited) {
+            throw new IllegalStateException("DnsService".concat(Const.NOT_INIT_TIPS));
+        }
+        sConfig.cachedIpEnable = mCachedIpEnable;
+        if (mCachedIpEnable == true) {
+            LookupCacheDatabase.creat(sAppContext);
+        }
     }
 
     public static String getDnsDetail(String hostname) {
@@ -181,7 +225,7 @@ public final class DnsService {
      * @return {@link IpSet}实例, 即解析得到的Ip集合
      * @throws IllegalStateException 没有初始化时抛出
      */
-    private static IpSet getAddrsByName(
+    public static IpSet getAddrsByName(
             /* @Nullable */String hostname, boolean fallback2Local, boolean enableAsyncLookup) {
         return getAddrsByName(hostname, sConfig.channel, fallback2Local, enableAsyncLookup);
     }
