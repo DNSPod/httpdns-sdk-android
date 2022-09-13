@@ -5,6 +5,7 @@ interface ReportConst {
     String PRE_LOOKUP_EVENT_NAME = "HDNSPreLookup";
     String ASYNC_LOOKUP_EVENT_NAME = "HDNSLookupAsync";
     String LOOKUP_METHOD_CALLED_EVENT_NAME = "HDNSGetHostByName";
+    String LOOKUP_FROM_CACHED_EVENT_NAME = "HDNSLookupCached";
 
     String IP_SPLITTER = ",";
 

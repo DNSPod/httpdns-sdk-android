@@ -183,7 +183,7 @@ public final class DnsService {
                 .customNetStack(sConfig.customNetStack)
                 .build());
 
-        // 上报命中缓存的数据
+        // 收集命中缓存的数据
         CacheStatisticsReport.add(lookupResult);
         StatisticsMerge statMerge = (StatisticsMerge) lookupResult.stat;
         return statMerge.toJsonResult();
@@ -272,7 +272,7 @@ public final class DnsService {
                             .enableAsyncLookup(enableAsyncLookup)
                             .customNetStack(sConfig.customNetStack)
                             .build());
-            ReportHelper.reportLookupMethodCalledEvent(lookupResult, sAppContext);
+            ReportHelper.reportLookupMethodCalledEvent(lookupResult);
             return lookupResult.ipSet;
         }
         if (fallback2Local) {
@@ -356,50 +356,29 @@ public final class DnsService {
         }
 
         final int numOfPreLookupDomain = sConfig.preLookupDomains.size();
-        final String[] preLookupDomains =
+        final String[] preLookupDomainsList =
                 sConfig.preLookupDomains.toArray(new String[numOfPreLookupDomain]);
-        final Set<String> persistentCacheDomains = sConfig.persistentCacheDomains;
+        final String preLookupDomains = CommonUtils.toStringList(preLookupDomainsList, ",");
 
-        final LookupResult[] preLookupResults = new LookupResult[numOfPreLookupDomain];
-        final CountDownLatch preLookupCountDownLatch = new CountDownLatch(numOfPreLookupDomain);
-        for (int i = 0; i < numOfPreLookupDomain; i++) {
-            // config保证domain不为空
-            final String domain = preLookupDomains[i];
-            final int iSnapshot = i;
-            DnsExecutors.WORK.execute(new Runnable() {
-                @Override
-                public void run() {
-                    String dnsIp = BackupResolver.getInstance().getDnsIp();
-                    LookupParameters<LookupExtra> lookupParams =
-                            new LookupParameters.Builder<LookupExtra>()
-                                    .context(sAppContext)
-                                    .hostname(domain)
-                                    .timeoutMills(sConfig.timeoutMills)
-                                    .dnsIp(dnsIp)
-                                    .lookupExtra(sConfig.lookupExtra)
-                                    .channel(sConfig.channel)
-                                    .fallback2Local(false)
-                                    .blockFirst(sConfig.blockFirst)
-                                    .ignoreCurrentNetworkStack(true)
-                                    .enableAsyncLookup(persistentCacheDomains != null && persistentCacheDomains.contains(domain))
-                                    .build();
-                    preLookupResults[iSnapshot] = DnsManager.lookupWrapper(lookupParams);
-                    preLookupCountDownLatch.countDown();
-                }
-            });
-        }
-// TODO: 目前上报效率比较低，等预解析逻辑更新为批量后再恢复上报
-//        DnsExecutors.WORK.execute(new Runnable() {
-//            @Override
-//            public void run() {
-//                try {
-//                    preLookupCountDownLatch.await();
-//                    DnsLog.d("Await for pre lookup count down success");
-//                } catch (Exception e) {
-//                    DnsLog.w(e, "Await for pre lookup count down failed");
-//                }
-//                ReportHelper.reportPreLookupEvent(preLookupResults);
-//            }
-//        });
+        // 预解析调整为批量解析
+        DnsExecutors.WORK.execute(new Runnable() {
+            @Override
+            public void run() {
+                String dnsIp = BackupResolver.getInstance().getDnsIp();
+                LookupResult lookupResult = DnsManager.lookupWrapper(new LookupParameters.Builder<LookupExtra>()
+                        .context(sAppContext)
+                        .hostname(preLookupDomains)
+                        .timeoutMills(sConfig.timeoutMills)
+                        .dnsIp(dnsIp)
+                        .lookupExtra(sConfig.lookupExtra)
+                        .channel(sConfig.channel)
+                        .fallback2Local(false)
+                        .blockFirst(sConfig.blockFirst)
+                        .ignoreCurrentNetworkStack(true)
+                        .enableAsyncLookup(true)
+                        .build());
+                ReportHelper.reportPreLookupEvent(lookupResult);
+            }
+        });
     }
 }

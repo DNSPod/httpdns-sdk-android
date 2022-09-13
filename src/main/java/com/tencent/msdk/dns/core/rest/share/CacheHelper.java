@@ -2,7 +2,6 @@ package com.tencent.msdk.dns.core.rest.share;
 
 import android.text.TextUtils;
 
-import com.tencent.msdk.dns.DnsConfig;
 import com.tencent.msdk.dns.DnsService;
 import com.tencent.msdk.dns.base.compat.CollectionCompat;
 import com.tencent.msdk.dns.base.executor.DnsExecutors;
@@ -178,7 +177,7 @@ public final class CacheHelper {
                             LookupResult lookupResult = DnsManager.lookupWrapper(newLookupParams);
                             AsyncLookupResultQueue.enqueue(lookupResult);
                             // atta上报
-                            ReportHelper.reportLookupMethodCalledEvent(lookupResult, DnsService.getAppContext());
+                            ReportHelper.attaReportAsyncLookupEvent(lookupResult);
                         }
                     });
                     mPendingTasks.remove(this);
@@ -251,7 +250,7 @@ public final class CacheHelper {
                                             AsyncLookupResultQueue.enqueue(
                                                     lookupResult);
                                             // atta上报
-                                            ReportHelper.reportLookupMethodCalledEvent(lookupResult, DnsService.getAppContext());
+                                            ReportHelper.attaReportAsyncLookupEvent(lookupResult);
                                         }
                                     });
                                     asyncLookupParamsIterator.remove();
