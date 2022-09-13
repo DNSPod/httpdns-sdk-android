@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+
 /**
  * Atta主要用于容灾上报和灯塔（用户个人上报）用途不同
  */
@@ -17,7 +18,7 @@ public class AttaHelper {
     private static final String ATTA_ID = "0f500064192";
     private static final String ATTA_TOKEN = "4725229671";
 
-    public static Runnable report(final String carrier, final String networkType, final String dnsId, final String encryptType, final String eventName, final long eventTime, final String dnsIp, final String sdkVersion, final String deviceName, final String systemName, final String systemVersion, final long spend, final String req_dn, final String req_type, final long req_timeout, final int req_ttl, final long errorCode, final int statusCode) {
+    public static Runnable report(final String carrier, final String networkType, final String dnsId, final String encryptType, final String eventName, final long eventTime, final String dnsIp, final String sdkVersion, final String deviceName, final String systemName, final String systemVersion, final long spend, final String req_dn, final String req_type, final long req_timeout, final int req_ttl, final long errorCode, final int statusCode, final boolean isCache, final int count, final String ldns, final String hdns) {
         return new Runnable() {
             @Override
             public void run() {

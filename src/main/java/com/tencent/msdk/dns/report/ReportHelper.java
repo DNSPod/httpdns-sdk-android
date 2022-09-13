@@ -31,8 +31,6 @@ public final class ReportHelper {
 
     private static DnsConfig sDnsConfig;
 
-    private static Map<String, Object[]> statisticsMap = new HashMap<>();
-
     private static Runnable sReportAsyncLookupEventTask = new Runnable() {
 
         @Override
@@ -40,7 +38,8 @@ public final class ReportHelper {
             List<LookupResult> lookupResults = AsyncLookupResultQueue.offerAll();
             reportAsyncLookupEvent(lookupResults);
             // attta上报统计数据
-            reportStatisticsEvent();
+            Map<String, Object[]> cacheStatisticsMap = CacheStatisticsReport.offerAll();
+            reportStatisticsEvent(cacheStatisticsMap);
             DnsExecutors.MAIN.cancel(sReportAsyncLookupEventTask);
             DnsExecutors.MAIN.schedule(
                     sReportAsyncLookupEventTask, REPORT_ASYNC_LOOKUP_EVENT_INTERVAL_MILLS);
@@ -127,25 +126,7 @@ public final class ReportHelper {
 
         // 命中缓存的数据，统计上报
         if (statMerge.restDnsStat.cached) {
-            String hostname = statMerge.hostname;
-            if (!statisticsMap.containsKey(hostname)) {
-                if (lookupResult.stat.lookupSuccess()) {
-                    // Object[costTimeMillsTotal, emptyCount, resultCount, lookupResult]
-                    statisticsMap.put(hostname, new Object[]{statMerge.restDnsStat.costTimeMills, 0, 1, lookupResult});
-                } else {
-                    statisticsMap.put(hostname, new Object[]{statMerge.restDnsStat.costTimeMills, 1, 0, lookupResult});
-                }
-
-            } else {
-                Object[] temp = statisticsMap.get(hostname);
-                temp[0] = (Integer) temp[0] + statMerge.restDnsStat.costTimeMills;
-                if (lookupResult.stat.lookupSuccess()) {
-                    temp[2] = (Integer) temp[2] + 1;
-                } else {
-                    temp[1] = (Integer) temp[1] + 1;
-                }
-                statisticsMap.put(hostname, temp);
-            }
+            CacheStatisticsReport.add(lookupResult);
         }
 
         //  ErrorCode==2 进行容灾处理
@@ -236,6 +217,8 @@ public final class ReportHelper {
         report(ReportConst.LOOKUP_METHOD_CALLED_EVENT_NAME, lookupMethodCalledEventMap);
     }
 
+
+
     private static void startReportAsyncLookupEvent() {
         // NOTE: 无论是否存在可用的上报通道, 都应该不断消费异步解析结果
         DnsExecutors.MAIN.schedule(
@@ -292,12 +275,11 @@ public final class ReportHelper {
     }
 
 
-
-    private static void reportStatisticsEvent() {
+    private static void reportStatisticsEvent(Map<String, Object[]> cacheStatisticsMap) {
         if (!ReportManager.canReport()) {
             return;
         }
-        for (Map.Entry<String, Object[]> item : statisticsMap.entrySet()) {
+        for (Map.Entry<String, Object[]> item : cacheStatisticsMap.entrySet()) {
             Object[] temp = item.getValue();
             int errCount = (int) temp[1];
             int curCount = (int) temp[2];
@@ -309,14 +291,13 @@ public final class ReportHelper {
             String dnsIp = BackupResolver.getInstance().getDnsIp();
             if (errCount > 0) {
                 // 为空的缓存统计项上报，解析结果不上报
-                DnsExecutors.MAIN.execute(AttaHelper.report(carrierCode, stat.netType, sDnsConfig.lookupExtra.bizId, sDnsConfig.channel, "HttpDnsSpend", System.currentTimeMillis(), dnsIp, BuildConfig.VERSION_NAME, AttaHelper.getSystemModel(), "Andriod", AttaHelper.getSystemVersion(), spendAvg, stat.hostname, null, sDnsConfig.timeoutMills, 0, 0, 0, true, errCount, null, null));
+                DnsExecutors.MAIN.execute(AttaHelper.report(carrierCode, stat.netType, sDnsConfig.lookupExtra.bizId, sDnsConfig.channel, "HttpDnsSpend", System.currentTimeMillis(), dnsIp, BuildConfig.VERSION_NAME, AttaHelper.getSystemModel(), "Andriod", AttaHelper.getSystemVersion(), spendAvg, stat.hostname, null, sDnsConfig.timeoutMills, 0, 0, 0, true, errCount, null, "0;0"));
             }
             if (curCount > 0) {
                 // 有值的缓存统计项上报，解析结果不上报
                 DnsExecutors.MAIN.execute(AttaHelper.report(carrierCode, stat.netType, sDnsConfig.lookupExtra.bizId, sDnsConfig.channel, "HttpDnsSpend", System.currentTimeMillis(), dnsIp, BuildConfig.VERSION_NAME, AttaHelper.getSystemModel(), "Andriod", AttaHelper.getSystemVersion(), spendAvg, stat.hostname, null, sDnsConfig.timeoutMills, 0, 0, 0, true, curCount, null, null));
             }
         }
-        statisticsMap.clear();
     }
 
     private static void addCommonConfigInfo(Map<String, String> eventMap) {

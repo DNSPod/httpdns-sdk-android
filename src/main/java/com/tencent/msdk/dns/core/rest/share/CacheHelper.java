@@ -2,6 +2,7 @@ package com.tencent.msdk.dns.core.rest.share;
 
 import android.text.TextUtils;
 
+import com.tencent.msdk.dns.DnsConfig;
 import com.tencent.msdk.dns.DnsService;
 import com.tencent.msdk.dns.base.compat.CollectionCompat;
 import com.tencent.msdk.dns.base.executor.DnsExecutors;
@@ -17,6 +18,7 @@ import com.tencent.msdk.dns.core.LookupResult;
 import com.tencent.msdk.dns.core.ipRank.IpRankCallback;
 import com.tencent.msdk.dns.core.ipRank.IpRankHelper;
 import com.tencent.msdk.dns.core.rest.share.rsp.Response;
+import com.tencent.msdk.dns.report.ReportHelper;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -175,6 +177,8 @@ public final class CacheHelper {
                         public void run() {
                             LookupResult lookupResult = DnsManager.lookupWrapper(newLookupParams);
                             AsyncLookupResultQueue.enqueue(lookupResult);
+                            // atta上报
+                            ReportHelper.reportLookupMethodCalledEvent(lookupResult, DnsService.getAppContext());
                         }
                     });
                     mPendingTasks.remove(this);
@@ -243,8 +247,11 @@ public final class CacheHelper {
                                     DnsExecutors.WORK.execute(new Runnable() {
                                         @Override
                                         public void run() {
+                                            LookupResult lookupResult = DnsManager.lookupWrapper(newLookupParams);
                                             AsyncLookupResultQueue.enqueue(
-                                                    DnsManager.lookupWrapper(newLookupParams));
+                                                    lookupResult);
+                                            // atta上报
+                                            ReportHelper.reportLookupMethodCalledEvent(lookupResult, DnsService.getAppContext());
                                         }
                                     });
                                     asyncLookupParamsIterator.remove();

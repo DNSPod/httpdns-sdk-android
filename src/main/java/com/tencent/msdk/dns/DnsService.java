@@ -26,12 +26,11 @@ import com.tencent.msdk.dns.core.cache.Cache;
 import com.tencent.msdk.dns.core.cache.database.LookupCacheDatabase;
 import com.tencent.msdk.dns.core.rest.share.LookupExtra;
 import com.tencent.msdk.dns.core.stat.StatisticsMerge;
+import com.tencent.msdk.dns.report.CacheStatisticsReport;
 import com.tencent.msdk.dns.report.ReportHelper;
 import com.tencent.msdk.dns.report.SpendReportResolver;
 
 import java.util.List;
-import java.util.Set;
-import java.util.concurrent.CountDownLatch;
 
 /**
  * SDK对外接口类
@@ -82,7 +81,7 @@ public final class DnsService {
         NetworkChangeManager.install(appContext);
         ActivityLifecycleDetector.install(appContext);
         // Room 本地数据读取
-        if (config.cachedIpEnable == true) {
+        if (config.cachedIpEnable) {
             DnsExecutors.WORK.execute(new Runnable() {
                 @Override
                 public void run() {
@@ -164,7 +163,7 @@ public final class DnsService {
             throw new IllegalStateException("DnsService".concat(Const.NOT_INIT_TIPS));
         }
         sConfig.cachedIpEnable = mCachedIpEnable;
-        if (mCachedIpEnable == true) {
+        if (mCachedIpEnable) {
             LookupCacheDatabase.creat(sAppContext);
         }
     }
@@ -183,8 +182,9 @@ public final class DnsService {
                 .enableAsyncLookup(false)
                 .customNetStack(sConfig.customNetStack)
                 .build());
-        // 上报命中缓存的数据 todo: 缓存无数据时,cached为false
-        ReportHelper.reportLookupMethodCalledEvent(lookupResult, sAppContext);
+
+        // 上报命中缓存的数据
+        CacheStatisticsReport.add(lookupResult);
         StatisticsMerge statMerge = (StatisticsMerge) lookupResult.stat;
         return statMerge.toJsonResult();
     }
