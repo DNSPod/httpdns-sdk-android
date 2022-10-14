@@ -133,4 +133,25 @@ public class AttaHelper {
         return android.os.Build.MODEL;
     }
 
+    /**
+     * 获取请求网络栈类型
+     *
+     * @param curNetStack 当前网络栈
+     * @return 请求类型 a/aaaa/dual
+     */
+    public static String getReqType(int curNetStack) {
+        String reqType = null;
+        switch (curNetStack) {
+            case 1:
+                reqType = "a";
+                break;
+            case 2:
+                reqType = "aaaa";
+                break;
+            case 3:
+                reqType = "dual";
+                break;
+        }
+        return reqType;
+    }
 }
