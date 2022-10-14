@@ -105,24 +105,27 @@ public final class CacheHelper {
 
 
         for (final String hostname : hostnameArr) {
-            String[] ips = ipsWithHostname.get(hostname).toArray(new String[0]);
-            AbsRestDns.Statistics stat = new AbsRestDns.Statistics(ips, rsp.clientIp, rsp.ttl);
-            stat.errorCode = ErrorCode.SUCCESS;
-            mCache.add(hostname, new LookupResult<>(ips, stat));
-            cacheUpdateTask(lookupParams, rsp, hostname);
+            List<String> ipsList= ipsWithHostname.get(hostname);
+            if (ipsList != null) {
+                String[] ips = ipsList.toArray(new String[0]);
+                AbsRestDns.Statistics stat = new AbsRestDns.Statistics(ips, rsp.clientIp, rsp.ttl);
+                stat.errorCode = ErrorCode.SUCCESS;
+                mCache.add(hostname, new LookupResult<>(ips, stat));
+                cacheUpdateTask(lookupParams, rsp, hostname);
 
-            // 发起IP优选服务
-            mIpRankHelper.ipv4Rank(hostname, ips, new IpRankCallback() {
-                @Override
-                public void onResult(String hostname, String[] sortedIps) {
-                    LookupResult cacheResult = get(hostname);
-                    // 根据排序的ip结果来对缓存结果排序
-                    if (cacheResult != null) {
-                        LookupResult sortedResult = mIpRankHelper.sortResultByIps(sortedIps, cacheResult);
-                        update(hostname, sortedResult);
+                // 发起IP优选服务
+                mIpRankHelper.ipv4Rank(hostname, ips, new IpRankCallback() {
+                    @Override
+                    public void onResult(String hostname, String[] sortedIps) {
+                        LookupResult cacheResult = get(hostname);
+                        // 根据排序的ip结果来对缓存结果排序
+                        if (cacheResult != null) {
+                            LookupResult sortedResult = mIpRankHelper.sortResultByIps(sortedIps, cacheResult);
+                            update(hostname, sortedResult);
+                        }
                     }
-                }
-            });
+                });
+            }
         }
 
         if (hostnameArr.length > 1) {
