@@ -536,6 +536,12 @@ public final class DnsConfig {
             return this;
         }
 
+        /**
+         * 设置IP优选服务，启动IP优选服务的域名会进行连接竞速更新缓存，下次解析时返回最优的IP
+         *
+         * @param ipRankItems 域名优选配置列表{hostname, port}
+         * @return 当前Builder实例, 方便链式调用
+         */
         public Builder ipRankItems(List<IpRankItem> ipRankItems) {
             if (ipRankItems.size() > mMaxNumOfIpRankItems) {
                 mIpRankItems = new HashSet<>(ipRankItems.subList(0, mMaxNumOfIpRankItems));
@@ -662,12 +668,26 @@ public final class DnsConfig {
             return this;
         }
 
+        /**
+         * 允许使用过期缓存
+         *
+         * @param useExpiredIpEnable 默认false，解析时先取未过期的缓存结果，不满足则等待解析请求完成后返回解析结果
+         *                           设置为true时，会直接返回缓存的解析结果，没有缓存则返回0;0，用户可使用localdns（InetAddress）进行兜底。且在无缓存结果或缓存已过期时，会异步发起解析请求更新缓存。
+         *                           因异步API（getAddrByNameAsync，getAddrsByNameAsync）逻辑在回调中始终返回未过期的解析结果，设置为true时，异步API不可使用。建议使用同步API （getAddrByName，getAddrsByName）
+         * @return 当前Builder实例, 方便链式调用
+         */
         public Builder setUseExpiredIpEnable(boolean useExpiredIpEnable) {
             mUseExpiredIpEnable = useExpiredIpEnable;
 
             return this;
         }
 
+        /**
+         * 启用本地缓存（Room）实现持久化缓存
+         *
+         * @param cachedIpEnable 默认false
+         * @return 当前Builder实例, 方便链式调用
+         */
         public Builder setCachedIpEnable(boolean cachedIpEnable) {
             mCachedIpEnable = cachedIpEnable;
             return this;
