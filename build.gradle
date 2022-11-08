@@ -30,13 +30,33 @@ android {
     buildTypes {
         debug {
             minifyEnabled false
-            buildConfigField("String","VERSION_NAME","\"${project.subVersionName}a\"")
+            buildConfigField("String", "VERSION_NAME", "\"${project.subVersionName}a\"")
         }
 
         release {
             minifyEnabled true
-            buildConfigField("String","VERSION_NAME","\"${project.subVersionName}a\"")
+            buildConfigField("String", "VERSION_NAME", "\"${project.subVersionName}a\"")
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    flavorDimensions "version"
+
+    productFlavors {
+        normal {
+            buildConfigField "String", "HTTP_INIT_SERVERS", HTTP_INIT_SERVERS
+            buildConfigField "String", "HTTP_TOLERANCE_SERVERS", HTTP_TOLERANCE_SERVERS
+            buildConfigField "String", "HTTPS_TOLERANCE_SERVERS", HTTPS_TOLERANCE_SERVERS
+            buildConfigField "String", "ATTA_ID", ATTA_ID
+            buildConfigField "String", "ATTA_TOKEN", ATTA_TOKEN
+        }
+
+        intl {
+            buildConfigField "String", "HTTP_INIT_SERVERS", INTL_HTTP_INIT_SERVERS
+            buildConfigField "String", "HTTP_TOLERANCE_SERVERS", INTL_HTTP_TOLERANCE_SERVERS
+            buildConfigField "String", "HTTPS_TOLERANCE_SERVERS", "\"\""
+            buildConfigField "String", "ATTA_ID", INTL_ATTA_ID
+            buildConfigField "String", "ATTA_TOKEN", INTL_ATTA_TOKEN
         }
     }
 
@@ -47,7 +67,10 @@ android {
     }
 
     libraryVariants.all { variant ->
-        def newLibName = "HTTPDNS_Android_v${defaultConfig.versionName}_${variant.buildType.name}.aar"
+        def flavor = variant.getFlavorName()
+        def newLibName = flavor == "normal" ?
+                "HTTPDNS_Android_v${defaultConfig.versionName}_${variant.buildType.name}.aar" :
+                "HTTPDNS_Android_v${defaultConfig.versionName}_${variant.buildType.name}_${flavor}.aar"
         variant.outputs.all {
             outputFileName = newLibName
         }
@@ -68,33 +91,33 @@ dependencies {
     implementation 'android.arch.persistence.room:runtime:2.1.1'
     annotationProcessor 'android.arch.persistence.room:compiler:2.1.1'
 
-   doclava 'com.google.doclava:doclava:1.0.6'
+    doclava 'com.google.doclava:doclava:1.0.6'
 }
 
 task generateJavadoc(type: Javadoc, dependsOn: project.configurations.doclava) {
-   failOnError = true
-   classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
-   destinationDir = file("../javadocs/")
+    failOnError = true
+    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+    destinationDir = file("../javadocs/")
 
-   options.doclet = "com.google.doclava.Doclava"
-   options.docletpath = configurations.doclava.files.asType(List)
-   options.encoding = "UTF-8"
-   options.memberLevel = JavadocMemberLevel.PUBLIC
+    options.doclet = "com.google.doclava.Doclava"
+    options.docletpath = configurations.doclava.files as List
+    options.encoding = "UTF-8"
+    options.memberLevel = JavadocMemberLevel.PUBLIC
 
-   title = null
-   source = [
-           'src/main/java/com/tencent/msdk/dns/DnsConfig.java',
-           'src/main/java/com/tencent/msdk/dns/DnsService.java',
-           'src/main/java/com/tencent/msdk/dns/base/executor/DnsExecutors.java',
-           'src/main/java/com/tencent/msdk/dns/ILookedUpListener.java',
-           'src/main/java/com/tencent/msdk/dns/base/log/ILogNode.java',
-           'src/main/java/com/tencent/msdk/dns/core/LookupResult.java',
-           'src/main/java/com/tencent/msdk/dns/core/IpSet.java',
-           'src/main/java/com/tencent/msdk/dns/core/stat/StatisticsMerge.java',
-           'src/main/java/com/tencent/msdk/dns/core/stat/AbsStatistics.java',
-           'src/main/java/com/tencent/msdk/dns/core/local/LocalDns.java',
-           'src/main/java/com/tencent/msdk/dns/core/rest/share/AbsRestDns.java',
+    title = null
+    source = [
+            'src/main/java/com/tencent/msdk/dns/DnsConfig.java',
+            'src/main/java/com/tencent/msdk/dns/DnsService.java',
+            'src/main/java/com/tencent/msdk/dns/base/executor/DnsExecutors.java',
+            'src/main/java/com/tencent/msdk/dns/ILookedUpListener.java',
+            'src/main/java/com/tencent/msdk/dns/base/log/ILogNode.java',
+            'src/main/java/com/tencent/msdk/dns/core/LookupResult.java',
+            'src/main/java/com/tencent/msdk/dns/core/IpSet.java',
+            'src/main/java/com/tencent/msdk/dns/core/stat/StatisticsMerge.java',
+            'src/main/java/com/tencent/msdk/dns/core/stat/AbsStatistics.java',
+            'src/main/java/com/tencent/msdk/dns/core/local/LocalDns.java',
+            'src/main/java/com/tencent/msdk/dns/core/rest/share/AbsRestDns.java',
 
-           'src/main/java/com/tencent/msdk/dns/MSDKDnsResolver.java',
-   ]
+            'src/main/java/com/tencent/msdk/dns/MSDKDnsResolver.java',
+    ]
 }

@@ -552,6 +552,9 @@ public final class DnsConfig {
         }
 
         public Builder channel(String channel) {
+            if (channel.equals(Const.HTTPS_CHANNEL) && BuildConfig.FLAVOR.equals("intl")) {
+                throw new IllegalArgumentException("httpdns-sdk-intl version still doesn't support " + Const.HTTPS_CHANNEL);
+            }
             mChannel = channel;
             return this;
         }
@@ -567,6 +570,9 @@ public final class DnsConfig {
         }
 
         public Builder https() {
+            if (BuildConfig.FLAVOR.equals("intl")) {
+                throw new IllegalArgumentException("httpdns-sdk-intl version still doesn't support " + Const.HTTPS_CHANNEL);
+            }
             mChannel = Const.HTTPS_CHANNEL;
             return this;
         }

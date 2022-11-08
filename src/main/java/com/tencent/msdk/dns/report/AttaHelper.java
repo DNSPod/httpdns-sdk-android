@@ -16,8 +16,8 @@ import java.net.URL;
  */
 public class AttaHelper {
     private static final String ATTA_URL = "https://h.trace.qq.com/kv";
-    private static final String ATTA_ID = "0f500064192";
-    private static final String ATTA_TOKEN = "4725229671";
+    private static final String ATTA_ID = BuildConfig.ATTA_ID;
+    private static final String ATTA_TOKEN = BuildConfig.ATTA_TOKEN;
     private static final String SDKVERSION = BuildConfig.VERSION_NAME;
     private static final String DEVICEMODEL = getSystemModel();
     private static final String SYSTEMNANE = "Andriod";
