@@ -13,6 +13,7 @@ import com.tencent.msdk.dns.base.report.IReporter;
 import com.tencent.msdk.dns.base.report.ReportManager;
 import com.tencent.msdk.dns.base.utils.CommonUtils;
 import com.tencent.msdk.dns.base.utils.IpValidator;
+import com.tencent.msdk.dns.core.ConfigFromServer;
 import com.tencent.msdk.dns.core.Const;
 import com.tencent.msdk.dns.core.DnsDescription;
 import com.tencent.msdk.dns.core.DnsManager;
@@ -69,7 +70,6 @@ public final class DnsService {
         if (null == config) {
             config = new DnsConfig.Builder().build();
         }
-
         // NOTE: 在开始打日志之前设置日志开关
         DnsLog.setLogLevel(config.logLevel);
         addLogNodes(config.logNodes);
@@ -77,6 +77,13 @@ public final class DnsService {
         Context appContext = context.getApplicationContext();
         sAppContext = appContext;
         sConfig = config;
+        // 底层配置获取
+        DnsExecutors.WORK.execute(new Runnable() {
+            @Override
+            public void run() {
+                ConfigFromServer.init(sConfig.lookupExtra);
+            }
+        });
         // 初始化Backup配置为容灾做准备
         BackupResolver.getInstance().init(sConfig);
         // 初始化SpendHelper配置为正常上报做准备

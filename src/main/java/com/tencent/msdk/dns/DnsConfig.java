@@ -41,7 +41,7 @@ public final class DnsConfig {
     /* @Nullable */ public final Set<IpRankItem> ipRankItems;
 
     public final String channel;
-    public final boolean enableReport;
+    public boolean enableReport;
     public final boolean blockFirst;
     public final int customNetStack;
 
@@ -92,6 +92,10 @@ public final class DnsConfig {
         this.reporters = reporters;
         this.useExpiredIpEnable = useExpiredIpEnable;
         this.cachedIpEnable = cachedIpEnable;
+    }
+
+    public void setDnsConfigFromServer(boolean mEnableReport, boolean mEnableDomainServer) {
+        this.enableReport = mEnableReport;
     }
 
     boolean needProtect(/* @Nullable */String hostname) {
