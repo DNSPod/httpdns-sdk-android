@@ -62,13 +62,11 @@ public final class ReportHelper {
         if (null == lookupResult) {
             throw new IllegalArgumentException("lookupResults".concat(Const.NULL_POINTER_TIPS));
         }
+        // atta上报
+        attaReportLookupEvent(ReportConst.PRE_LOOKUP_EVENT_NAME, lookupResult);
         if (!ReportManager.canReport()) {
             return;
         }
-
-        // atta上报
-        attaReportLookupEvent(ReportConst.PRE_LOOKUP_EVENT_NAME, lookupResult);
-
         // NOTE: 上报字段增减, 记得修改capacity
         Map<String, String> preLookupEventMap = CollectionCompat.createMap(24);
         StatisticsMerge statMerge = (StatisticsMerge) lookupResult.stat;
@@ -269,7 +267,7 @@ public final class ReportHelper {
     }
 
     private static void attaReportStatisticsEvent(Map<String, Object[]> cacheStatisticsMap) {
-        if (!ReportManager.canReport()) {
+        if (!sDnsConfig.enableReport) {
             return;
         }
         for (Map.Entry<String, Object[]> item : cacheStatisticsMap.entrySet()) {
