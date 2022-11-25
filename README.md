@@ -53,7 +53,7 @@ ext.subVersionCode = Integer.valueOf(String.format('%d%02d%02d',
 android { 
   dependencies { 
     // ...
-    implementation project(path: ':httpdns-sdk-android'
+    implementation project(path: ':httpdns-sdk-android')
   }
 ```
 
@@ -87,6 +87,15 @@ DnsConfig dnsConfigBuilder = DnsConfig.Builder()
     .timeoutMills(1000)
     //（可选）是否开启解析异常上报，默认false，不上报
     .enableReport(true)
+    //（可选）[V4.1.0] 解析缓存自动刷新, 以域名形式进行配置，填写形式："baidu.com", "qq.com"。配置的域名会在 TTL * 75% 时自动发起解析请求更新缓存，实现配置域名解析时始终命中缓存。此项建议不要设置太多域名，当前限制为最多 10 个域名。与预解析分开独立配置。
+    .persistentCacheDomains("baidu.com", "qq.com")
+    //（可选）[V4.2.0] IP 优选，以 IpRankItem(hostname, port) 组成的 List 配置, port（可选）默认值为 8080。例如：IpRankItem("qq.com", 443)。sdk 会根据配置项进行 socket 连接测速情况对解析 IP 进行排序，IP 优选不阻塞当前解析，在下次解析时生效。当前限制为最多 10 项。
+    .ipRankItems(ipRankItemList)
+    //（可选）[V4.3.0] 设置是否允许使用过期缓存，默认false，解析时先取未过期的缓存结果，不满足则等待解析请求完成后返回解析结果。
+    // 设置为true时，会直接返回缓存的解析结果，没有缓存则返回0;0，用户可使用localdns（InetAddress）进行兜底。且在无缓存结果或缓存已过期时，会异步发起解析请求更新缓存。因异步API（getAddrByNameAsync，getAddrsByNameAsync）逻辑在回调中始终返回未过期的解析结果，设置为true时，异步API不可使用。建议使用同步API （getAddrByName，getAddrsByName）。
+    .setUseExpiredIpEnable(true)
+    //（可选）[V4.3.0] 设置是否启用本地缓存（Room），默认false
+    .setCachedIpEnable(true)
     // 以build()结束
     .build();
     
