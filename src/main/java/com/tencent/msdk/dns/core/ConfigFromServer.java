@@ -1,4 +1,5 @@
 package com.tencent.msdk.dns.core;
+
 import com.tencent.msdk.dns.DnsService;
 import com.tencent.msdk.dns.base.log.DnsLog;
 import com.tencent.msdk.dns.core.rest.deshttp.DesCipherSuite;
@@ -13,8 +14,16 @@ public final class ConfigFromServer {
     private static boolean enableDomainServer;
     private static boolean enableReport;
 
-    public static void init(LookupExtra lookupExtra) {
-        String urlStr = "http://182.254.60.40/conf?id="+lookupExtra.bizId+"&alg=des";
+    public static void init(LookupExtra lookupExtra, String channel) {
+        String ServerIp = "182.254.60.40";
+        String urlStr = "http://" + ServerIp + "/conf?id=" + lookupExtra.bizId;
+        if (channel.equals(Const.HTTPS_CHANNEL)) {
+            // todo
+        } else {
+            String alg = channel.equals(Const.AES_HTTP_CHANNEL) ? "aes" : "des";
+            urlStr += "&alg=" + alg;
+        }
+
         HttpURLConnection connection = null;
         BufferedReader reader = null;
         String rawRspContent = "";

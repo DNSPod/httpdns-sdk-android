@@ -81,7 +81,7 @@ public final class DnsService {
         DnsExecutors.WORK.execute(new Runnable() {
             @Override
             public void run() {
-                ConfigFromServer.init(sConfig.lookupExtra);
+                ConfigFromServer.init(sConfig.lookupExtra, sConfig.channel);
             }
         });
         // 初始化Backup配置为容灾做准备
