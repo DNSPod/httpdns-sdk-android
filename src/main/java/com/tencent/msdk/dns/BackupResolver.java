@@ -4,8 +4,18 @@ import android.os.SystemClock;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.tencent.msdk.dns.base.executor.DnsExecutors;
 import com.tencent.msdk.dns.base.log.DnsLog;
+import com.tencent.msdk.dns.base.utils.DebounceTask;
 import com.tencent.msdk.dns.core.Const;
+import com.tencent.msdk.dns.core.DnsDescription;
+import com.tencent.msdk.dns.core.IDns;
+import com.tencent.msdk.dns.core.LookupParameters;
+import com.tencent.msdk.dns.core.LookupResult;
+import com.tencent.msdk.dns.core.rest.deshttp.DesHttpDns;
+import com.tencent.msdk.dns.core.rest.https.HttpsDns;
+import com.tencent.msdk.dns.core.rest.share.AbsHttpDns;
+import com.tencent.msdk.dns.core.rest.share.LookupExtra;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -27,7 +37,7 @@ public class BackupResolver {
     private int maxErrorCount = 3;
     private DnsConfig mConfig;
     //  解析ips
-    List<String> backupIps;
+    List<String> dnsIps;
     // 当前对应的解析ip index
     private int mIpIndex = 0;
     // 记录主ip切换时间，每隔10min切回测试一次主IP（不主动探测主备IP是否恢复）
@@ -50,20 +60,28 @@ public class BackupResolver {
         mConfig = dnsConfig;
         mErrorCount = new AtomicInteger(0);
         //  http和https是两个IP
-        if (Const.HTTPS_CHANNEL.equals(dnsConfig.channel) && !BuildConfig.HTTPS_TOLERANCE_SERVERS.isEmpty()) {
-            backupIps = new ArrayList<String>(Arrays.asList(mConfig.dnsIp, BuildConfig.HTTPS_TOLERANCE_SERVERS));
-        } else {
-            backupIps = new ArrayList<String>(Arrays.asList(mConfig.dnsIp, BuildConfig.HTTP_TOLERANCE_SERVERS));
-        }
-
+        dnsIps = getBackUpIps();
+        getThreeNets();
     }
 
-    public void incrementErrorCount(){
+    public void getThreeNets() {
+        getThreeNets.run();
+    }
+
+    private ArrayList getBackUpIps() {
+        if (Const.HTTPS_CHANNEL.equals(mConfig.channel) && !BuildConfig.HTTPS_TOLERANCE_SERVERS.isEmpty()) {
+            return new ArrayList<String>(Arrays.asList(mConfig.dnsIp, BuildConfig.HTTPS_TOLERANCE_SERVERS));
+        } else {
+            return new ArrayList<String>(Arrays.asList(mConfig.dnsIp, BuildConfig.HTTP_TOLERANCE_SERVERS));
+        }
+    }
+
+    public void incrementErrorCount() {
         Integer count = mErrorCount.incrementAndGet();
         DnsLog.d(Thread.currentThread().getName() + " increment mErrorCount: " + count);
     }
 
-    public void setErrorCount(Integer count){
+    public void setErrorCount(Integer count) {
         mErrorCount.set(count);
         DnsLog.d(Thread.currentThread().getName() + " set mErrorCount: " + count);
     }
@@ -104,7 +122,7 @@ public class BackupResolver {
                 mBackupTime = SystemClock.elapsedRealtime();
             }
             // 当前的失败次数达到了切换阈值时进行ipIndex的首尾循环，这里重新切回主IP
-            if (mIpIndex >= backupIps.size() - 1) {
+            if (mIpIndex >= dnsIps.size() - 1) {
                 mIpIndex = 0;
                 mBackupTime = 0;
             } else {
@@ -112,11 +130,41 @@ public class BackupResolver {
             }
             //  ip切换后清空ip错误次数
             mErrorCount.set(0);
-            DnsLog.d("IP Changed：" + backupIps.get(mIpIndex));
+            DnsLog.d("IP Changed：" + dnsIps.get(mIpIndex));
         }
-
-        String backip = backupIps.get(mIpIndex);
-
+        String backip = dnsIps.get(mIpIndex);
         return TextUtils.isEmpty(backip) ? mConfig.dnsIp : backip;
     }
+
+    DebounceTask getThreeNets = DebounceTask.build(new Runnable() {
+        @Override
+        public void run() {
+            try {
+                IDns dns = new DesHttpDns(DnsDescription.Family.INET);
+                LookupParameters lookupParameters = new LookupParameters.Builder<LookupExtra>()
+                        .dnsIp("119.29.29.98")
+                        .channel("DesHttp")
+                        .hostname("httpdns.run")
+                        .lookupExtra(new LookupExtra("34745", "Sh63l8wv", "347982594"))
+                        .context(DnsService.getContext())
+                        .timeoutMills(1000)
+                        .fallback2Local(false)
+                        .build();
+                LookupResult result = dns.lookup(lookupParameters);
+                if(result.stat.lookupSuccess()){
+                    List<String> mergeList = new ArrayList<>();
+                    List<String> threeNets = Arrays.asList(result.ipSet.ips);
+                    List<String> backUpIps = getBackUpIps();
+                    DnsLog.d("ThreeNets dnsIps: " + dnsIps);
+                    mergeList.addAll(threeNets);
+                    mergeList.addAll(backUpIps);
+                    dnsIps = mergeList;
+                    mIpIndex = 0;
+                    mErrorCount.set(0);
+                }
+            } catch (Exception e) {
+                DnsLog.w(e, "getThreeNets failed");
+            }
+        }
+    }, 15L);
 }

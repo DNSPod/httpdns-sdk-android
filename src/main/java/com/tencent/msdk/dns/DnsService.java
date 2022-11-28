@@ -84,7 +84,7 @@ public final class DnsService {
                 ConfigFromServer.init(sConfig.lookupExtra, sConfig.channel);
             }
         });
-        // 初始化Backup配置为容灾做准备
+        // 初始化ThreeNetsIP配置为容灾做准备
         BackupResolver.getInstance().init(sConfig);
         // 初始化SpendHelper配置为正常上报做准备
         SpendReportResolver.getInstance().init();
@@ -445,5 +445,9 @@ public final class DnsService {
                 ReportHelper.reportPreLookupEvent(lookupResult);
             }
         });
+    }
+
+    public static Context getContext() {
+        return sAppContext;
     }
 }
