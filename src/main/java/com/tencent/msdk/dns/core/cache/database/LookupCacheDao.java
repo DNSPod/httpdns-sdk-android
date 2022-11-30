@@ -17,8 +17,8 @@ public interface LookupCacheDao {
     @Query("Select * from lookupcache")
     List<LookupCache> getAll();
 
-    @Query("Select lookupResult from lookupcache where hostname = :hostname")
-    LookupResult get(String hostname);
+    @Query("Select * from lookupcache where hostname = :hostname")
+    LookupCache get(String hostname);
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insertLookupCache(LookupCache lookupCache);

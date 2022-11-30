@@ -2,6 +2,7 @@ package com.tencent.msdk.dns.core.rest.share;
 
 import android.text.TextUtils;
 
+import com.tencent.msdk.dns.BuildConfig;
 import com.tencent.msdk.dns.DnsService;
 import com.tencent.msdk.dns.BackupResolver;
 import com.tencent.msdk.dns.base.compat.CollectionCompat;
@@ -231,8 +232,10 @@ public final class CacheHelper {
                             }
                         }
 
-                        DnsLog.d("Network changed, refetch ThreeNets Ips");
-                        BackupResolver.getInstance().getThreeNets();
+                        if (BuildConfig.FLAVOR.equals("intl")) {
+                            DnsLog.d("Network changed, refetch server Ips");
+                            BackupResolver.getInstance().getServerIps();
+                        }
 
                         // 开启自动刷新缓存后，切换网络，刷新配置域名的缓存
                         final boolean enablePersistentCache = DnsService.getDnsConfig().enablePersistentCache;

@@ -56,9 +56,9 @@ public final class DnsConfig {
      */
     /* @Nullable */ public final List<IReporter> reporters;
 
-    public boolean useExpiredIpEnable = false;
+    public boolean useExpiredIpEnable;
 
-    public boolean cachedIpEnable = false;
+    public boolean cachedIpEnable;
 
     private DnsConfig(int logLevel,
                       String appId, String userId, boolean initBuiltInReporters,

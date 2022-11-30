@@ -5,8 +5,8 @@ import com.tencent.msdk.dns.core.DnsDescription;
 import com.tencent.msdk.dns.core.rest.share.AbsHttpDns;
 import com.tencent.msdk.dns.core.rest.share.AbsHttpDnsConfig;
 import com.tencent.msdk.dns.core.rest.share.LookupExtra;
-
 import com.tencent.msdk.dns.core.rest.share.RequestBuilder;
+
 import java.net.SocketAddress;
 
 
@@ -34,11 +34,14 @@ public final class DesHttpDns extends AbsHttpDns {
         String reqContent;
         switch (mFamily) {
             case DnsDescription.Family.INET:
-                reqContent = RequestBuilder.buildInetRequest(encryptHostname, lookupExtra.bizId); break;
+                reqContent = RequestBuilder.buildInetRequest(encryptHostname, lookupExtra.bizId, "des");
+                break;
             case DnsDescription.Family.INET6:
-                reqContent = RequestBuilder.buildInet6Request(encryptHostname, lookupExtra.bizId); break;
+                reqContent = RequestBuilder.buildInet6Request(encryptHostname, lookupExtra.bizId, "des");
+                break;
             case DnsDescription.Family.UN_SPECIFIC:
-                reqContent = RequestBuilder.buildDoubRequest(encryptHostname, lookupExtra.bizId); break;
+                reqContent = RequestBuilder.buildDoubRequest(encryptHostname, lookupExtra.bizId, "des");
+                break;
             default:
                 throw new IllegalStateException("Unexpected value: " + mFamily);
         }

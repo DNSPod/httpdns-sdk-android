@@ -2,9 +2,7 @@ package com.tencent.msdk.dns;
 
 import android.os.SystemClock;
 import android.text.TextUtils;
-import android.util.Log;
 
-import com.tencent.msdk.dns.base.executor.DnsExecutors;
 import com.tencent.msdk.dns.base.log.DnsLog;
 import com.tencent.msdk.dns.base.utils.DebounceTask;
 import com.tencent.msdk.dns.core.Const;
@@ -13,8 +11,6 @@ import com.tencent.msdk.dns.core.IDns;
 import com.tencent.msdk.dns.core.LookupParameters;
 import com.tencent.msdk.dns.core.LookupResult;
 import com.tencent.msdk.dns.core.rest.deshttp.DesHttpDns;
-import com.tencent.msdk.dns.core.rest.https.HttpsDns;
-import com.tencent.msdk.dns.core.rest.share.AbsHttpDns;
 import com.tencent.msdk.dns.core.rest.share.LookupExtra;
 
 import java.util.ArrayList;
@@ -61,18 +57,21 @@ public class BackupResolver {
         mErrorCount = new AtomicInteger(0);
         //  http和https是两个IP
         dnsIps = getBackUpIps();
-        getThreeNets();
+        getServerIps();
     }
 
-    public void getThreeNets() {
-        getThreeNets.run();
+    public void getServerIps() {
+        if (Const.HTTPS_CHANNEL.equals(mConfig.channel)) {
+            return;
+        }
+        getServerIpsTask.run();
     }
 
     private ArrayList getBackUpIps() {
-        if (Const.HTTPS_CHANNEL.equals(mConfig.channel) && !BuildConfig.HTTPS_TOLERANCE_SERVERS.isEmpty()) {
-            return new ArrayList<String>(Arrays.asList(mConfig.dnsIp, BuildConfig.HTTPS_TOLERANCE_SERVERS));
+        if (Const.HTTPS_CHANNEL.equals(mConfig.channel) && !BuildConfig.HTTPS_TOLERANCE_SERVER.isEmpty()) {
+            return new ArrayList<String>(Arrays.asList(mConfig.dnsIp, BuildConfig.HTTPS_TOLERANCE_SERVER));
         } else {
-            return new ArrayList<String>(Arrays.asList(mConfig.dnsIp, BuildConfig.HTTP_TOLERANCE_SERVERS));
+            return new ArrayList<String>(Arrays.asList(mConfig.dnsIp, BuildConfig.HTTP_TOLERANCE_SERVER));
         }
     }
 
@@ -136,29 +135,36 @@ public class BackupResolver {
         return TextUtils.isEmpty(backip) ? mConfig.dnsIp : backip;
     }
 
-    DebounceTask getThreeNets = DebounceTask.build(new Runnable() {
+    /**
+     * 服务域名解析，获取服务IP
+     * https加密方式不支持域名接入
+     * 国内站在初始化和网络变更时发起解析服务刷新服务IP
+     * 国际站服务IP按州部署，可持久化缓存，过期后刷新，无须每次初始化/网络变更时刷新
+     */
+    DebounceTask getServerIpsTask = DebounceTask.build(new Runnable() {
         @Override
         public void run() {
             try {
                 IDns dns = new DesHttpDns(DnsDescription.Family.INET);
+                String domain = BuildConfig.INIT_SERVERS_DOMAINS[0];
                 LookupParameters lookupParameters = new LookupParameters.Builder<LookupExtra>()
-                        .dnsIp("119.29.29.98")
+                        .dnsIp(BuildConfig.HTTP_INIT_SERVER)
                         .channel("DesHttp")
-                        .hostname("httpdns.run")
+                        .hostname(domain)
                         .lookupExtra(new LookupExtra("34745", "Sh63l8wv", "347982594"))
                         .context(DnsService.getContext())
                         .timeoutMills(1000)
                         .fallback2Local(false)
                         .build();
                 LookupResult result = dns.lookup(lookupParameters);
-                if(result.stat.lookupSuccess()){
+                if (result.stat.lookupSuccess()) {
                     List<String> mergeList = new ArrayList<>();
-                    List<String> threeNets = Arrays.asList(result.ipSet.ips);
+                    List<String> serverIps = Arrays.asList(result.ipSet.ips);
                     List<String> backUpIps = getBackUpIps();
-                    DnsLog.d("ThreeNets dnsIps: " + dnsIps);
-                    mergeList.addAll(threeNets);
+                    mergeList.addAll(serverIps);
                     mergeList.addAll(backUpIps);
                     dnsIps = mergeList;
+                    DnsLog.d("dns servers Ips: " + dnsIps);
                     mIpIndex = 0;
                     mErrorCount.set(0);
                 }
