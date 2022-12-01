@@ -50,10 +50,12 @@ public class BackupResolver {
         mConfig = dnsConfig;
         mErrorCount = new AtomicInteger(0);
         //  http和https是两个IP
-        if (Const.HTTPS_CHANNEL.equals(dnsConfig.channel) && !BuildConfig.HTTPS_TOLERANCE_SERVERS.isEmpty()) {
-            backupIps = new ArrayList<String>(Arrays.asList(mConfig.dnsIp, BuildConfig.HTTPS_TOLERANCE_SERVERS));
+        if (Const.HTTPS_CHANNEL.equals(dnsConfig.channel)) {
+            if (!BuildConfig.HTTPS_TOLERANCE_SERVER.isEmpty()) {
+                backupIps = new ArrayList<String>(Arrays.asList(mConfig.dnsIp, BuildConfig.HTTPS_TOLERANCE_SERVER));
+            }
         } else {
-            backupIps = new ArrayList<String>(Arrays.asList(mConfig.dnsIp, BuildConfig.HTTP_TOLERANCE_SERVERS));
+            backupIps = new ArrayList<String>(Arrays.asList(mConfig.dnsIp, BuildConfig.HTTP_TOLERANCE_SERVER));
         }
 
     }
