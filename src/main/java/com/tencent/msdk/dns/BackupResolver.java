@@ -30,7 +30,7 @@ public class BackupResolver {
     // 当前ip解析失败的次数
     private AtomicInteger mErrorCount = new AtomicInteger(0);
     // 解析失败的最大次数
-    private int maxErrorCount = 3;
+    private final int maxErrorCount = 3;
     private DnsConfig mConfig;
     //  解析ips
     List<String> dnsIps;
@@ -39,7 +39,7 @@ public class BackupResolver {
     // 记录主ip切换时间，每隔10min切回测试一次主IP（不主动探测主备IP是否恢复）
     private long mBackupTime = 0;
     // 尝试切回主ip的间隔时间，默认为10分钟
-    private long mInterval = 10 * 60 * 1000;
+    private final long mInterval = 10 * 60 * 1000;
 
     public static BackupResolver getInstance() {//静态get方法
         if (mBackupResolver == null) {
@@ -138,8 +138,8 @@ public class BackupResolver {
     /**
      * 服务域名解析，获取服务IP
      * https加密方式不支持域名接入
-     * 国内站在初始化和网络变更时发起解析服务刷新服务IP
-     * 国际站服务IP按州部署，可持久化缓存，过期后刷新，无须每次初始化/网络变更时刷新
+     * 国内站在初始化和网络变更时发起解析服务刷新服务IP，刷新IP不命中缓存
+     * 国际站服务IP按州部署，无须在网络变更时刷新
      */
     DebounceTask getServerIpsTask = DebounceTask.build(new Runnable() {
         @Override
@@ -147,13 +147,20 @@ public class BackupResolver {
             try {
                 IDns dns = new DesHttpDns(DnsDescription.Family.INET);
                 String domain = BuildConfig.INIT_SERVERS_DOMAINS[0];
+                LookupExtra lookupExtra;
+                if (BuildConfig.FLAVOR.equals("intl")) {
+                    lookupExtra = new LookupExtra("4308", "0jXUrLWR", "");
+                } else {
+                    lookupExtra = new LookupExtra("34745", "Sh63l8wv", "347982594");
+                }
                 LookupParameters lookupParameters = new LookupParameters.Builder<LookupExtra>()
                         .dnsIp(BuildConfig.HTTP_INIT_SERVER)
                         .channel("DesHttp")
                         .hostname(domain)
-                        .lookupExtra(new LookupExtra("34745", "Sh63l8wv", "347982594"))
+                        .lookupExtra(lookupExtra)
                         .context(DnsService.getContext())
                         .timeoutMills(1000)
+                        .enableAsyncLookup(true)
                         .fallback2Local(false)
                         .build();
                 LookupResult result = dns.lookup(lookupParameters);
@@ -169,7 +176,7 @@ public class BackupResolver {
                     mErrorCount.set(0);
                 }
             } catch (Exception e) {
-                DnsLog.w(e, "getThreeNets failed");
+                DnsLog.w(e, "getServerIpsTask failed");
             }
         }
     }, 15L);

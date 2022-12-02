@@ -1,7 +1,6 @@
 package com.tencent.msdk.dns.core.rest.share;
 
 import android.text.TextUtils;
-import android.util.Log;
 
 import com.tencent.msdk.dns.base.log.DnsLog;
 import com.tencent.msdk.dns.base.utils.CommonUtils;
@@ -20,7 +19,6 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.SocketAddress;
 import java.net.URL;
-import java.net.URLConnection;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
@@ -132,7 +130,7 @@ public abstract class AbsHttpDns extends AbsRestDns {
                 stat.errorCode = ErrorCode.PARSE_RESPONSE_CONTENT_FAILED_ERROR_CODE;
                 return new LookupResult<>(stat.ips, stat);
             }
-            if(rsp.ips==Const.EMPTY_IPS){
+            if (rsp.ips == Const.EMPTY_IPS) {
                 DnsLog.d(getTag() + "receive success, but no " + (DnsDescription.Family.INET6 == mFamily ? "INET6" : "INET") + " record");
                 stat.isGetEmptyResponse = true;
                 stat.errorCode = ErrorCode.NO_RECORD;
@@ -416,7 +414,7 @@ public abstract class AbsHttpDns extends AbsRestDns {
             String rspBody = HttpHelper.responseBody(rspHttpRsp);
             String rspContent = decrypt(rspBody, lookupExtra.bizKey);
             int rspStatus = HttpHelper.responseStatus(rspHttpRsp);
-            mStat.statusCode =rspStatus;
+            mStat.statusCode = rspStatus;
             DnsLog.d(getTag() + "receive rawLen:%d, raw:[%s], rsp body content:[%s]", totalLen, rspBody, rspContent);
             if (TextUtils.isEmpty(rspContent)) {
                 mStat.isGetEmptyResponse = true;
@@ -425,7 +423,7 @@ public abstract class AbsHttpDns extends AbsRestDns {
             }
             Response resParser = ResponseParser.parseResponse(mFamily, rspContent);
             //  将hdns有返回但域名自身解析记录配置为空的情况独立出来
-            if(resParser.ips==Const.EMPTY_IPS){
+            if (resParser.ips == Const.EMPTY_IPS) {
                 DnsLog.d(getTag() + "receive success, but no " + (DnsDescription.Family.INET6 == mFamily ? "INET6" : "INET") + " record");
                 mStat.isGetEmptyResponse = true;
                 mStat.errorCode = ErrorCode.NO_RECORD;

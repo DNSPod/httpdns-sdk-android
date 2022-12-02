@@ -193,8 +193,8 @@ public final class CacheHelper {
             DnsExecutors.MAIN.schedule(
                     asyncLookupTask, (long) (ASYNC_LOOKUP_FACTOR * rsp.ttl * 1000));
         } else {
+            // 不允许使用过期缓存时，ttl*100%应执行缓存清空任务。
             final boolean useExpiredIpEnable = DnsService.getDnsConfig().useExpiredIpEnable;
-            // 允许使用过期缓存，不下发清空缓存任务
             if (!useExpiredIpEnable) {
                 final Runnable removeExpiredCacheTask = new Runnable() {
                     @Override
@@ -232,7 +232,8 @@ public final class CacheHelper {
                             }
                         }
 
-                        if (BuildConfig.FLAVOR.equals("intl")) {
+                        // 国内站网络变更需刷新服务ip
+                        if (BuildConfig.FLAVOR.equals("normal")) {
                             DnsLog.d("Network changed, refetch server Ips");
                             BackupResolver.getInstance().getServerIps();
                         }
