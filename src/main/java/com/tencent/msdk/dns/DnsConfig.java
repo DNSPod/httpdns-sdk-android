@@ -94,10 +94,6 @@ public final class DnsConfig {
         this.cachedIpEnable = cachedIpEnable;
     }
 
-    public void setDnsConfigFromServer(boolean mEnableReport, boolean mEnableDomainServer) {
-        this.enableReport = mEnableReport;
-    }
-
     boolean needProtect(/* @Nullable */String hostname) {
         if (TextUtils.isEmpty(hostname) || TextUtils.isEmpty(hostname = hostname.trim())) {
             return false;

@@ -7,7 +7,7 @@ import com.tencent.msdk.dns.core.rest.share.DataConverter;
 import java.nio.charset.Charset;
 import java.security.SecureRandom;
 
-final class AesCipherSuite {
+public final class AesCipherSuite {
   public static final int DEFAULT_IV_LEN = 16;
 
   @SuppressWarnings("CharsetObjectCanBeUsed")
@@ -32,7 +32,7 @@ final class AesCipherSuite {
   }
 
   @SuppressWarnings("CharsetObjectCanBeUsed")
-  static String decrypt(/* @Nullable */String content, /* @Nullable */String key) {
+  public static String decrypt(/* @Nullable */String content, /* @Nullable */String key) {
     if (TextUtils.isEmpty(content) || TextUtils.isEmpty(key)) {
       return "";
     }
