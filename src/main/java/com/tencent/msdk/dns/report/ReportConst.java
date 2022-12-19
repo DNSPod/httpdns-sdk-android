@@ -2,10 +2,11 @@ package com.tencent.msdk.dns.report;
 
 interface ReportConst {
 
-    String PRE_LOOKUP_EVENT_NAME = "HDNSPreLookup";
-    String ASYNC_LOOKUP_EVENT_NAME = "HDNSLookupAsync";
-    String LOOKUP_METHOD_CALLED_EVENT_NAME = "HDNSGetHostByName";
-    String LOOKUP_FROM_CACHED_EVENT_NAME = "HDNSLookupCached";
+    String PRE_LOOKUP_EVENT_NAME = "HDNSPreLookup"; // 预解析
+    String ASYNC_LOOKUP_EVENT_NAME = "HDNSLookupAsync"; // 缓存自动刷新（异步）
+    String LOOKUP_METHOD_CALLED_EVENT_NAME = "HDNSGetHostByName";   // 普通解析
+    String LOOKUP_FROM_CACHED_EVENT_NAME = "HDNSLookupCached";  // 命中缓存
+    String EXPIRED_ASYNC_LOOKUP_EVENT_NAME = "HDNSLookupExpiredAsync"; // useExpiredIpEnable为true时的异步更新缓存事件,区别于HDNSLookupAsync
 
     String IP_SPLITTER = ",";
 

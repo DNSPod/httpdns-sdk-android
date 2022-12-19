@@ -178,6 +178,18 @@ public final class DnsService {
         }
     }
 
+    /**
+     * 设置是否上报，是否启用域名服务（获取底层配置）
+     * @param mEnableReport
+     * @param mEnableDomainServer
+     */
+    public static void setDnsConfigFromServer(boolean mEnableReport, boolean mEnableDomainServer) {
+        if (!sInited) {
+            throw new IllegalStateException("DnsService".concat(Const.NOT_INIT_TIPS));
+        }
+        sConfig.enableReport = mEnableReport;
+    }
+
     public static String getDnsDetail(String hostname) {
         String dnsIp = BackupResolver.getInstance().getDnsIp();
         LookupResult<IStatisticsMerge> lookupResult = DnsManager.getResultFromCache(new LookupParameters.Builder<LookupExtra>()

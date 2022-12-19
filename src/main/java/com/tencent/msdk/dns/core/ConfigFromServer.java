@@ -86,7 +86,7 @@ public final class ConfigFromServer {
                     enableDomainServer = Boolean.parseBoolean(item[1]);
                 }
             }
-            DnsService.getDnsConfig().setDnsConfigFromServer(enableReport, enableDomainServer);
+            DnsService.setDnsConfigFromServer(enableReport, enableDomainServer);
         }
     }
 

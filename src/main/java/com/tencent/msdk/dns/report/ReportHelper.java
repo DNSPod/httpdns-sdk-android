@@ -107,14 +107,17 @@ public final class ReportHelper {
             return;
         }
         StatisticsMerge statMerge = (StatisticsMerge) lookupResult.stat;
-        DnsLog.d("lookupResult:" + String.valueOf(lookupResult));
 
-        // 命中缓存的数据，统计上报
         if (statMerge.restDnsStat.cached) {
+            // 命中缓存的数据，统计上报
             CacheStatisticsReport.add(lookupResult);
+        } else {
+            if (sDnsConfig.useExpiredIpEnable) {
+                attaReportLookupEvent(ReportConst.EXPIRED_ASYNC_LOOKUP_EVENT_NAME, lookupResult);
+            } else {
+                attaReportLookupEvent(ReportConst.LOOKUP_METHOD_CALLED_EVENT_NAME, lookupResult);
+            }
         }
-
-        attaReportLookupEvent(ReportConst.LOOKUP_METHOD_CALLED_EVENT_NAME, lookupResult);
 
         //  灯塔反射引入
         if (!ReportManager.canReport()) {
