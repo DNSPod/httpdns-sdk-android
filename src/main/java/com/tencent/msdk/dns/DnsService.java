@@ -186,6 +186,7 @@ public final class DnsService {
             throw new IllegalStateException("DnsService".concat(Const.NOT_INIT_TIPS));
         }
         sConfig.enableReport = mEnableReport;
+        sConfig.enableDomainServer = mEnableDomainServer;
     }
 
     public static String getDnsDetail(String hostname) {

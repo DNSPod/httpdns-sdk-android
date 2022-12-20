@@ -229,6 +229,10 @@ public final class ReportHelper {
         attaReportLookupEvent(ReportConst.ASYNC_LOOKUP_EVENT_NAME, lookupResult);
     }
 
+    public static void attaReportDomainServerLookupEvent(LookupResult lookupResult) {
+        attaReportLookupEvent(ReportConst.DOMAIN_SERVER_LOOKUP_EVENT_NAME, lookupResult);
+    }
+
     private static void attaReportLookupEvent(String eventName, LookupResult lookupResult) {
         if (null == lookupResult) {
             throw new IllegalArgumentException("lookupResult".concat(Const.NULL_POINTER_TIPS));

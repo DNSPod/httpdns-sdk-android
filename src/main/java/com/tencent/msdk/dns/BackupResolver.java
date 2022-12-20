@@ -7,11 +7,13 @@ import com.tencent.msdk.dns.base.log.DnsLog;
 import com.tencent.msdk.dns.base.utils.DebounceTask;
 import com.tencent.msdk.dns.core.Const;
 import com.tencent.msdk.dns.core.DnsDescription;
+import com.tencent.msdk.dns.core.DnsManager;
 import com.tencent.msdk.dns.core.IDns;
 import com.tencent.msdk.dns.core.LookupParameters;
 import com.tencent.msdk.dns.core.LookupResult;
 import com.tencent.msdk.dns.core.rest.deshttp.DesHttpDns;
 import com.tencent.msdk.dns.core.rest.share.LookupExtra;
+import com.tencent.msdk.dns.report.ReportHelper;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -159,14 +161,15 @@ public class BackupResolver {
                         .hostname(domain)
                         .lookupExtra(lookupExtra)
                         .context(DnsService.getContext())
-                        .timeoutMills(1000)
+                        .timeoutMills(2000)
                         .enableAsyncLookup(true)
                         .fallback2Local(false)
                         .build();
-                LookupResult result = dns.lookup(lookupParameters);
+                LookupResult result = DnsManager.lookupWrapper(lookupParameters);
+                ReportHelper.attaReportDomainServerLookupEvent(result);
                 if (result.stat.lookupSuccess()) {
                     List<String> mergeList = new ArrayList<>();
-                    List<String> serverIps = Arrays.asList(result.ipSet.ips);
+                    List<String> serverIps = Arrays.asList(result.ipSet.v4Ips);
                     List<String> backUpIps = getBackUpIps();
                     mergeList.addAll(serverIps);
                     mergeList.addAll(backUpIps);

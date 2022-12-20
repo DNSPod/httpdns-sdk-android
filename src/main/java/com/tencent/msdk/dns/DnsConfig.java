@@ -45,7 +45,6 @@ public final class DnsConfig {
     public final boolean blockFirst;
     public final int customNetStack;
 
-
     /* @Nullable */ public final DnsExecutors.ExecutorSupplier executorSupplier;
 
     /* @Nullable */ public final ILookedUpListener lookedUpListener;
@@ -59,6 +58,8 @@ public final class DnsConfig {
     public boolean useExpiredIpEnable;
 
     public boolean cachedIpEnable;
+
+    public boolean enableDomainServer = true;
 
     private DnsConfig(int logLevel,
                       String appId, String userId, boolean initBuiltInReporters,
@@ -133,6 +134,7 @@ public final class DnsConfig {
                 ", reporters=" + CommonUtils.toString(reporters) +
                 ", useExpiredIpEnable=" + useExpiredIpEnable +
                 ", cachedIpEnable=" + cachedIpEnable +
+                ", enableDomainServer=" + enableDomainServer +
                 '}';
     }
 
