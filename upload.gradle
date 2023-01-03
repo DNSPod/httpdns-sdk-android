@@ -1,0 +1,35 @@
+apply plugin: 'maven-publish'
+
+//用户名
+def NEXUS_USERNAME="*****"
+//密码
+def NEXUS_PASSWORD="*****"
+//地址
+def NEXUS_REPOSITORY_URL="https://s01.oss.sonatype.org/content/repositories/releases/"
+def SNSPSHOT_REPOSITORY_URL = "https://s01.oss.sonatype.org/content/repositories/snapshots/"
+
+publishing {
+    publications {
+        Production(MavenPublication) {
+            //包结构
+            groupId = "io.github.dnspod"
+            //项目名
+            artifactId = "httpdns-sdk"
+            //版本号
+            version = "4.3.0-SNAPSHOT"
+            //本地的文件
+            artifact("$buildDir/outputs/aar/HTTPDNS_Android_v4.3.0a_release.aar")
+        }
+    }
+
+    repositories {
+        maven {
+            url NEXUS_REPOSITORY_URL
+            credentials {
+                username = NEXUS_USERNAME
+                password = NEXUS_PASSWORD
+            }
+            allowInsecureProtocol true
+        }
+    }
+}
