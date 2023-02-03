@@ -8,6 +8,7 @@ import com.tencent.msdk.dns.base.jni.JniWrapper;
 import com.tencent.msdk.dns.base.log.DnsLog;
 import com.tencent.msdk.dns.base.log.ILogNode;
 import com.tencent.msdk.dns.base.utils.CommonUtils;
+import com.tencent.msdk.dns.base.utils.NetworkStack;
 import com.tencent.msdk.dns.core.Const;
 import com.tencent.msdk.dns.core.IpSet;
 
@@ -390,6 +391,15 @@ public class MSDKDnsResolver {
             DnsLog.v("getDnsDetail exception:" + e);
         }
         return "";
+    }
+
+    /**
+     *  获取网络栈支持情况
+     * @return 0: UNKOWN, 1: IPV4_ONLY, 2: IPV6_ONLY, 3: DUAL_STACK;
+     */
+    public int getNetworkStack() {
+        DnsLog.v("MSDKDnsResolver.getNetworkStack() called.");
+        return NetworkStack.get();
     }
 
     @SuppressWarnings("unused")
