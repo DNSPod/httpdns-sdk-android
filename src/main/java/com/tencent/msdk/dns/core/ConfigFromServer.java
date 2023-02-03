@@ -1,6 +1,7 @@
 package com.tencent.msdk.dns.core;
 
 import com.tencent.msdk.dns.BuildConfig;
+import com.tencent.msdk.dns.BackupResolver;
 import com.tencent.msdk.dns.DnsService;
 import com.tencent.msdk.dns.base.log.DnsLog;
 import com.tencent.msdk.dns.core.rest.aeshttp.AesCipherSuite;
@@ -83,11 +84,12 @@ public final class ConfigFromServer {
                 if (item[0].contains("log")) {
                     enableReport = "1".equals(item[1]);
                 } else if (item[0].contains("domain")) {
-                    enableDomainServer = Boolean.parseBoolean(item[1]);
+                    enableDomainServer = "1".equals(item[1]);
                 }
             }
             DnsService.setDnsConfigFromServer(enableReport, enableDomainServer);
         }
+        BackupResolver.getInstance().getServerIps();
     }
 
 

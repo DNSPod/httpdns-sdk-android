@@ -50,7 +50,10 @@ android {
             buildConfigField "String", "HTTPS_TOLERANCE_SERVER", HTTPS_TOLERANCE_SERVER
             buildConfigField "String", "ATTA_ID", ATTA_ID
             buildConfigField "String", "ATTA_TOKEN", ATTA_TOKEN
-            buildConfigField "String[]", "INIT_SERVERS_DOMAINS", INIT_SERVERS_DOMAINS
+            buildConfigField "String[]", "DOMAIN_SERVICE_DOMAINS", DOMAIN_SERVICE_DOMAINS
+            buildConfigField "String", "DOMAIN_SERVICE_ID", DOMAIN_SERVICE_ID
+            buildConfigField "String", "DOMSIN_SERVICE_KEY", DOMSIN_SERVICE_KEY
+            buildConfigField "String", "DOMAIN_SERVICE_TOKEN", DOMAIN_SERVICE_TOKEN
         }
 
         intl {
@@ -59,7 +62,10 @@ android {
             buildConfigField "String", "HTTPS_TOLERANCE_SERVER", "\"\""
             buildConfigField "String", "ATTA_ID", INTL_ATTA_ID
             buildConfigField "String", "ATTA_TOKEN", INTL_ATTA_TOKEN
-            buildConfigField "String[]", "INIT_SERVERS_DOMAINS", INTL_INIT_SERVERS_DOMAINS
+            buildConfigField "String[]", "DOMAIN_SERVICE_DOMAINS", INTL_DOMAIN_SERVICE_DOMAINS
+            buildConfigField "String", "DOMAIN_SERVICE_ID", INTL_DOMAIN_SERVICE_ID
+            buildConfigField "String", "DOMSIN_SERVICE_KEY", INTL_DOMSIN_SERVICE_KEY
+            buildConfigField "String", "DOMAIN_SERVICE_TOKEN", INTL_DOMAIN_SERVICE_TOKEN
         }
     }
 

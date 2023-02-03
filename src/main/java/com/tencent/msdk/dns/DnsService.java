@@ -84,7 +84,7 @@ public final class DnsService {
                 ConfigFromServer.init(sConfig.lookupExtra, sConfig.channel);
             }
         });
-        // 初始化ThreeNetsIP配置为容灾做准备
+        // 初始化容灾服务
         BackupResolver.getInstance().init(sConfig);
         // 初始化SpendHelper配置为正常上报做准备
         SpendReportResolver.getInstance().init();

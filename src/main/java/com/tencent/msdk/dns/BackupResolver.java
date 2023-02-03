@@ -59,11 +59,10 @@ public class BackupResolver {
         mErrorCount = new AtomicInteger(0);
         //  http和https是两个IP
         dnsIps = getBackUpIps();
-        getServerIps();
     }
 
     public void getServerIps() {
-        if (Const.HTTPS_CHANNEL.equals(mConfig.channel)) {
+        if (Const.HTTPS_CHANNEL.equals(mConfig.channel) || !DnsService.getDnsConfig().enableDomainServer) {
             return;
         }
         getServerIpsTask.run();
@@ -148,13 +147,8 @@ public class BackupResolver {
         public void run() {
             try {
                 IDns dns = new DesHttpDns(DnsDescription.Family.INET);
-                String domain = BuildConfig.INIT_SERVERS_DOMAINS[0];
-                LookupExtra lookupExtra;
-                if (BuildConfig.FLAVOR.equals("intl")) {
-                    lookupExtra = new LookupExtra("4308", "0jXUrLWR", "");
-                } else {
-                    lookupExtra = new LookupExtra("34745", "Sh63l8wv", "347982594");
-                }
+                String domain = BuildConfig.DOMAIN_SERVICE_DOMAINS[0];
+                LookupExtra lookupExtra = new LookupExtra(BuildConfig.DOMAIN_SERVICE_ID, BuildConfig.DOMSIN_SERVICE_KEY, BuildConfig.DOMAIN_SERVICE_TOKEN);
                 LookupParameters lookupParameters = new LookupParameters.Builder<LookupExtra>()
                         .dnsIp(BuildConfig.HTTP_INIT_SERVER)
                         .channel("DesHttp")

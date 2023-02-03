@@ -59,7 +59,7 @@ public final class DnsConfig {
 
     public boolean cachedIpEnable;
 
-    public boolean enableDomainServer = true;
+    public boolean enableDomainServer = false;
 
     private DnsConfig(int logLevel,
                       String appId, String userId, boolean initBuiltInReporters,
