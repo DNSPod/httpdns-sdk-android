@@ -395,7 +395,7 @@ public class MSDKDnsResolver {
 
     /**
      *  获取网络栈支持情况
-     * @return 0: UNKOWN, 1: IPV4_ONLY, 2: IPV6_ONLY, 3: DUAL_STACK;
+     * @return 0: UNKNOWN, 1: IPV4_ONLY, 2: IPV6_ONLY, 3: DUAL_STACK;
      */
     public int getNetworkStack() {
         DnsLog.v("MSDKDnsResolver.getNetworkStack() called.");
