@@ -1,20 +1,32 @@
 package com.tencent.msdk.dns.core.rest.deshttp;
 
 import android.text.TextUtils;
-import com.tencent.msdk.dns.base.jni.JniWrapper;
+
 import com.tencent.msdk.dns.core.rest.share.DataConverter;
+
 import java.nio.charset.Charset;
 
+import javax.crypto.Cipher;
+import javax.crypto.spec.SecretKeySpec;
+
 public final class DesCipherSuite {
+    private static final String ALGORITHM = "DES";
+
+    private static final String CIPHER_ALGORITHM = "DES/ECB/PKCS5Padding";
+
+    private static final String CHARSET = "utf-8";
+
     @SuppressWarnings("CharsetObjectCanBeUsed")
     static String encrypt(/* @Nullable */String content, /* @Nullable */String key) {
         if (TextUtils.isEmpty(content) || TextUtils.isEmpty(key)) {
             return "";
         }
         try {
-            byte[] rawEncryptContent = JniWrapper
-                    .desCrypt(content.getBytes("utf-8"), key, JniWrapper.ENCRYPTION_MODE);
-            return DataConverter.bytes2HexString(rawEncryptContent);
+            SecretKeySpec secretKey = new SecretKeySpec(key.getBytes(CHARSET), ALGORITHM);
+            Cipher cipher = Cipher.getInstance(CIPHER_ALGORITHM);
+            cipher.init(Cipher.ENCRYPT_MODE, secretKey);
+            byte[] encryptedData = cipher.doFinal(content.getBytes());
+            return DataConverter.bytes2HexString(encryptedData);
         } catch (Exception ignored) {
             return "";
         }
@@ -27,11 +39,14 @@ public final class DesCipherSuite {
         }
         try {
             byte[] src = DataConverter.hexString2Bytes(content);
-            byte[] decryptedBytes = JniWrapper.desCrypt(src, key, JniWrapper.DECRYPTION_MODE);
+            SecretKeySpec secretKey = new SecretKeySpec(key.getBytes(CHARSET), ALGORITHM);
+            Cipher cipher = Cipher.getInstance(CIPHER_ALGORITHM);
+            cipher.init(Cipher.DECRYPT_MODE, secretKey);
+            byte[] decryptedBytes = cipher.doFinal(src);
             if (decryptedBytes == null) {
                 return "";
             }
-            return new String(decryptedBytes, Charset.forName("UTF-8"));
+            return new String(decryptedBytes, Charset.forName(CHARSET));
         } catch (Exception ignored) {
             return "";
         }

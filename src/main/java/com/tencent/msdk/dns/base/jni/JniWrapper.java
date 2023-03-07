@@ -24,14 +24,15 @@ public final class JniWrapper {
         }
     }
 
-    public static byte[] desCrypt(byte[] src, String key, int mode) {
-        try {
-            return Jni.desCrypt(src, key, mode);
-        } catch (Throwable t) {
-            DnsLog.w("dnsCrypt failed");
-            return null;
-        }
-    }
+//    unused, plan to remove
+//    public static byte[] desCrypt(byte[] src, String key, int mode) {
+//        try {
+//            return Jni.desCrypt(src, key, mode);
+//        } catch (Throwable t) {
+//            DnsLog.w("dnsCrypt failed");
+//            return null;
+//        }
+//    }
 
     public static byte[] aesCrypt(byte[] src, String key, int mode, byte[] aes_iv) {
         try {
