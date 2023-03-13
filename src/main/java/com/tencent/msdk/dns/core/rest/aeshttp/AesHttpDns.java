@@ -2,9 +2,7 @@ package com.tencent.msdk.dns.core.rest.aeshttp;
 
 import com.tencent.msdk.dns.core.Const;
 import com.tencent.msdk.dns.core.DnsDescription;
-
 import com.tencent.msdk.dns.core.rest.share.AbsHttpDns;
-
 import com.tencent.msdk.dns.core.rest.share.AbsHttpDnsConfig;
 import com.tencent.msdk.dns.core.rest.share.LookupExtra;
 import com.tencent.msdk.dns.core.rest.share.RequestBuilder;
@@ -32,15 +30,18 @@ public final class AesHttpDns extends AbsHttpDns {
 
     @Override
     public String getTargetUrl(String dnsIp, String hostname, LookupExtra lookupExtra) {
-        String encryptHostname = AesCipherSuite.encrypt(hostname, lookupExtra.bizKey);
+        String encryptHostname = encrypt(hostname, lookupExtra.bizKey);
         String reqContent;
         switch (mFamily) {
             case DnsDescription.Family.INET:
-                reqContent = RequestBuilder.buildInetRequest(encryptHostname, lookupExtra.bizId, "aes"); break;
+                reqContent = RequestBuilder.buildInetRequest(encryptHostname, lookupExtra.bizId, "aes");
+                break;
             case DnsDescription.Family.INET6:
-                reqContent = RequestBuilder.buildInet6Request(encryptHostname, lookupExtra.bizId, "aes"); break;
+                reqContent = RequestBuilder.buildInet6Request(encryptHostname, lookupExtra.bizId, "aes");
+                break;
             case DnsDescription.Family.UN_SPECIFIC:
-                reqContent = RequestBuilder.buildDoubRequest(encryptHostname, lookupExtra.bizId, "aes"); break;
+                reqContent = RequestBuilder.buildDoubRequest(encryptHostname, lookupExtra.bizId, "aes");
+                break;
             default:
                 throw new IllegalStateException("Unexpected value: " + mFamily);
         }

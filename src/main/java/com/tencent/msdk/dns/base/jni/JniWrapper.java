@@ -4,9 +4,6 @@ import com.tencent.msdk.dns.base.log.DnsLog;
 import com.tencent.msdk.dns.base.utils.NetworkStack;
 
 public final class JniWrapper {
-    public static final int ENCRYPTION_MODE = 0;
-    public static final int DECRYPTION_MODE = 1;
-
     static {
         try {
             System.loadLibrary("httpdns");
@@ -21,25 +18,6 @@ public final class JniWrapper {
         } catch (Throwable tr) {
             DnsLog.w("Get cur network stack failed");
             return NetworkStack.NONE;
-        }
-    }
-
-//    unused, plan to remove
-//    public static byte[] desCrypt(byte[] src, String key, int mode) {
-//        try {
-//            return Jni.desCrypt(src, key, mode);
-//        } catch (Throwable t) {
-//            DnsLog.w("dnsCrypt failed");
-//            return null;
-//        }
-//    }
-
-    public static byte[] aesCrypt(byte[] src, String key, int mode, byte[] aes_iv) {
-        try {
-            return Jni.aesCrypt(src, key, mode, aes_iv);
-        } catch (Throwable t) {
-            DnsLog.w("dnsCrypt failed");
-            return null;
         }
     }
 
