@@ -4,12 +4,8 @@ public interface Const {
 
     String LOCAL_CHANNEL = "Local";
     String DES_HTTP_CHANNEL = "DesHttp";
-    String DES_HTTPS_CHANNEL = "DesHttps";
     String AES_HTTP_CHANNEL = "AesHttp";
-    String AES_HTTPS_CHANNEL = "AesHttps";
     String HTTPS_CHANNEL = "Https";
-
-    int MAX_IP_COUNT = 5;
 
     String INVALID_HOSTNAME = "";
 

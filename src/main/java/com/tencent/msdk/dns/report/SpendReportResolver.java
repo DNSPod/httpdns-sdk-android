@@ -1,9 +1,6 @@
 package com.tencent.msdk.dns.report;
 
-import android.os.SystemClock;
-
 import com.tencent.msdk.dns.BackupResolver;
-import com.tencent.msdk.dns.base.log.DnsLog;
 
 public class SpendReportResolver {
     private static SpendReportResolver mSpendReportResolver = null; //   静态对象

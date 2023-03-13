@@ -381,7 +381,7 @@ public final class DnsManager {
     private static <LookupExtra extends IDns.ILookupExtra>
     void prepareTasks(DnsGroup dnsGroup, LookupContext<LookupExtra> lookupContext) {
         int curNetStack = lookupContext.currentNetworkStack();
-        int family = lookupContext.family();
+//        int family = lookupContext.family();
         boolean ignoreCurNetStack = lookupContext.ignoreCurrentNetworkStack();
 
         // ignoreCurNetStack = true / localdns, 双栈同时请求
