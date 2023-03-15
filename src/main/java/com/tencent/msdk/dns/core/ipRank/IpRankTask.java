@@ -2,8 +2,6 @@ package com.tencent.msdk.dns.core.ipRank;
 
 import android.util.Pair;
 
-import com.tencent.msdk.dns.base.log.DnsLog;
-
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
@@ -40,6 +38,7 @@ public class IpRankTask implements Runnable {
 
     /**
      * ips测速排名
+     *
      * @param ips
      * @param speeds
      * @return
@@ -64,6 +63,7 @@ public class IpRankTask implements Runnable {
 
     /**
      * ip socket连接测速任务
+     *
      * @param ip
      * @param port
      * @return

@@ -1,6 +1,5 @@
 package com.tencent.msdk.dns.core.sorter;
 
-import android.text.TextUtils;
 import com.tencent.msdk.dns.base.log.DnsLog;
 import com.tencent.msdk.dns.base.utils.CommonUtils;
 import com.tencent.msdk.dns.base.utils.IpValidator;
@@ -9,6 +8,7 @@ import com.tencent.msdk.dns.core.Const;
 import com.tencent.msdk.dns.core.IDns;
 import com.tencent.msdk.dns.core.ISorter;
 import com.tencent.msdk.dns.core.IpSet;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;

@@ -7,8 +7,6 @@ import androidx.room.Room;
 import androidx.room.RoomDatabase;
 import androidx.room.TypeConverters;
 
-import com.tencent.msdk.dns.base.log.DnsLog;
-
 @Database(entities = {LookupCache.class}, version = 2, exportSchema = false)
 @TypeConverters(LookupResultConverter.class)
 public abstract class LookupCacheDatabase extends RoomDatabase {

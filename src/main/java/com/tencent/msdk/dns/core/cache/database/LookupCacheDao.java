@@ -7,8 +7,6 @@ import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
 import androidx.room.Update;
 
-import com.tencent.msdk.dns.core.LookupResult;
-
 import java.util.ArrayList;
 import java.util.List;
 
