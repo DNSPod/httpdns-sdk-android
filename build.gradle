@@ -46,6 +46,7 @@ android {
     productFlavors {
         normal {
             buildConfigField "String", "HTTP_INIT_SERVER", HTTP_INIT_SERVER
+            buildConfigField "String", "HTTPS_INIT_SERVER", HTTPS_INIT_SERVER
             buildConfigField "String", "HTTP_TOLERANCE_SERVER", HTTP_TOLERANCE_SERVER
             buildConfigField "String", "HTTPS_TOLERANCE_SERVER", HTTPS_TOLERANCE_SERVER
             buildConfigField "String", "ATTA_ID", ATTA_ID
@@ -58,6 +59,7 @@ android {
 
         intl {
             buildConfigField "String", "HTTP_INIT_SERVER", INTL_HTTP_INIT_SERVER
+            buildConfigField "String", "HTTPS_INIT_SERVER", "\"\""
             buildConfigField "String", "HTTP_TOLERANCE_SERVER", INTL_HTTP_TOLERANCE_SERVER
             buildConfigField "String", "HTTPS_TOLERANCE_SERVER", "\"\""
             buildConfigField "String", "ATTA_ID", INTL_ATTA_ID

@@ -1,7 +1,7 @@
 package com.tencent.msdk.dns.core;
 
-import com.tencent.msdk.dns.BuildConfig;
 import com.tencent.msdk.dns.BackupResolver;
+import com.tencent.msdk.dns.BuildConfig;
 import com.tencent.msdk.dns.DnsService;
 import com.tencent.msdk.dns.base.log.DnsLog;
 import com.tencent.msdk.dns.core.rest.aeshttp.AesCipherSuite;
@@ -24,9 +24,11 @@ public final class ConfigFromServer {
     public static void init(LookupExtra lookupExtra, String channel) {
         String urlStr = "";
         if (channel.equals(Const.HTTPS_CHANNEL)) {
-            if (!BuildConfig.HTTPS_TOLERANCE_SERVER.isEmpty()) {
-                urlStr = "https://" + BuildConfig.HTTPS_TOLERANCE_SERVER + "/conf?token=" + lookupExtra.token;
+            if (BuildConfig.FLAVOR.equals("intl")) {
+                DnsLog.d("httpdns-sdk-intl version still doesn't support https");
+                return;
             }
+            urlStr = "https://" + BuildConfig.HTTPS_INIT_SERVER + "/conf?token=" + lookupExtra.token;
         } else {
             String alg = channel.equals(Const.AES_HTTP_CHANNEL) ? "aes" : "des";
             urlStr = "http://" + BuildConfig.HTTP_INIT_SERVER + "/conf?id=" + lookupExtra.bizId + "&alg=" + alg;
