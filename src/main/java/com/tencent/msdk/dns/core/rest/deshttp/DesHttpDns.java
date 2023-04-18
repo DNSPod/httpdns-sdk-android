@@ -34,13 +34,13 @@ public final class DesHttpDns extends AbsHttpDns {
         String reqContent;
         switch (mFamily) {
             case DnsDescription.Family.INET:
-                reqContent = RequestBuilder.buildInetRequest(encryptHostname, lookupExtra.bizId, "des");
+                reqContent = RequestBuilder.buildInetRequest(encryptHostname, lookupExtra.bizId);
                 break;
             case DnsDescription.Family.INET6:
-                reqContent = RequestBuilder.buildInet6Request(encryptHostname, lookupExtra.bizId, "des");
+                reqContent = RequestBuilder.buildInet6Request(encryptHostname, lookupExtra.bizId);
                 break;
             case DnsDescription.Family.UN_SPECIFIC:
-                reqContent = RequestBuilder.buildDoubRequest(encryptHostname, lookupExtra.bizId, "des");
+                reqContent = RequestBuilder.buildDoubRequest(encryptHostname, lookupExtra.bizId);
                 break;
             default:
                 throw new IllegalStateException("Unexpected value: " + mFamily);
