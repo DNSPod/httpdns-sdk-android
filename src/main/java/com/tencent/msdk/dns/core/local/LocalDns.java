@@ -85,15 +85,15 @@ public final class LocalDns implements IDns<IDns.ILookupExtra> {
                     for (int i = 0; i < inetAddresses.length; i++) {
                         ipsList.add(host + ":" + inetAddresses[i].getHostAddress());
                     }
-                    // NOTE: 避免无谓的toString调用
-                    if (DnsLog.canLog(Log.DEBUG)) {
-                        DnsLog.d("LocalDns lookup for %s result: %s", hostname, Arrays.toString(ips));
-                    }
                 } catch (UnknownHostException e) {
-                    DnsLog.d(e, "LocalDns lookup %s failed", hostname);
+                    DnsLog.d(e, "LocalDns lookup %s failed", host);
                 }
             }
             ips = ipsList.toArray(new String[ipsList.size()]);
+            // NOTE: 避免无谓的toString调用
+            if (DnsLog.canLog(Log.DEBUG)) {
+                DnsLog.d("LocalDns lookup for %s result: %s", hostname, Arrays.toString(ips));
+            }
         } else {
             try {
                 // LocalDns使用系统默认时延
