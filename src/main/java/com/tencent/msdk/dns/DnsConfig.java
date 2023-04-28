@@ -25,6 +25,7 @@ public final class DnsConfig {
     public final String appId;
     public String userId;
 
+    @Deprecated
     public final boolean initBuiltInReporters;
 
     public final String dnsIp;
@@ -188,7 +189,7 @@ public final class DnsConfig {
         private String mAppId = "";
         private String mUserId = "";
 
-        // CHANGE: 默认不初始化灯塔的key
+        @Deprecated
         private boolean mInitBuiltInReporters = false;
 
         private String mDnsIp = "";
@@ -285,22 +286,26 @@ public final class DnsConfig {
         }
 
         /**
+         * @Deprecated
          * 自动初始化内置上报通道
          * 不设置时, 默认为自动初始化内置上报通道
          *
          * @return 当前Builder实例, 方便链式调用
          */
+        @Deprecated
         public Builder initBuiltInReporters() {
             mInitBuiltInReporters = true;
             return this;
         }
 
         /**
+         * @Deprecated
          * 不自动初始化内置上报通道
          * 不设置时, 默认为自动初始化内置上报通道
          *
          * @return 当前Builder实例, 方便链式调用
          */
+        @Deprecated
         public Builder notInitBuiltInReporters() {
             mInitBuiltInReporters = false;
             return this;
