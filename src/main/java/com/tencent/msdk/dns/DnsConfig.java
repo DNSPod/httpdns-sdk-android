@@ -247,7 +247,7 @@ public final class DnsConfig {
         /**
          * 设置AppId, 进行数据上报时用于区分业务
          *
-         * @param appId AppId, 即灯塔AppId, 从<a href="https://console.cloud.tencent.com/HttpDNS">腾讯云官网</a>申请获得
+         * @param appId AppId, 从<a href="https://console.cloud.tencent.com/HttpDNS">腾讯云官网</a>申请获得
          * @return 当前Builder实例, 方便链式调用
          * @throws IllegalArgumentException appId为空时抛出
          */
