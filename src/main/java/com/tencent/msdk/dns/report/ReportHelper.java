@@ -64,9 +64,7 @@ public final class ReportHelper {
         }
         // atta上报
         attaReportLookupEvent(ReportConst.PRE_LOOKUP_EVENT_NAME, lookupResult);
-        if (!ReportManager.canReport()) {
-            return;
-        }
+
         // NOTE: 上报字段增减, 记得修改capacity
         Map<String, String> preLookupEventMap = CollectionCompat.createMap(24);
         StatisticsMerge statMerge = (StatisticsMerge) lookupResult.stat;
@@ -117,11 +115,6 @@ public final class ReportHelper {
             } else {
                 attaReportLookupEvent(ReportConst.LOOKUP_METHOD_CALLED_EVENT_NAME, lookupResult);
             }
-        }
-
-        //  灯塔反射引入
-        if (!ReportManager.canReport()) {
-            return;
         }
 
         // NOTE: 上报字段增减, 记得修改capacity
@@ -183,7 +176,7 @@ public final class ReportHelper {
     }
 
     private static void reportAsyncLookupEvent(Collection<LookupResult> lookupResults) {
-        if (CommonUtils.isEmpty(lookupResults) || !ReportManager.canReport()) {
+        if (CommonUtils.isEmpty(lookupResults)) {
             return;
         }
 

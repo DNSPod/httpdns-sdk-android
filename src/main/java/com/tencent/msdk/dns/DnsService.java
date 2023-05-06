@@ -97,13 +97,6 @@ public final class DnsService {
                     Cache.readFromDb();
                 }
             });
-        // NOTE: 当前版本暂时不会提供为OneSdk版本, 默认使用灯塔上报
-        ReportManager.init(ReportManager.Channel.BEACON);
-        if (config.initBuiltInReporters) {
-            ReportManager.initBuiltInReporter(
-                    ReportManager.Channel.BEACON,
-                    new BeaconReporterInitParameters(appContext, sConfig.appId));
-        }
         ReportHelper.init(config);
         DnsExecutors.sExecutorSupplier = sConfig.executorSupplier;
         setLookedUpListener(config.lookedUpListener);
