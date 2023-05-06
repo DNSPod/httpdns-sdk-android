@@ -180,7 +180,6 @@ public final class CacheHelper {
                         @Override
                         public void run() {
                             LookupResult lookupResult = DnsManager.lookupWrapper(newLookupParams);
-                            AsyncLookupResultQueue.enqueue(lookupResult);
                             // atta上报
                             ReportHelper.attaReportAsyncLookupEvent(lookupResult);
                         }
@@ -258,8 +257,6 @@ public final class CacheHelper {
                                         @Override
                                         public void run() {
                                             LookupResult lookupResult = DnsManager.lookupWrapper(newLookupParams);
-                                            AsyncLookupResultQueue.enqueue(
-                                                    lookupResult);
                                             // atta上报
                                             ReportHelper.attaReportAsyncLookupEvent(lookupResult);
                                         }

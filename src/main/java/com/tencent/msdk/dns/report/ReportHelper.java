@@ -16,11 +16,8 @@ import com.tencent.msdk.dns.base.utils.CommonUtils;
 import com.tencent.msdk.dns.core.Const;
 import com.tencent.msdk.dns.core.IpSet;
 import com.tencent.msdk.dns.core.LookupResult;
-import com.tencent.msdk.dns.core.rest.share.AsyncLookupResultQueue;
 import com.tencent.msdk.dns.core.stat.StatisticsMerge;
 
-import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 
 public final class ReportHelper {
@@ -30,11 +27,8 @@ public final class ReportHelper {
     private static DnsConfig sDnsConfig;
 
     private static Runnable sReportAsyncLookupEventTask = new Runnable() {
-
         @Override
         public void run() {
-            List<LookupResult> lookupResults = AsyncLookupResultQueue.offerAll();
-            reportAsyncLookupEvent(lookupResults);
             // attta上报统计数据
             Map<String, Object[]> cacheStatisticsMap = CacheStatisticsReport.offerAll();
             attaReportStatisticsEvent(cacheStatisticsMap);
@@ -50,10 +44,8 @@ public final class ReportHelper {
         }
 
         sDnsConfig = dnsConfig;
-
         // sessionId初始化
         Session.setSessionId();
-
         startReportAsyncLookupEvent();
     }
 
@@ -173,49 +165,6 @@ public final class ReportHelper {
                 DnsExecutors.MAIN.execute(sReportAsyncLookupEventTask);
             }
         });
-    }
-
-    private static void reportAsyncLookupEvent(Collection<LookupResult> lookupResults) {
-        if (CommonUtils.isEmpty(lookupResults)) {
-            return;
-        }
-
-        // NOTE: 上报字段增减, 记得修改capacity
-        Map<String, String> asyncLookupEventMap = CollectionCompat.createMap(19);
-
-        asyncLookupEventMap.put(ReportConst.CHANNEL_KEY, sDnsConfig.channel);
-        asyncLookupEventMap.put(ReportConst.LOOKUP_COUNT_KEY, String.valueOf(lookupResults.size()));
-        BatchStatistics.Builder batchStatBuilder = new BatchStatistics.Builder(true);
-        for (LookupResult lookupResult : lookupResults) {
-            batchStatBuilder.append((StatisticsMerge) lookupResult.stat);
-        }
-        BatchStatistics batchStat = batchStatBuilder.build();
-        asyncLookupEventMap.put(ReportConst.BATCH_NETWORK_TYPE_KEY, batchStat.netTypeList);
-        asyncLookupEventMap.put(
-                ReportConst.BATCH_NETWORK_CHANGE_KEY, batchStat.restInetNetChangeLookupList);
-        asyncLookupEventMap.put(ReportConst.BATCH_HOSTNAME_KEY, batchStat.hostnameList);
-        asyncLookupEventMap.put(
-                ReportConst.BATCH_LOOKUP_TIME_MILLS_KEY, batchStat.restInetStartLookupTimeMillsList);
-        asyncLookupEventMap.put(ReportConst.BATCH_NETWORK_STACK_KEY, batchStat.netStackList);
-
-        asyncLookupEventMap.put(ReportConst.BATCH_REST_LOOKUP_ERROR_CODE_KEY,
-                batchStat.restInetLookupErrorCodeList);
-        asyncLookupEventMap.put(ReportConst.BATCH_REST_LOOKUP_ERROR_MESSAGE_KEY,
-                batchStat.restInetLookupErrorMsgList);
-        asyncLookupEventMap.put(ReportConst.BATCH_REST_LOOKUP_IPS_KEY,
-                batchStat.restInetLookupIpsList);
-        asyncLookupEventMap.put(ReportConst.BATCH_REST_LOOKUP_TTL_KEY,
-                batchStat.restInetLookupTtlList);
-        asyncLookupEventMap.put(ReportConst.BATCH_REST_LOOKUP_CLIENT_IP_KEY,
-                batchStat.restInetLookupClientIpList);
-        asyncLookupEventMap.put(ReportConst.BATCH_REST_LOOKUP_COST_TIME_MILLS_KEY,
-                batchStat.restInetLookupCostTimeMillsList);
-        asyncLookupEventMap.put(ReportConst.BATCH_REST_LOOKUP_RETRY_TIMES_KEY,
-                batchStat.restInetLookupRetryTimesList);
-
-        addCommonConfigInfo(asyncLookupEventMap);
-
-        report(ReportConst.ASYNC_LOOKUP_EVENT_NAME, asyncLookupEventMap);
     }
 
     public static void attaReportAsyncLookupEvent(LookupResult lookupResult) {
