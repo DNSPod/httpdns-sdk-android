@@ -13,16 +13,12 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLSession;
-
 public final class ConfigFromServer {
     private static boolean enableDomainServer;
     private static boolean enableReport;
 
     public static void init(LookupExtra lookupExtra, String channel) {
-        String urlStr = "";
+        String urlStr;
         if (channel.equals(Const.HTTPS_CHANNEL)) {
             if (BuildConfig.FLAVOR.equals("intl")) {
                 DnsLog.d("httpdns-sdk-intl version still doesn't support https");
@@ -35,24 +31,16 @@ public final class ConfigFromServer {
         }
 
         HttpURLConnection connection = null;
-        BufferedReader reader = null;
+        BufferedReader reader;
         String rawRspContent = "";
-        String lineTxt = "";
+        String lineTxt;
+        int timeoutMills = 10000;
         try {
             //  发起请求
             connection = (HttpURLConnection) new URL(urlStr).openConnection();
-            if (connection instanceof HttpsURLConnection) {
-                final HttpsURLConnection httpsURLConnection = (HttpsURLConnection) connection;
-                httpsURLConnection.setHostnameVerifier(new HostnameVerifier() {
-                    @Override
-                    public boolean verify(String hostname, SSLSession session) {
-                        return true;
-                    }
-                });
-            }
             connection.setRequestMethod("GET");
-            connection.setConnectTimeout(10000);
-            connection.setReadTimeout(10000);
+            connection.setConnectTimeout(timeoutMills);
+            connection.setReadTimeout(timeoutMills);
             connection.connect();
             //  读取网络请求结果
             reader = new BufferedReader(new InputStreamReader(
@@ -65,11 +53,13 @@ public final class ConfigFromServer {
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
-            connection.disconnect();
+            if (connection != null) {
+                connection.disconnect();
+            }
         }
         if (!rawRspContent.isEmpty()) {
             //  解密
-            String rspContent = "";
+            String rspContent;
             if (channel.equals(Const.HTTPS_CHANNEL)) {
                 rspContent = rawRspContent;
             } else if (channel.equals(Const.AES_HTTP_CHANNEL)) {
