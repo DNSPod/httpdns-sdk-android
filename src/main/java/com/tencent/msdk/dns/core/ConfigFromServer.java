@@ -46,7 +46,6 @@ public final class ConfigFromServer {
             reader = new BufferedReader(new InputStreamReader(
                     connection.getInputStream(), "UTF-8"));
             while ((lineTxt = reader.readLine()) != null) {
-                lineTxt += '\n';
                 rawRspContent += lineTxt;
             }
             reader.close();
