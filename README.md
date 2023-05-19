@@ -85,7 +85,7 @@ DnsConfig dnsConfigBuilder = DnsConfig.Builder()
     .setCustomNetStack(3)
     //（可选）设置域名解析请求超时时间，默认为1000ms
     .timeoutMills(1000)
-    //（可选）是否开启解析异常上报，默认false，不上报
+    //（可选）[V4.4.0废弃]是否开启解析异常上报，默认false，不上报
     .enableReport(true)
     //（可选）[V4.1.0] 解析缓存自动刷新, 以域名形式进行配置，填写形式："baidu.com", "qq.com"。配置的域名会在 TTL * 75% 时自动发起解析请求更新缓存，实现配置域名解析时始终命中缓存。此项建议不要设置太多域名，当前限制为最多 10 个域名。与预解析分开独立配置。
     .persistentCacheDomains("baidu.com", "qq.com")

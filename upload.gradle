@@ -7,6 +7,7 @@ def NEXUS_PASSWORD="*****"
 //地址
 def NEXUS_REPOSITORY_URL="https://s01.oss.sonatype.org/content/repositories/releases/"
 def SNSPSHOT_REPOSITORY_URL = "https://s01.oss.sonatype.org/content/repositories/snapshots/"
+def VERSION = "4.4.0-SNAPSHOT"
 
 publishing {
     publications {
@@ -16,15 +17,15 @@ publishing {
             //项目名
             artifactId = "httpdns-sdk"
             //版本号
-            version = "4.3.0-SNAPSHOT"
+            version = VERSION
             //本地的文件
-            artifact("$buildDir/outputs/aar/HTTPDNS_Android_v4.3.0a_release.aar")
+            artifact("$buildDir/outputs/aar/HTTPDNS_Android_v4.4.0_release.aar")
         }
     }
 
     repositories {
         maven {
-            url NEXUS_REPOSITORY_URL
+            url VERSION.endsWith("SNAPSHOT") ? SNSPSHOT_REPOSITORY_URL : NEXUS_REPOSITORY_URL
             credentials {
                 username = NEXUS_USERNAME
                 password = NEXUS_PASSWORD
