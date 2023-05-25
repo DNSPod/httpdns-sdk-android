@@ -7,8 +7,6 @@ import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
 import androidx.room.Update;
 
-import com.tencent.msdk.dns.core.LookupResult;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,8 +15,8 @@ public interface LookupCacheDao {
     @Query("Select * from lookupcache")
     List<LookupCache> getAll();
 
-    @Query("Select lookupResult from lookupcache where hostname = :hostname")
-    LookupResult get(String hostname);
+    @Query("Select * from lookupcache where hostname = :hostname")
+    LookupCache get(String hostname);
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insertLookupCache(LookupCache lookupCache);

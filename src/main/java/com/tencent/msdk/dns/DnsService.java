@@ -13,6 +13,7 @@ import com.tencent.msdk.dns.base.report.IReporter;
 import com.tencent.msdk.dns.base.report.ReportManager;
 import com.tencent.msdk.dns.base.utils.CommonUtils;
 import com.tencent.msdk.dns.base.utils.IpValidator;
+import com.tencent.msdk.dns.core.ConfigFromServer;
 import com.tencent.msdk.dns.core.Const;
 import com.tencent.msdk.dns.core.DnsDescription;
 import com.tencent.msdk.dns.core.DnsManager;
@@ -26,12 +27,14 @@ import com.tencent.msdk.dns.core.cache.Cache;
 import com.tencent.msdk.dns.core.cache.database.LookupCacheDatabase;
 import com.tencent.msdk.dns.core.rest.share.LookupExtra;
 import com.tencent.msdk.dns.core.stat.StatisticsMerge;
+import com.tencent.msdk.dns.report.CacheStatisticsReport;
 import com.tencent.msdk.dns.report.ReportHelper;
 import com.tencent.msdk.dns.report.SpendReportResolver;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.List;
-import java.util.Set;
-import java.util.concurrent.CountDownLatch;
 
 /**
  * SDK对外接口类
@@ -67,7 +70,6 @@ public final class DnsService {
         if (null == config) {
             config = new DnsConfig.Builder().build();
         }
-
         // NOTE: 在开始打日志之前设置日志开关
         DnsLog.setLogLevel(config.logLevel);
         addLogNodes(config.logNodes);
@@ -75,21 +77,26 @@ public final class DnsService {
         Context appContext = context.getApplicationContext();
         sAppContext = appContext;
         sConfig = config;
-        // 初始化Backup配置为容灾做准备
+        // 底层配置获取
+        DnsExecutors.WORK.execute(new Runnable() {
+            @Override
+            public void run() {
+                ConfigFromServer.init(sConfig.lookupExtra, sConfig.channel);
+            }
+        });
+        // 初始化容灾服务
         BackupResolver.getInstance().init(sConfig);
         // 初始化SpendHelper配置为正常上报做准备
         SpendReportResolver.getInstance().init();
         NetworkChangeManager.install(appContext);
         ActivityLifecycleDetector.install(appContext);
         // Room 本地数据读取
-        if (config.cachedIpEnable == true) {
-            DnsExecutors.WORK.execute(new Runnable() {
+        DnsExecutors.WORK.execute(new Runnable() {
                 @Override
                 public void run() {
                     Cache.readFromDb();
                 }
             });
-        }
         // NOTE: 当前版本暂时不会提供为OneSdk版本, 默认使用灯塔上报
         ReportManager.init(ReportManager.Channel.BEACON);
         if (config.initBuiltInReporters) {
@@ -164,9 +171,22 @@ public final class DnsService {
             throw new IllegalStateException("DnsService".concat(Const.NOT_INIT_TIPS));
         }
         sConfig.cachedIpEnable = mCachedIpEnable;
-        if (mCachedIpEnable == true) {
+        if (mCachedIpEnable) {
             LookupCacheDatabase.creat(sAppContext);
         }
+    }
+
+    /**
+     * 设置是否上报，是否启用域名服务（获取底层配置）
+     * @param mEnableReport
+     * @param mEnableDomainServer
+     */
+    public static void setDnsConfigFromServer(boolean mEnableReport, boolean mEnableDomainServer) {
+        if (!sInited) {
+            throw new IllegalStateException("DnsService".concat(Const.NOT_INIT_TIPS));
+        }
+        sConfig.enableReport = mEnableReport;
+        sConfig.enableDomainServer = mEnableDomainServer;
     }
 
     public static String getDnsDetail(String hostname) {
@@ -183,6 +203,9 @@ public final class DnsService {
                 .enableAsyncLookup(false)
                 .customNetStack(sConfig.customNetStack)
                 .build());
+
+        // 收集命中缓存的数据
+        CacheStatisticsReport.add(lookupResult);
         StatisticsMerge statMerge = (StatisticsMerge) lookupResult.stat;
         return statMerge.toJsonResult();
     }
@@ -225,7 +248,7 @@ public final class DnsService {
      * @return {@link IpSet}实例, 即解析得到的Ip集合
      * @throws IllegalStateException 没有初始化时抛出
      */
-    public static IpSet getAddrsByName(
+    private static IpSet getAddrsByName(
             /* @Nullable */String hostname, boolean fallback2Local, boolean enableAsyncLookup) {
         return getAddrsByName(hostname, sConfig.channel, fallback2Local, enableAsyncLookup);
     }
@@ -270,7 +293,7 @@ public final class DnsService {
                             .enableAsyncLookup(enableAsyncLookup)
                             .customNetStack(sConfig.customNetStack)
                             .build());
-            ReportHelper.reportLookupMethodCalledEvent(lookupResult, sAppContext);
+            ReportHelper.reportLookupMethodCalledEvent(lookupResult);
             return lookupResult.ipSet;
         }
         if (fallback2Local) {
@@ -289,6 +312,61 @@ public final class DnsService {
                     .ipSet;
         }
         return IpSet.EMPTY;
+    }
+
+    /**
+     * 乐观DNS解析（批量）
+     *
+     * @param domain 域名
+     * @return 解析结果
+     * 单独接口查询情况返回：IpSet{v4Ips=[xx.xx.xx.xx], v6Ips=[xxx], ips=null}
+     * 多域名批量查询返回：IpSet{v4Ips=[youtube.com:31.13.73.1, qq.com:123.151.137.18, qq.com:183.3.226.35, qq.com:61.129.7.47], v6Ips=[youtube.com.:2001::42d:9141], ips=null}
+     */
+    public static IpSet getAddrsByNamesEnableExpired(final String domain) {
+        if (!sInited) {
+            throw new IllegalStateException("DnsService".concat(Const.NOT_INIT_TIPS));
+        }
+        String result = MSDKDnsResolver.getInstance().getDnsDetail((domain));
+        IpSet ipSetReslut = IpSet.EMPTY;
+
+        if (result.isEmpty()) {
+            DnsExecutors.WORK.execute(new Runnable() {
+                @Override
+                public void run() {
+                    // 下发解析请求
+                    getAddrsByName(domain, true, true);
+                }
+            });
+        } else {
+            try {
+                JSONObject temp = new JSONObject(result);
+                long expiredTime = Long.parseLong(temp.get("expired_time").toString());
+                long current = System.currentTimeMillis();
+                if (expiredTime < current) {
+                    // 缓存过期，发起异步请求
+                    DnsExecutors.WORK.execute(new Runnable() {
+                        @Override
+                        public void run() {
+                            DnsLog.d("async look up send");
+                            getAddrsByName(domain, true, true);
+                        }
+                    });
+                    // 缓存过期且不允许使用过期缓存
+                    if (!DnsService.getDnsConfig().useExpiredIpEnable) {
+                        return ipSetReslut;
+                    }
+                }
+                String v4IpsStr = temp.get("v4_ips").toString();
+                String v6IpsStr = temp.get("v6_ips").toString();
+                String[] v4Ips = v4IpsStr.isEmpty() ? new String[0] : v4IpsStr.split(",");
+                String[] v6Ips = v6IpsStr.isEmpty() ? new String[0] : v6IpsStr.split(",");
+                ipSetReslut = new IpSet(v4Ips, v6Ips);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+        }
+        return ipSetReslut;
     }
 
     private static void setLookedUpListener(
@@ -354,50 +432,33 @@ public final class DnsService {
         }
 
         final int numOfPreLookupDomain = sConfig.preLookupDomains.size();
-        final String[] preLookupDomains =
+        final String[] preLookupDomainsList =
                 sConfig.preLookupDomains.toArray(new String[numOfPreLookupDomain]);
-        final Set<String> persistentCacheDomains = sConfig.persistentCacheDomains;
+        final String preLookupDomains = CommonUtils.toStringList(preLookupDomainsList, ",");
 
-        final LookupResult[] preLookupResults = new LookupResult[numOfPreLookupDomain];
-        final CountDownLatch preLookupCountDownLatch = new CountDownLatch(numOfPreLookupDomain);
-        for (int i = 0; i < numOfPreLookupDomain; i++) {
-            // config保证domain不为空
-            final String domain = preLookupDomains[i];
-            final int iSnapshot = i;
-            DnsExecutors.WORK.execute(new Runnable() {
-                @Override
-                public void run() {
-                    String dnsIp = BackupResolver.getInstance().getDnsIp();
-                    LookupParameters<LookupExtra> lookupParams =
-                            new LookupParameters.Builder<LookupExtra>()
-                                    .context(sAppContext)
-                                    .hostname(domain)
-                                    .timeoutMills(sConfig.timeoutMills)
-                                    .dnsIp(dnsIp)
-                                    .lookupExtra(sConfig.lookupExtra)
-                                    .channel(sConfig.channel)
-                                    .fallback2Local(false)
-                                    .blockFirst(sConfig.blockFirst)
-                                    .ignoreCurrentNetworkStack(true)
-                                    .enableAsyncLookup(persistentCacheDomains != null && persistentCacheDomains.contains(domain))
-                                    .build();
-                    preLookupResults[iSnapshot] = DnsManager.lookupWrapper(lookupParams);
-                    preLookupCountDownLatch.countDown();
-                }
-            });
-        }
-// TODO: 目前上报效率比较低，等预解析逻辑更新为批量后再恢复上报
-//        DnsExecutors.WORK.execute(new Runnable() {
-//            @Override
-//            public void run() {
-//                try {
-//                    preLookupCountDownLatch.await();
-//                    DnsLog.d("Await for pre lookup count down success");
-//                } catch (Exception e) {
-//                    DnsLog.w(e, "Await for pre lookup count down failed");
-//                }
-//                ReportHelper.reportPreLookupEvent(preLookupResults);
-//            }
-//        });
+        // 预解析调整为批量解析
+        DnsExecutors.WORK.execute(new Runnable() {
+            @Override
+            public void run() {
+                String dnsIp = BackupResolver.getInstance().getDnsIp();
+                LookupResult lookupResult = DnsManager.lookupWrapper(new LookupParameters.Builder<LookupExtra>()
+                        .context(sAppContext)
+                        .hostname(preLookupDomains)
+                        .timeoutMills(sConfig.timeoutMills)
+                        .dnsIp(dnsIp)
+                        .lookupExtra(sConfig.lookupExtra)
+                        .channel(sConfig.channel)
+                        .fallback2Local(false)
+                        .blockFirst(sConfig.blockFirst)
+                        .ignoreCurrentNetworkStack(true)
+                        .enableAsyncLookup(true)
+                        .build());
+                ReportHelper.reportPreLookupEvent(lookupResult);
+            }
+        });
+    }
+
+    public static Context getContext() {
+        return sAppContext;
     }
 }

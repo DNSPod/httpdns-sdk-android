@@ -2,7 +2,9 @@ package com.tencent.msdk.dns.core.rest.share;
 
 import android.text.TextUtils;
 
+import com.tencent.msdk.dns.BuildConfig;
 import com.tencent.msdk.dns.DnsService;
+import com.tencent.msdk.dns.BackupResolver;
 import com.tencent.msdk.dns.base.compat.CollectionCompat;
 import com.tencent.msdk.dns.base.executor.DnsExecutors;
 import com.tencent.msdk.dns.base.log.DnsLog;
@@ -17,6 +19,7 @@ import com.tencent.msdk.dns.core.LookupResult;
 import com.tencent.msdk.dns.core.ipRank.IpRankCallback;
 import com.tencent.msdk.dns.core.ipRank.IpRankHelper;
 import com.tencent.msdk.dns.core.rest.share.rsp.Response;
+import com.tencent.msdk.dns.report.ReportHelper;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -104,24 +107,27 @@ public final class CacheHelper {
 
 
         for (final String hostname : hostnameArr) {
-            String[] ips = ipsWithHostname.get(hostname).toArray(new String[0]);
-            AbsRestDns.Statistics stat = new AbsRestDns.Statistics(ips, rsp.clientIp, rsp.ttl);
-            stat.errorCode = ErrorCode.SUCCESS;
-            mCache.add(hostname, new LookupResult<>(ips, stat));
-            cacheUpdateTask(lookupParams, rsp, hostname);
+            List<String> ipsList= ipsWithHostname.get(hostname);
+            if (ipsList != null) {
+                String[] ips = ipsList.toArray(new String[0]);
+                AbsRestDns.Statistics stat = new AbsRestDns.Statistics(ips, rsp.clientIp, rsp.ttl);
+                stat.errorCode = ErrorCode.SUCCESS;
+                mCache.add(hostname, new LookupResult<>(ips, stat));
+                cacheUpdateTask(lookupParams, rsp, hostname);
 
-            // 发起IP优选服务
-            mIpRankHelper.ipv4Rank(hostname, ips, new IpRankCallback() {
-                @Override
-                public void onResult(String hostname, String[] sortedIps) {
-                    LookupResult cacheResult = get(hostname);
-                    // 根据排序的ip结果来对缓存结果排序
-                    if (cacheResult != null) {
-                        LookupResult sortedResult = mIpRankHelper.sortResultByIps(sortedIps, cacheResult);
-                        update(hostname, sortedResult);
+                // 发起IP优选服务
+                mIpRankHelper.ipv4Rank(hostname, ips, new IpRankCallback() {
+                    @Override
+                    public void onResult(String hostname, String[] sortedIps) {
+                        LookupResult cacheResult = get(hostname);
+                        // 根据排序的ip结果来对缓存结果排序
+                        if (cacheResult != null) {
+                            LookupResult sortedResult = mIpRankHelper.sortResultByIps(sortedIps, cacheResult);
+                            update(hostname, sortedResult);
+                        }
                     }
-                }
-            });
+                });
+            }
         }
 
         if (hostnameArr.length > 1) {
@@ -175,6 +181,8 @@ public final class CacheHelper {
                         public void run() {
                             LookupResult lookupResult = DnsManager.lookupWrapper(newLookupParams);
                             AsyncLookupResultQueue.enqueue(lookupResult);
+                            // atta上报
+                            ReportHelper.attaReportAsyncLookupEvent(lookupResult);
                         }
                     });
                     mPendingTasks.remove(this);
@@ -185,8 +193,8 @@ public final class CacheHelper {
             DnsExecutors.MAIN.schedule(
                     asyncLookupTask, (long) (ASYNC_LOOKUP_FACTOR * rsp.ttl * 1000));
         } else {
+            // 不允许使用过期缓存时，ttl*100%应执行缓存清空任务。
             final boolean useExpiredIpEnable = DnsService.getDnsConfig().useExpiredIpEnable;
-            // 允许使用过期缓存，不下发清空缓存任务
             if (!useExpiredIpEnable) {
                 final Runnable removeExpiredCacheTask = new Runnable() {
                     @Override
@@ -224,6 +232,12 @@ public final class CacheHelper {
                             }
                         }
 
+                        // 国内站网络变更需刷新服务ip
+                        if (BuildConfig.FLAVOR.equals("normal")) {
+                            DnsLog.d("Network changed, refetch server Ips");
+                            BackupResolver.getInstance().getServerIps();
+                        }
+
                         // 开启自动刷新缓存后，切换网络，刷新配置域名的缓存
                         final boolean enablePersistentCache = DnsService.getDnsConfig().enablePersistentCache;
                         if (enablePersistentCache) {
@@ -243,8 +257,11 @@ public final class CacheHelper {
                                     DnsExecutors.WORK.execute(new Runnable() {
                                         @Override
                                         public void run() {
+                                            LookupResult lookupResult = DnsManager.lookupWrapper(newLookupParams);
                                             AsyncLookupResultQueue.enqueue(
-                                                    DnsManager.lookupWrapper(newLookupParams));
+                                                    lookupResult);
+                                            // atta上报
+                                            ReportHelper.attaReportAsyncLookupEvent(lookupResult);
                                         }
                                     });
                                     asyncLookupParamsIterator.remove();

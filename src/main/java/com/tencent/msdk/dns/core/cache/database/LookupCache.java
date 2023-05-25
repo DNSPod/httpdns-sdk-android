@@ -17,7 +17,7 @@ public class LookupCache {
     @ColumnInfo
     public LookupResult lookupResult;
 
-    public LookupCache(String mHostname, LookupResult mLookupResult) {
+    public LookupCache(@NonNull String mHostname, LookupResult mLookupResult) {
         this.hostname = mHostname;
         this.lookupResult = mLookupResult;
     }

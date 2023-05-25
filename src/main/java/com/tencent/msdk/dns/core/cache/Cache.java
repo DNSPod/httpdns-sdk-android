@@ -22,22 +22,24 @@ public final class Cache implements ICache {
 
     private static final LookupCacheDao lookupCacheDao = LookupCacheDatabase.getInstance(DnsService.getAppContext()).lookupCacheDao();
 
-    private boolean getCachedIpEnable() {
+    private static boolean getCachedIpEnable() {
         return DnsService.getDnsConfig().cachedIpEnable;
     }
 
     public static void readFromDb() {
-        List<LookupCache> allCache = lookupCacheDao.getAll();
-        ArrayList<LookupCache> expired = new ArrayList<LookupCache>();
-        for (LookupCache lookupCache : allCache) {
-            mHostnameIpsMap.put(lookupCache.hostname, lookupCache.lookupResult);
+        if (getCachedIpEnable()) {
+            List<LookupCache> allCache = lookupCacheDao.getAll();
+            ArrayList<LookupCache> expired = new ArrayList<>();
+            for (LookupCache lookupCache : allCache) {
+                mHostnameIpsMap.put(lookupCache.hostname, lookupCache.lookupResult);
 
-            if (lookupCache.isExpired()) {
-                expired.add(lookupCache);
+                if (lookupCache.isExpired()) {
+                    expired.add(lookupCache);
+                }
             }
+            // 内存读取后，清空本地已过期的缓存
+            lookupCacheDao.deleteLookupCaches(expired);
         }
-        // 内存读取后，清空本地已过期的缓存
-        lookupCacheDao.deleteLookupCaches(expired);
     }
 
     @Override

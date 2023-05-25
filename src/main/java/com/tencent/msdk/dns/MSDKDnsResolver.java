@@ -8,6 +8,7 @@ import com.tencent.msdk.dns.base.jni.JniWrapper;
 import com.tencent.msdk.dns.base.log.DnsLog;
 import com.tencent.msdk.dns.base.log.ILogNode;
 import com.tencent.msdk.dns.base.utils.CommonUtils;
+import com.tencent.msdk.dns.base.utils.NetworkStack;
 import com.tencent.msdk.dns.core.Const;
 import com.tencent.msdk.dns.core.IpSet;
 
@@ -305,60 +306,8 @@ public class MSDKDnsResolver {
      * 本地为Dual Stack网络时, 最多返回一个IPv4结果IP和一个IPv6结果IP
      */
     private String getAddrByNameEnableExpired(final String domain) {
-        IpSet ipSet = getAddrsByNamesEnableExpired(domain);
+        IpSet ipSet = DnsService.getAddrsByNamesEnableExpired(domain);
         return CommonUtils.getIpfromSet(ipSet);
-    }
-
-    /**
-     * 乐观DNS解析（批量）
-     *
-     * @param domain 域名
-     * @return 解析结果
-     * 单独接口查询情况返回：IpSet{v4Ips=[xx.xx.xx.xx], v6Ips=[xxx], ips=null}
-     * 多域名批量查询返回：IpSet{v4Ips=[youtube.com:31.13.73.1, qq.com:123.151.137.18, qq.com:183.3.226.35, qq.com:61.129.7.47], v6Ips=[youtube.com.:2001::42d:9141], ips=null}
-     */
-    private IpSet getAddrsByNamesEnableExpired(final String domain) {
-        String result = MSDKDnsResolver.getInstance().getDnsDetail((domain));
-        IpSet ipSetReslut = IpSet.EMPTY;
-
-        if (result.isEmpty()) {
-            DnsExecutors.WORK.execute(new Runnable() {
-                @Override
-                public void run() {
-                    // 下发解析请求
-                    getAddrByNameNormal(domain);
-                }
-            });
-        } else {
-            try {
-                JSONObject temp = new JSONObject(result);
-                long expiredTime = Long.parseLong(temp.get("expired_time").toString());
-                long current = System.currentTimeMillis();
-                if (expiredTime < current) {
-                    // 缓存过期，发起异步请求
-                    DnsExecutors.WORK.execute(new Runnable() {
-                        @Override
-                        public void run() {
-                            DnsLog.d("async look up send");
-                            DnsService.getAddrsByName(domain, true, true);
-                        }
-                    });
-                    // 缓存过期且不允许使用过期缓存
-                    if (!DnsService.getDnsConfig().useExpiredIpEnable) {
-                        return ipSetReslut;
-                    }
-                }
-                String v4IpsStr = temp.get("v4_ips").toString();
-                String v6IpsStr = temp.get("v6_ips").toString();
-                String[] v4Ips = v4IpsStr.isEmpty() ? new String[0] : v4IpsStr.split(",");
-                String[] v6Ips = v6IpsStr.isEmpty() ? new String[0] : v6IpsStr.split(",");
-                ipSetReslut = new IpSet(v4Ips, v6Ips);
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-
-        }
-        return ipSetReslut;
     }
 
     /**
@@ -374,7 +323,7 @@ public class MSDKDnsResolver {
         if (!DnsService.getDnsConfig().useExpiredIpEnable) {
             return getAddrsByNameNormal(domain);
         } else {
-            return getAddrsByNamesEnableExpired(domain);
+            return DnsService.getAddrsByNamesEnableExpired(domain);
         }
     }
 
@@ -442,6 +391,15 @@ public class MSDKDnsResolver {
             DnsLog.v("getDnsDetail exception:" + e);
         }
         return "";
+    }
+
+    /**
+     *  获取网络栈支持情况
+     * @return 0: UNKNOWN, 1: IPV4_ONLY, 2: IPV6_ONLY, 3: DUAL_STACK;
+     */
+    public int getNetworkStack() {
+        DnsLog.v("MSDKDnsResolver.getNetworkStack() called.");
+        return NetworkStack.get();
     }
 
     @SuppressWarnings("unused")

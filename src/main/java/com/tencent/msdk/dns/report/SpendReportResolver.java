@@ -46,7 +46,8 @@ public class SpendReportResolver {
      * @return
      */
     public boolean getCanReport() {
-        return mReportCount < maxReportCount && (System.currentTimeMillis() - mLastReportTime) >= mInterval;
+        return (System.currentTimeMillis() - mLastReportTime) >= mInterval;
+//        return mReportCount < maxReportCount && (System.currentTimeMillis() - mLastReportTime) >= mInterval;
     }
 
 }

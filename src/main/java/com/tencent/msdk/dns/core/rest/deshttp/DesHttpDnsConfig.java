@@ -9,7 +9,7 @@ import java.util.Locale;
 
 final class DesHttpDnsConfig extends AbsHttpDnsConfig {
 
-    private static final String TARGET_URL_FORMAT = "http://%s/d?%s";
+    private static final String TARGET_URL_FORMAT = "http://%s/d?%s&alg=des";
 
     private static final int TARGET_PORT = 80;
 

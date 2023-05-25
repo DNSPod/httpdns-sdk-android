@@ -116,6 +116,7 @@ public final class DnsManager {
                 sStatMergeFactory.create(
                         (Class<LookupExtra>) lookupExtra.getClass(), lookupParams.appContext);
         lookupContext.statisticsMerge(statMerge);
+        statMerge.statContext(lookupContext);
 
         IDns dns;
         switch (currentNetworkStack) {
@@ -135,9 +136,7 @@ public final class DnsManager {
             lookupContext.sorter().put(dns, lookupResultFromCache.ipSet.ips);
             lookupContext.statisticsMerge()
                     .merge(dns, lookupResultFromCache.stat);
-        }
 
-        if (lookupResultFromCache.stat.lookupSuccess()) {
             IpSet ipSet = sorter.sort();
             statMerge.statResult(ipSet);
             LookupResult<IStatisticsMerge> lookupResult =
@@ -147,7 +146,7 @@ public final class DnsManager {
             return lookupResult;
         }
         return new LookupResult<IStatisticsMerge>(
-                IpSet.EMPTY, new StatisticsMerge(lookupParams.appContext));
+                IpSet.EMPTY, statMerge);
     }
 
     // lookupParameters创建时会进行参数校验

@@ -5,7 +5,7 @@ import com.tencent.msdk.dns.base.jni.JniWrapper;
 import com.tencent.msdk.dns.core.rest.share.DataConverter;
 import java.nio.charset.Charset;
 
-final class DesCipherSuite {
+public final class DesCipherSuite {
     @SuppressWarnings("CharsetObjectCanBeUsed")
     static String encrypt(/* @Nullable */String content, /* @Nullable */String key) {
         if (TextUtils.isEmpty(content) || TextUtils.isEmpty(key)) {
@@ -21,7 +21,7 @@ final class DesCipherSuite {
     }
 
     @SuppressWarnings("CharsetObjectCanBeUsed")
-    static String decrypt(/* @Nullable */String content, /* @Nullable */String key) {
+    public static String decrypt(/* @Nullable */String content, /* @Nullable */String key) {
         if (TextUtils.isEmpty(content) || TextUtils.isEmpty(key)) {
             return "";
         }

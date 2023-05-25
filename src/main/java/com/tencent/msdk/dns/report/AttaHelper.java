@@ -3,21 +3,45 @@ package com.tencent.msdk.dns.report;
 import android.content.Context;
 import android.telephony.TelephonyManager;
 
+import com.tencent.msdk.dns.BuildConfig;
 import com.tencent.msdk.dns.base.log.DnsLog;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+
 /**
  * Atta主要用于容灾上报和灯塔（用户个人上报）用途不同
  */
 public class AttaHelper {
     private static final String ATTA_URL = "https://h.trace.qq.com/kv";
-    private static final String ATTA_ID = "0f500064192";
-    private static final String ATTA_TOKEN = "4725229671";
+    private static final String ATTA_ID = BuildConfig.ATTA_ID;
+    private static final String ATTA_TOKEN = BuildConfig.ATTA_TOKEN;
+    private static final String SDKVERSION = BuildConfig.VERSION_NAME;
+    private static final String DEVICEMODEL = getSystemModel();
+    private static final String SYSTEMNANE = "Andriod";
+    private static final String SYSTEMVERSION = getSystemVersion();
+    private static final String SESSIONID = Session.getSessionId();
 
-    public static Runnable report(final String carrier, final String networkType, final String dnsId, final String encryptType, final String eventName, final long eventTime, final String dnsIp, final String sdkVersion, final String deviceName, final String systemName, final String systemVersion, final long spend, final String req_dn, final String req_type, final long req_timeout, final int req_ttl, final long errorCode, final int statusCode) {
+    public static Runnable report(final String carrier,
+                                  final String networkType,
+                                  final String dnsId,
+                                  final String encryptType,
+                                  final String eventName,
+                                  final long eventTime,
+                                  final String dnsIp,
+                                  final long spend,
+                                  final String req_dn,
+                                  final String req_type,
+                                  final long req_timeout,
+                                  final int req_ttl,
+                                  final long errorCode,
+                                  final int statusCode,
+                                  final boolean isCache,
+                                  final int count,
+                                  final String ldns,
+                                  final String hdns) {
         return new Runnable() {
             @Override
             public void run() {
@@ -33,17 +57,23 @@ public class AttaHelper {
                             + "&eventName=" + eventName
                             + "&eventTime=" + eventTime
                             + "&dnsIp=" + dnsIp
-                            + "&sdkVersion=" + sdkVersion
-                            + "&deviceName=" + deviceName
-                            + "&systemName=" + systemName
-                            + "&systemVersion=" + systemVersion
+                            + "&sdkVersion=" + SDKVERSION
+                            + "&deviceName=" + DEVICEMODEL
+                            + "&systemName=" + SYSTEMNANE
+                            + "&systemVersion=" + SYSTEMVERSION
                             + "&spend=" + spend
                             + "&req_dn=" + req_dn
                             + "&req_type=" + req_type
                             + "&req_timeout=" + req_timeout
                             + "&req_ttl=" + req_ttl
                             + "&errorCode=" + errorCode
-                            + "&statusCode=" + statusCode);
+                            + "&statusCode=" + statusCode
+                            + "&sessionId=" + SESSIONID
+                            + "&isCache=" + (isCache ? 1 : 0)
+                            + "&count=" + count
+                            + "&ldns=" + ldns
+                            + "&hdns=" + hdns
+                    );
                     DnsLog.d("开始Atta上报：" + url);
                     connection = (HttpURLConnection) url.openConnection();
                     //设置请求方法
@@ -103,4 +133,25 @@ public class AttaHelper {
         return android.os.Build.MODEL;
     }
 
+    /**
+     * 获取请求网络栈类型
+     *
+     * @param curNetStack 当前网络栈
+     * @return 请求类型 a/aaaa/dual
+     */
+    public static String getReqType(int curNetStack) {
+        String reqType = null;
+        switch (curNetStack) {
+            case 1:
+                reqType = "a";
+                break;
+            case 2:
+                reqType = "aaaa";
+                break;
+            case 3:
+                reqType = "dual";
+                break;
+        }
+        return reqType;
+    }
 }
