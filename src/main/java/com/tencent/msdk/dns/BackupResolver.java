@@ -1,7 +1,6 @@
 package com.tencent.msdk.dns;
 
 import android.os.SystemClock;
-import android.text.TextUtils;
 
 import com.tencent.msdk.dns.base.log.DnsLog;
 import com.tencent.msdk.dns.base.utils.DebounceTask;
@@ -70,9 +69,9 @@ public class BackupResolver {
 
     private ArrayList getBackUpIps() {
         if (Const.HTTPS_CHANNEL.equals(mConfig.channel) && !BuildConfig.HTTPS_TOLERANCE_SERVER.isEmpty()) {
-            return new ArrayList<String>(Arrays.asList(mConfig.dnsIp, BuildConfig.HTTPS_TOLERANCE_SERVER));
+            return new ArrayList<String>(Arrays.asList(BuildConfig.HTTPS_INIT_SERVER, BuildConfig.HTTPS_TOLERANCE_SERVER));
         } else {
-            return new ArrayList<String>(Arrays.asList(mConfig.dnsIp, BuildConfig.HTTP_TOLERANCE_SERVER));
+            return new ArrayList<String>(Arrays.asList(BuildConfig.HTTP_INIT_SERVER, BuildConfig.HTTP_TOLERANCE_SERVER));
         }
     }
 
@@ -132,8 +131,7 @@ public class BackupResolver {
             mErrorCount.set(0);
             DnsLog.d("IP Changed：" + dnsIps.get(mIpIndex));
         }
-        String backip = dnsIps.get(mIpIndex);
-        return TextUtils.isEmpty(backip) ? mConfig.dnsIp : backip;
+        return dnsIps.get(mIpIndex);
     }
 
     /**
@@ -146,11 +144,11 @@ public class BackupResolver {
         @Override
         public void run() {
             try {
-                IDns dns = new DesHttpDns(DnsDescription.Family.INET);
+                String dnsIp = BackupResolver.getInstance().getDnsIp();
                 String domain = BuildConfig.DOMAIN_SERVICE_DOMAINS[0];
                 LookupExtra lookupExtra = new LookupExtra(BuildConfig.DOMAIN_SERVICE_ID, BuildConfig.DOMSIN_SERVICE_KEY, BuildConfig.DOMAIN_SERVICE_TOKEN);
                 LookupParameters lookupParameters = new LookupParameters.Builder<LookupExtra>()
-                        .dnsIp(BuildConfig.HTTP_INIT_SERVER)
+                        .dnsIp(dnsIp)
                         .channel("DesHttp")
                         .hostname(domain)
                         .lookupExtra(lookupExtra)
