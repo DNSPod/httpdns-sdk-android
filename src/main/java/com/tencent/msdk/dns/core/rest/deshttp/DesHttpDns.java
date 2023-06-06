@@ -30,7 +30,7 @@ public final class DesHttpDns extends AbsHttpDns {
 
     @Override
     public String getTargetUrl(String dnsIp, String hostname, LookupExtra lookupExtra) {
-        String encryptHostname = DesCipherSuite.encrypt(hostname, lookupExtra.bizKey);
+        String encryptHostname = encrypt(hostname, lookupExtra.bizKey);
         String reqContent;
         switch (mFamily) {
             case DnsDescription.Family.INET:

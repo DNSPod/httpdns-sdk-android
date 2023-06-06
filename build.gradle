@@ -37,7 +37,7 @@ android {
         release {
             minifyEnabled true
             buildConfigField("String", "VERSION_NAME", "\"${project.subVersionName}a\"")
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
 
