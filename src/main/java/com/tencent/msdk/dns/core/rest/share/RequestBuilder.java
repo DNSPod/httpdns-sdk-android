@@ -2,18 +2,19 @@ package com.tencent.msdk.dns.core.rest.share;
 
 import android.text.TextUtils;
 
+import com.tencent.msdk.dns.DnsService;
 import com.tencent.msdk.dns.core.Const;
 
 import java.util.Locale;
 
 public final class RequestBuilder {
 
-    private static final String INET_REQUEST_FORMAT = "dn=%s&clientip=1&ttl=1&id=%s";
-    private static final String INET6_REQUEST_FORMAT = "dn=%s&clientip=1&ttl=1&id=%s&type=aaaa";
-    private static final String DOUB_REQUEST_FORMAT = "dn=%s&clientip=1&ttl=1&id=%s&type=addrs";
-    private static final String HTTPS_INET_REQUEST_FORMAT = "dn=%s&clientip=1&ttl=1&id=%s&token=%s";
-    private static final String HTTPS_INET6_REQUEST_FORMAT = "dn=%s&clientip=1&ttl=1&id=%s&token=%s&type=aaaa";
-    private static final String HTTPS_DOUB_REQUEST_FORMAT = "dn=%s&clientip=1&ttl=1&id=%s&token=%s&type=addrs";
+    private static final String INET_REQUEST_FORMAT = "dn=%s&ip=%s&clientip=1&ttl=1&id=%s";
+    private static final String INET6_REQUEST_FORMAT = "dn=%s&ip=%s&clientip=1&ttl=1&id=%s&type=aaaa";
+    private static final String DOUB_REQUEST_FORMAT = "dn=%s&ip=%s&clientip=1&ttl=1&id=%s&type=addrs";
+    private static final String HTTPS_INET_REQUEST_FORMAT = "dn=%s&ip=%s&clientip=1&ttl=1&id=%s&token=%s";
+    private static final String HTTPS_INET6_REQUEST_FORMAT = "dn=%s&ip=%s&clientip=1&ttl=1&id=%s&token=%s&type=aaaa";
+    private static final String HTTPS_DOUB_REQUEST_FORMAT = "dn=%s&ip=%s&clientip=1&ttl=1&id=%s&token=%s&type=addrs";
 
     public static String buildInetRequest(String encryptedHostname, String bizId) {
         return buildRequest(encryptedHostname, bizId, INET_REQUEST_FORMAT);
@@ -35,8 +36,9 @@ public final class RequestBuilder {
         if (TextUtils.isEmpty(encryptedHostname)) {
             return "";
         }
+        String ip = DnsService.getDnsConfig().routeIp;
         return String.format(Locale.US,
-                format, encryptedHostname, bizId);
+                format, encryptedHostname, ip, bizId);
     }
 
     public static String buildHttpsInetRequest(String encryptedHostname, String bizId, String token) {
@@ -63,7 +65,8 @@ public final class RequestBuilder {
         if (TextUtils.isEmpty(encryptedHostname)) {
             return "";
         }
+        String ip = DnsService.getDnsConfig().routeIp;
         return String.format(Locale.US,
-                format, encryptedHostname, bizId, token);
+                format, encryptedHostname, ip, bizId, token);
     }
 }

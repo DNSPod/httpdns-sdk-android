@@ -61,6 +61,8 @@ public final class DnsConfig {
 
     public boolean enableDomainServer = false;
 
+    public String routeIp;
+
     private DnsConfig(int logLevel,
                       String appId, String userId, boolean initBuiltInReporters,
                       String dnsIp, String dnsId, String dnsKey, String token,
@@ -70,7 +72,7 @@ public final class DnsConfig {
                       Set<IpRankItem> ipRankItems, String channel, boolean enableReport, boolean blockFirst,
                       int customNetStack, DnsExecutors.ExecutorSupplier executorSupplier,
                       ILookedUpListener lookedUpListener, List<ILogNode> logNodes,
-                      List<IReporter> reporters, boolean useExpiredIpEnable, boolean cachedIpEnable) {
+                      List<IReporter> reporters, boolean useExpiredIpEnable, boolean cachedIpEnable, String routeIp) {
         this.logLevel = logLevel;
         this.appId = appId;
         this.userId = userId;
@@ -93,6 +95,7 @@ public final class DnsConfig {
         this.reporters = reporters;
         this.useExpiredIpEnable = useExpiredIpEnable;
         this.cachedIpEnable = cachedIpEnable;
+        this.routeIp = routeIp;
     }
 
     boolean needProtect(/* @Nullable */String hostname) {
@@ -135,6 +138,7 @@ public final class DnsConfig {
                 ", useExpiredIpEnable=" + useExpiredIpEnable +
                 ", cachedIpEnable=" + cachedIpEnable +
                 ", enableDomainServer=" + enableDomainServer +
+                ", routeIp=" + routeIp +
                 '}';
     }
 
@@ -222,6 +226,7 @@ public final class DnsConfig {
         private List<IReporter> mReporters = null;
         private boolean mUseExpiredIpEnable = false;
         private boolean mCachedIpEnable = false;
+        private String mRouteIp = "";
 
         /**
          * 设置最低日志等级, 低于设置等级的日志不会输出
@@ -702,6 +707,17 @@ public final class DnsConfig {
         }
 
         /**
+         * 设置DNS 请求的 ECS（EDNS-Client-Subnet）值
+         *
+         * @param routeIp IPV4/IPv6 地址值
+         * @return 当前Builder实例, 方便链式调用
+         */
+        public Builder routeIp(String routeIp) {
+            mRouteIp = routeIp;
+            return this;
+        }
+
+        /**
          * 构建DnsConfig实例
          *
          * @return DnsConfig实例
@@ -714,7 +730,7 @@ public final class DnsConfig {
                     mIpRankItems, mChannel, mEnableReport, mBlockFirst,
                     mCustomNetStack, mExecutorSupplier,
                     mLookedUpListener, mLogNodes,
-                    mReporters, mUseExpiredIpEnable, mCachedIpEnable);
+                    mReporters, mUseExpiredIpEnable, mCachedIpEnable, mRouteIp);
         }
     }
 }
