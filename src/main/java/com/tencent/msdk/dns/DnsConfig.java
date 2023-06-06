@@ -25,6 +25,7 @@ public final class DnsConfig {
     public final String appId;
     public String userId;
 
+    @Deprecated
     public final boolean initBuiltInReporters;
 
     public final String dnsIp;
@@ -192,7 +193,7 @@ public final class DnsConfig {
         private String mAppId = "";
         private String mUserId = "";
 
-        // CHANGE: 默认不初始化灯塔的key
+        @Deprecated
         private boolean mInitBuiltInReporters = false;
 
         private String mDnsIp = "";
@@ -251,7 +252,7 @@ public final class DnsConfig {
         /**
          * 设置AppId, 进行数据上报时用于区分业务
          *
-         * @param appId AppId, 即灯塔AppId, 从<a href="https://console.cloud.tencent.com/HttpDNS">腾讯云官网</a>申请获得
+         * @param appId AppId, 从<a href="https://console.cloud.tencent.com/HttpDNS">腾讯云官网</a>申请获得
          * @return 当前Builder实例, 方便链式调用
          * @throws IllegalArgumentException appId为空时抛出
          */
@@ -290,22 +291,26 @@ public final class DnsConfig {
         }
 
         /**
+         * @Deprecated
          * 自动初始化内置上报通道
          * 不设置时, 默认为自动初始化内置上报通道
          *
          * @return 当前Builder实例, 方便链式调用
          */
+        @Deprecated
         public Builder initBuiltInReporters() {
             mInitBuiltInReporters = true;
             return this;
         }
 
         /**
+         * @Deprecated
          * 不自动初始化内置上报通道
          * 不设置时, 默认为自动初始化内置上报通道
          *
          * @return 当前Builder实例, 方便链式调用
          */
+        @Deprecated
         public Builder notInitBuiltInReporters() {
             mInitBuiltInReporters = false;
             return this;

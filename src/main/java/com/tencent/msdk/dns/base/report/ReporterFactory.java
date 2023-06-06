@@ -12,17 +12,6 @@ final class ReporterFactory {
 
     public static boolean canReport = false;
 
-    static {
-        BeaconReporterImpl beaconReporter = new BeaconReporterImpl();
-        // 无论能不能上报，都记录，这样可以保证可以打印
-        CHANNEL_REPORTER_MAP.put(ReportManager.Channel.BEACON, beaconReporter);
-        ReporterFactory.canReport = beaconReporter.canReport();
-//        GCCReporterImpl gccReporter = new GCCReporterImpl();
-//        if (gccReporter.canReport()) {
-//            CHANNEL_REPORTER_MAP.put(ReportManager.Channel.GCC, new GCCReporterImpl());
-//        }
-    }
-
     private ReporterFactory() {
     }
 

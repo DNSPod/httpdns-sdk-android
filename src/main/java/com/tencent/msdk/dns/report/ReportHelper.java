@@ -16,11 +16,8 @@ import com.tencent.msdk.dns.base.utils.CommonUtils;
 import com.tencent.msdk.dns.core.Const;
 import com.tencent.msdk.dns.core.IpSet;
 import com.tencent.msdk.dns.core.LookupResult;
-import com.tencent.msdk.dns.core.rest.share.AsyncLookupResultQueue;
 import com.tencent.msdk.dns.core.stat.StatisticsMerge;
 
-import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 
 public final class ReportHelper {
@@ -30,11 +27,8 @@ public final class ReportHelper {
     private static DnsConfig sDnsConfig;
 
     private static Runnable sReportAsyncLookupEventTask = new Runnable() {
-
         @Override
         public void run() {
-            List<LookupResult> lookupResults = AsyncLookupResultQueue.offerAll();
-            reportAsyncLookupEvent(lookupResults);
             // attta上报统计数据
             Map<String, Object[]> cacheStatisticsMap = CacheStatisticsReport.offerAll();
             attaReportStatisticsEvent(cacheStatisticsMap);
@@ -50,10 +44,8 @@ public final class ReportHelper {
         }
 
         sDnsConfig = dnsConfig;
-
         // sessionId初始化
         Session.setSessionId();
-
         startReportAsyncLookupEvent();
     }
 
@@ -64,9 +56,7 @@ public final class ReportHelper {
         }
         // atta上报
         attaReportLookupEvent(ReportConst.PRE_LOOKUP_EVENT_NAME, lookupResult);
-        if (!ReportManager.canReport()) {
-            return;
-        }
+
         // NOTE: 上报字段增减, 记得修改capacity
         Map<String, String> preLookupEventMap = CollectionCompat.createMap(24);
         StatisticsMerge statMerge = (StatisticsMerge) lookupResult.stat;
@@ -117,11 +107,6 @@ public final class ReportHelper {
             } else {
                 attaReportLookupEvent(ReportConst.LOOKUP_METHOD_CALLED_EVENT_NAME, lookupResult);
             }
-        }
-
-        //  灯塔反射引入
-        if (!ReportManager.canReport()) {
-            return;
         }
 
         // NOTE: 上报字段增减, 记得修改capacity
@@ -182,49 +167,6 @@ public final class ReportHelper {
         });
     }
 
-    private static void reportAsyncLookupEvent(Collection<LookupResult> lookupResults) {
-        if (CommonUtils.isEmpty(lookupResults) || !ReportManager.canReport()) {
-            return;
-        }
-
-        // NOTE: 上报字段增减, 记得修改capacity
-        Map<String, String> asyncLookupEventMap = CollectionCompat.createMap(19);
-
-        asyncLookupEventMap.put(ReportConst.CHANNEL_KEY, sDnsConfig.channel);
-        asyncLookupEventMap.put(ReportConst.LOOKUP_COUNT_KEY, String.valueOf(lookupResults.size()));
-        BatchStatistics.Builder batchStatBuilder = new BatchStatistics.Builder(true);
-        for (LookupResult lookupResult : lookupResults) {
-            batchStatBuilder.append((StatisticsMerge) lookupResult.stat);
-        }
-        BatchStatistics batchStat = batchStatBuilder.build();
-        asyncLookupEventMap.put(ReportConst.BATCH_NETWORK_TYPE_KEY, batchStat.netTypeList);
-        asyncLookupEventMap.put(
-                ReportConst.BATCH_NETWORK_CHANGE_KEY, batchStat.restInetNetChangeLookupList);
-        asyncLookupEventMap.put(ReportConst.BATCH_HOSTNAME_KEY, batchStat.hostnameList);
-        asyncLookupEventMap.put(
-                ReportConst.BATCH_LOOKUP_TIME_MILLS_KEY, batchStat.restInetStartLookupTimeMillsList);
-        asyncLookupEventMap.put(ReportConst.BATCH_NETWORK_STACK_KEY, batchStat.netStackList);
-
-        asyncLookupEventMap.put(ReportConst.BATCH_REST_LOOKUP_ERROR_CODE_KEY,
-                batchStat.restInetLookupErrorCodeList);
-        asyncLookupEventMap.put(ReportConst.BATCH_REST_LOOKUP_ERROR_MESSAGE_KEY,
-                batchStat.restInetLookupErrorMsgList);
-        asyncLookupEventMap.put(ReportConst.BATCH_REST_LOOKUP_IPS_KEY,
-                batchStat.restInetLookupIpsList);
-        asyncLookupEventMap.put(ReportConst.BATCH_REST_LOOKUP_TTL_KEY,
-                batchStat.restInetLookupTtlList);
-        asyncLookupEventMap.put(ReportConst.BATCH_REST_LOOKUP_CLIENT_IP_KEY,
-                batchStat.restInetLookupClientIpList);
-        asyncLookupEventMap.put(ReportConst.BATCH_REST_LOOKUP_COST_TIME_MILLS_KEY,
-                batchStat.restInetLookupCostTimeMillsList);
-        asyncLookupEventMap.put(ReportConst.BATCH_REST_LOOKUP_RETRY_TIMES_KEY,
-                batchStat.restInetLookupRetryTimesList);
-
-        addCommonConfigInfo(asyncLookupEventMap);
-
-        report(ReportConst.ASYNC_LOOKUP_EVENT_NAME, asyncLookupEventMap);
-    }
-
     public static void attaReportAsyncLookupEvent(LookupResult lookupResult) {
         attaReportLookupEvent(ReportConst.ASYNC_LOOKUP_EVENT_NAME, lookupResult);
     }
@@ -255,7 +197,7 @@ public final class ReportHelper {
         if (statMerge.restDnsStat.errorCode == 2 || (Const.HTTPS_CHANNEL.equals(sDnsConfig.channel) && (statMerge.restDnsStat.errorCode == 1))) {
             // 解析失败，仅当达到最大失败次数满足切换IP时候上报
             if (sDnsConfig.enableReport && backupInfo.getCanReport(backupInfo.getErrorCount() + 1)) {
-                DnsExecutors.MAIN.execute(AttaHelper.report(carrierCode, statMerge.netType, sDnsConfig.lookupExtra.bizId, sDnsConfig.channel, eventName, System.currentTimeMillis(), dnsIp, statMerge.restDnsStat.costTimeMills, statMerge.hostname, reqType, sDnsConfig.timeoutMills, statMerge.restDnsStat.ttl, statMerge.restDnsStat.errorCode, statMerge.restDnsStat.statusCode, statMerge.restDnsStat.cached, 1, CommonUtils.toStringList(statMerge.localDnsStat.ips, ReportConst.IP_SPLITTER), CommonUtils.toStringList(statMerge.restDnsStat.ips, ReportConst.IP_SPLITTER)));
+                DnsExecutors.MAIN.execute(AttaHelper.report(carrierCode, statMerge.netType, sDnsConfig.lookupExtra.bizId, sDnsConfig.appId, sDnsConfig.channel, eventName, System.currentTimeMillis(), dnsIp, statMerge.restDnsStat.costTimeMills, statMerge.hostname, reqType, sDnsConfig.timeoutMills, statMerge.restDnsStat.ttl, statMerge.restDnsStat.errorCode, statMerge.restDnsStat.statusCode, statMerge.restDnsStat.cached, 1, CommonUtils.toStringList(statMerge.localDnsStat.ips, ReportConst.IP_SPLITTER), CommonUtils.toStringList(statMerge.restDnsStat.ips, ReportConst.IP_SPLITTER)));
             }
             // 报错记录+1
             backupInfo.incrementErrorCount();
@@ -267,7 +209,7 @@ public final class ReportHelper {
             //  请求成功后将ErrorCount置为0
             backupInfo.setErrorCount(0);
             if (sDnsConfig.enableReport) {
-                DnsExecutors.MAIN.execute(AttaHelper.report(carrierCode, statMerge.netType, sDnsConfig.lookupExtra.bizId, sDnsConfig.channel, eventName, System.currentTimeMillis(), dnsIp, statMerge.restDnsStat.costTimeMills, statMerge.hostname, reqType, sDnsConfig.timeoutMills, statMerge.restDnsStat.ttl, statMerge.restDnsStat.errorCode, statMerge.restDnsStat.statusCode, statMerge.restDnsStat.cached, 1, CommonUtils.toStringList(statMerge.localDnsStat.ips, ReportConst.IP_SPLITTER), CommonUtils.toStringList(statMerge.restDnsStat.ips, ReportConst.IP_SPLITTER)));
+                DnsExecutors.MAIN.execute(AttaHelper.report(carrierCode, statMerge.netType, sDnsConfig.lookupExtra.bizId, sDnsConfig.appId, sDnsConfig.channel, eventName, System.currentTimeMillis(), dnsIp, statMerge.restDnsStat.costTimeMills, statMerge.hostname, reqType, sDnsConfig.timeoutMills, statMerge.restDnsStat.ttl, statMerge.restDnsStat.errorCode, statMerge.restDnsStat.statusCode, statMerge.restDnsStat.cached, 1, CommonUtils.toStringList(statMerge.localDnsStat.ips, ReportConst.IP_SPLITTER), CommonUtils.toStringList(statMerge.restDnsStat.ips, ReportConst.IP_SPLITTER)));
             }
         }
     }
@@ -289,11 +231,11 @@ public final class ReportHelper {
             String reqType = AttaHelper.getReqType(statMerge.curNetStack);
             if (errCount > 0) {
                 // 为空的缓存统计项上报，解析结果不上报
-                DnsExecutors.MAIN.execute(AttaHelper.report(carrierCode, statMerge.netType, sDnsConfig.lookupExtra.bizId, sDnsConfig.channel, ReportConst.LOOKUP_FROM_CACHED_EVENT_NAME, System.currentTimeMillis(), dnsIp, spendAvg, statMerge.hostname, reqType, sDnsConfig.timeoutMills, 0, 3, 0, true, errCount, null, null));
+                DnsExecutors.MAIN.execute(AttaHelper.report(carrierCode, statMerge.netType, sDnsConfig.lookupExtra.bizId, sDnsConfig.appId, sDnsConfig.channel, ReportConst.LOOKUP_FROM_CACHED_EVENT_NAME, System.currentTimeMillis(), dnsIp, spendAvg, statMerge.hostname, reqType, sDnsConfig.timeoutMills, 0, 3, 0, true, errCount, null, null));
             }
             if (curCount > 0) {
                 // 有值的缓存统计项上报，解析结果不上报
-                DnsExecutors.MAIN.execute(AttaHelper.report(carrierCode, statMerge.netType, sDnsConfig.lookupExtra.bizId, sDnsConfig.channel, ReportConst.LOOKUP_FROM_CACHED_EVENT_NAME, System.currentTimeMillis(), dnsIp, spendAvg, statMerge.hostname, reqType, sDnsConfig.timeoutMills, 0, 0, 0, true, curCount, null, null));
+                DnsExecutors.MAIN.execute(AttaHelper.report(carrierCode, statMerge.netType, sDnsConfig.lookupExtra.bizId, sDnsConfig.appId, sDnsConfig.channel, ReportConst.LOOKUP_FROM_CACHED_EVENT_NAME, System.currentTimeMillis(), dnsIp, spendAvg, statMerge.hostname, reqType, sDnsConfig.timeoutMills, 0, 0, 0, true, curCount, null, null));
             }
         }
     }

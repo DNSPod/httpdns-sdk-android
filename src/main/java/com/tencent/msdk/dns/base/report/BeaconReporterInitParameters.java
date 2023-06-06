@@ -2,6 +2,7 @@ package com.tencent.msdk.dns.base.report;
 
 import android.content.Context;
 
+@Deprecated
 public final class BeaconReporterInitParameters implements IReporter.IInitParameters {
 
     public final Context appContext;

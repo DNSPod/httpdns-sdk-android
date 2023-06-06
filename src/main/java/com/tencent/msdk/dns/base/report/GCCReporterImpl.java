@@ -1,10 +1,12 @@
 package com.tencent.msdk.dns.base.report;
 
 //import com.tencent.gcloud.httpdns.report.GCloudCoreReporter;
+
 import com.tencent.msdk.dns.base.log.DnsLog;
 
 import java.util.Map;
 
+@Deprecated
 final class GCCReporterImpl extends AbsReporter<IReporter.IInitParameters> {
 
     private static final String GCC_REPORTER_NAME = GCCReporterImpl.class.getSimpleName();
