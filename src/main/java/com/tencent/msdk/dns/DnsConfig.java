@@ -28,8 +28,6 @@ public final class DnsConfig {
     @Deprecated
     public final boolean initBuiltInReporters;
 
-    public final String dnsIp;
-
     public final LookupExtra lookupExtra;
 
     public final int timeoutMills;
@@ -66,7 +64,7 @@ public final class DnsConfig {
 
     private DnsConfig(int logLevel,
                       String appId, String userId, boolean initBuiltInReporters,
-                      String dnsIp, String dnsId, String dnsKey, String token,
+                      String dnsId, String dnsKey, String token,
                       int timeoutMills,
                       Set<WildcardDomain> protectedDomains,
                       Set<String> preLookupDomains, boolean enablePersistentCache, Set<String> persistentCacheDomains,
@@ -78,7 +76,6 @@ public final class DnsConfig {
         this.appId = appId;
         this.userId = userId;
         this.initBuiltInReporters = initBuiltInReporters;
-        this.dnsIp = dnsIp;
         this.ipRankItems = ipRankItems;
         this.lookupExtra = new LookupExtra(dnsId, dnsKey, token);
         this.timeoutMills = timeoutMills;
@@ -196,6 +193,7 @@ public final class DnsConfig {
         @Deprecated
         private boolean mInitBuiltInReporters = false;
 
+        @Deprecated
         private String mDnsIp = "";
         private String mDnsId = "";
         private String mDnsKey = "";
@@ -317,17 +315,14 @@ public final class DnsConfig {
         }
 
         /**
-         * 设置DnsIp
+         * 设置DnsIp 【V4.5.0版本起废弃】
          *
          * @param dnsIp HTTPDNS IP 地址
          * @return 当前Builder实例, 方便链式调用
          * @throws IllegalArgumentException dnsIp为空时抛出
          */
+        @Deprecated
         public Builder dnsIp(String dnsIp) {
-            if (TextUtils.isEmpty(dnsIp)) {
-                throw new IllegalArgumentException("dnsIp".concat(Const.EMPTY_TIPS));
-            }
-            mDnsIp = dnsIp;
             return this;
         }
 
@@ -729,7 +724,7 @@ public final class DnsConfig {
          */
         public DnsConfig build() {
             return new DnsConfig(mLogLevel,
-                    mAppId, mUserId, mInitBuiltInReporters, mDnsIp, mDnsId, mDnsKey, mToken,
+                    mAppId, mUserId, mInitBuiltInReporters, mDnsId, mDnsKey, mToken,
                     mTimeoutMills,
                     mProtectedDomains, mPreLookupDomains, mEnablePersistentCache, mPersistentCacheDomains,
                     mIpRankItems, mChannel, mEnableReport, mBlockFirst,
