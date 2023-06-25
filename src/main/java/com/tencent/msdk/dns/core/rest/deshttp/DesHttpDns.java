@@ -1,5 +1,6 @@
 package com.tencent.msdk.dns.core.rest.deshttp;
 
+import com.tencent.msdk.dns.BuildConfig;
 import com.tencent.msdk.dns.core.Const;
 import com.tencent.msdk.dns.core.DnsDescription;
 import com.tencent.msdk.dns.core.rest.share.AbsHttpDns;
@@ -8,6 +9,8 @@ import com.tencent.msdk.dns.core.rest.share.LookupExtra;
 import com.tencent.msdk.dns.core.rest.share.RequestBuilder;
 
 import java.net.SocketAddress;
+import java.util.Arrays;
+import java.util.List;
 
 
 public final class DesHttpDns extends AbsHttpDns {
@@ -30,17 +33,19 @@ public final class DesHttpDns extends AbsHttpDns {
 
     @Override
     public String getTargetUrl(String dnsIp, String hostname, LookupExtra lookupExtra) {
+        List<String> tempList = Arrays.asList(BuildConfig.DOMAIN_SERVICE_DOMAINS);
+        Boolean isServerHostname =   tempList.contains(hostname);
         String encryptHostname = encrypt(hostname, lookupExtra.bizKey);
         String reqContent;
         switch (mFamily) {
             case DnsDescription.Family.INET:
-                reqContent = RequestBuilder.buildInetRequest(encryptHostname, lookupExtra.bizId);
+                reqContent = RequestBuilder.buildInetRequest(encryptHostname, lookupExtra.bizId, isServerHostname);
                 break;
             case DnsDescription.Family.INET6:
-                reqContent = RequestBuilder.buildInet6Request(encryptHostname, lookupExtra.bizId);
+                reqContent = RequestBuilder.buildInet6Request(encryptHostname, lookupExtra.bizId, isServerHostname);
                 break;
             case DnsDescription.Family.UN_SPECIFIC:
-                reqContent = RequestBuilder.buildDoubRequest(encryptHostname, lookupExtra.bizId);
+                reqContent = RequestBuilder.buildDoubRequest(encryptHostname, lookupExtra.bizId, isServerHostname);
                 break;
             default:
                 throw new IllegalStateException("Unexpected value: " + mFamily);
