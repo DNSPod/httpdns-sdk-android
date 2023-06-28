@@ -289,7 +289,6 @@ public final class DnsConfig {
         }
 
         /**
-         * @Deprecated
          * 自动初始化内置上报通道
          * 不设置时, 默认为自动初始化内置上报通道
          *
@@ -302,7 +301,6 @@ public final class DnsConfig {
         }
 
         /**
-         * @Deprecated
          * 不自动初始化内置上报通道
          * 不设置时, 默认为自动初始化内置上报通道
          *
@@ -584,6 +582,13 @@ public final class DnsConfig {
             return this;
         }
 
+        /**
+         * 解析日志上报开关，【V4.4.0废弃】
+         *
+         * @param enableReport
+         * @return
+         */
+        @Deprecated
         public Builder enableReport(boolean enableReport) {
             mEnableReport = enableReport;
             return this;
