@@ -31,7 +31,7 @@ public final class HttpHelper {
             String host = url.getHost();
             String file = url.getFile();
             return GET_METHOD + ' ' + file + ' ' + HTTP_VERSION + CRLF +
-                   "Connection: close" + CRLF +
+                   "Connection: keep-alive" + CRLF +
                    HOST_HEADER + ": " + host + CRLF +
                    CRLF;
         } catch (MalformedURLException e) {
