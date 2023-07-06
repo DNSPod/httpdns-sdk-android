@@ -1,12 +1,12 @@
 package com.tencent.msdk.dns.core.rest.share.rsp;
 
 import android.text.TextUtils;
+
 import com.tencent.msdk.dns.base.utils.CommonUtils;
 import com.tencent.msdk.dns.base.utils.IpValidator;
 import com.tencent.msdk.dns.core.Const;
 import com.tencent.msdk.dns.core.DnsDescription;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 
 public final class Response {
@@ -15,7 +15,7 @@ public final class Response {
             new Response(Const.INVALID_IP, Const.EMPTY_IPS, Const.DEFAULT_TIME_INTERVAL);
 
     public static final Response NEED_CONTINUE =
-        new Response(Const.INVALID_IP, Const.EMPTY_IPS, Const.DEFAULT_TIME_INTERVAL);
+            new Response(Const.INVALID_IP, Const.EMPTY_IPS, Const.DEFAULT_TIME_INTERVAL);
 
     public final String clientIp;
     public final String[] ips;
@@ -65,7 +65,7 @@ public final class Response {
         int inet6IpsLength = inet6Ips.length;
 
         inet4Ips = Arrays.copyOf(inet4Ips, inet4IpsLength + inet6IpsLength);
-        System.arraycopy(inet6Ips, 0 , inet4Ips, inet4IpsLength, inet6IpsLength);
+        System.arraycopy(inet6Ips, 0, inet4Ips, inet4IpsLength, inet6IpsLength);
 
         this.clientIp = clientIp;
         this.ips = inet4Ips;
@@ -75,7 +75,7 @@ public final class Response {
     // NOTE: 仅用于创建空实现, 空实现实际上为无效值, 无法通过常规构造器创建
     private Response(String clientIp, String[] ips, int ttl) {
         this.clientIp = clientIp;
-        this.ips = ips;       
+        this.ips = ips;
         this.ttl = ttl;
     }
 

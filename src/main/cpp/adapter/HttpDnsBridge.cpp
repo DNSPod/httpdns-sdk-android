@@ -13,9 +13,9 @@ __attribute__ ((visibility ("default"))) HTTPDNSSendToUnity HTTPDNSGetBridge() {
     return self_dns::HttpDnsBridge::HTTPDNSGetBridge();
 }
 
-__attribute__ ((visibility ("default"))) void HTTPDNSSetBridge(HTTPDNSSendToUnity bridge) {
-    self_dns::HttpDnsBridge::HTTPDNSSetBridge(bridge);
-}
+//__attribute__ ((visibility ("default"))) void HTTPDNSSetBridge(HTTPDNSSendToUnity bridge) {
+//    self_dns::HttpDnsBridge::HTTPDNSSetBridge(bridge);
+//}
 
 #ifdef __cplusplus
 }

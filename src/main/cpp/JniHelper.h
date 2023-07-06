@@ -28,57 +28,57 @@ namespace self_dns {
 
 class JniHelper {
  public:
-  static void InitializeJavaVm(JavaVM *vm, jint version);
+//  static void InitializeJavaVm(JavaVM *vm, jint version);
 
-  static jstring String2Jstring(JNIEnv *env, const std::string &s);
+//  static jstring String2Jstring(JNIEnv *env, const std::string &s);
 
-  static jstring Char2Jstring(JNIEnv *env, const char *input);
+//  static jstring Char2Jstring(JNIEnv *env, const char *input);
 
   static std::string Jstring2String(JNIEnv *env, jstring jstr);
 
-  static int JbyteArray2byteArray(JNIEnv *env, jbyteArray javaByteArray,
-                                  unsigned char **bufPtr, size_t *bufLen);
+//  static int JbyteArray2byteArray(JNIEnv *env, jbyteArray javaByteArray,
+//                                  unsigned char **bufPtr, size_t *bufLen);
+//
+//  static int JstringArray2stringArray(JNIEnv *env, jobjectArray javaStringArray,
+//                                      std::string **stringArrayPtr,
+//                                      size_t *stringArrayLen);
 
-  static int JstringArray2stringArray(JNIEnv *env, jobjectArray javaStringArray,
-                                      std::string **stringArrayPtr,
-                                      size_t *stringArrayLen);
+//  static jclass FindClass(JNIEnv *env, const char *className);
 
-  static jclass FindClass(JNIEnv *env, const char *className);
+//  static jmethodID FindStaticMethod(JNIEnv *env, jclass jc,
+//                                    const char *methodName,
+//                                    const char *methodSign);
 
-  static jmethodID FindStaticMethod(JNIEnv *env, jclass jc,
-                                    const char *methodName,
-                                    const char *methodSign);
+//  static jmethodID FindMethod(JNIEnv *env, jclass jc, const char *methodName,
+//                              const char *methodSign);
 
-  static jmethodID FindMethod(JNIEnv *env, jclass jc, const char *methodName,
-                              const char *methodSign);
+//  static jobject NewGlobalRef(JNIEnv *env, jobject obj);
+//
+//  static void DeleteLocalRef(JNIEnv *env, jobject localRef);
+//
+//  static jobject CreateInstance(JNIEnv *env, const char *className,
+//                                const char *signature, ...);
+//
+//  static void CallStaticVoidMethod(JNIEnv *env, jclass clazz,
+//                                   jmethodID methodId, ...);
+//
+//  static int CallStaticIntMethodById(JNIEnv *env, jclass jc, jmethodID methodId,
+//                                     int defaultRet, ...);
+//
+//  static int CallStaticIntMethod(JNIEnv *env, const char *className,
+//                                 const char *methodName, const char *methodSign,
+//                                 jclass jc, int defaultRet, ...);
+//
+//  static std::string CallStaticStringMethod(JNIEnv *env, const char *className,
+//                                            const char *methodName,
+//                                            const char *methodSign, jclass jc,
+//                                            const char *defaultRet, ...);
 
-  static jobject NewGlobalRef(JNIEnv *env, jobject obj);
-
-  static void DeleteLocalRef(JNIEnv *env, jobject localRef);
-
-  static jobject CreateInstance(JNIEnv *env, const char *className,
-                                const char *signature, ...);
-
-  static void CallStaticVoidMethod(JNIEnv *env, jclass clazz,
-                                   jmethodID methodId, ...);
-
-  static int CallStaticIntMethodById(JNIEnv *env, jclass jc, jmethodID methodId,
-                                     int defaultRet, ...);
-
-  static int CallStaticIntMethod(JNIEnv *env, const char *className,
-                                 const char *methodName, const char *methodSign,
-                                 jclass jc, int defaultRet, ...);
-
-  static std::string CallStaticStringMethod(JNIEnv *env, const char *className,
-                                            const char *methodName,
-                                            const char *methodSign, jclass jc,
-                                            const char *defaultRet, ...);
-
-  static jobject CallStaticObjectMethodById(JNIEnv *env, jclass jc,
-                                            jmethodID methodId, ...);
-
-  static jobject CallObjectMethodById(JNIEnv *env, jobject jo,
-                                      jmethodID methodId, ...);
+//  static jobject CallStaticObjectMethodById(JNIEnv *env, jclass jc,
+//                                            jmethodID methodId, ...);
+//
+//  static jobject CallObjectMethodById(JNIEnv *env, jobject jo,
+//                                      jmethodID methodId, ...);
 
   static void ClearEnvException(JNIEnv *env);
 
@@ -88,13 +88,13 @@ class JniHelper {
 
   static void DetachJniEnv();
 
-  static std::vector<float> JfloatArray2Vec(jfloat *origin, int len);
-
-  static jobject GetApplicationContext(JNIEnv *env);
+//  static std::vector<float> JfloatArray2Vec(jfloat *origin, int len);
+//
+//  static jobject GetApplicationContext(JNIEnv *env);
 
   static int GetAndroidOsVersion();
 
-  static int DetachAndroidThread(pthread_t threadId);
+//  static int DetachAndroidThread(pthread_t threadId);
 };
 
 }  // namespace httpdns_itop

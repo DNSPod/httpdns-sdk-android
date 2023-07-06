@@ -12,9 +12,6 @@ import com.tencent.msdk.dns.base.utils.NetworkStack;
 import com.tencent.msdk.dns.core.Const;
 import com.tencent.msdk.dns.core.IpSet;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
 public class MSDKDnsResolver {
     public static final String DES_HTTP_CHANNEL = Const.DES_HTTP_CHANNEL;
     public static final String AES_HTTP_CHANNEL = Const.AES_HTTP_CHANNEL;
@@ -394,7 +391,8 @@ public class MSDKDnsResolver {
     }
 
     /**
-     *  获取网络栈支持情况
+     * 获取网络栈支持情况
+     *
      * @return 0: UNKNOWN, 1: IPV4_ONLY, 2: IPV6_ONLY, 3: DUAL_STACK;
      */
     public int getNetworkStack() {

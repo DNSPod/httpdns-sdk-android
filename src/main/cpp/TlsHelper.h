@@ -22,26 +22,26 @@ class TlsHelper {
   /**
    * Returns the currently executing thread's id
    */
-  static inline uint32_t GetCurrentThreadId() {
-    // gettid不可移植，但更唯一，返回的是pid
-    return static_cast<uint32_t>(gettid());
-    // pthread_self是posix标准，但仅在同一进程中唯一
-    // return pthread_self();
-  }
+//  static inline uint32_t GetCurrentThreadId() {
+//    // gettid不可移植，但更唯一，返回的是pid
+//    return static_cast<uint32_t>(gettid());
+//    // pthread_self是posix标准，但仅在同一进程中唯一
+//    // return pthread_self();
+//  }
 
   /**
    * Allocates a thread local store slot
    */
-  static inline uint32_t AllocTlsSlot() {
-    // allocate a per-thread mem slot
-    pthread_key_t Key = 0;
-
-    if (pthread_key_create(&Key, NULL) != 0) {
-      Key = 0xFFFFFFFF;  // matches the Windows TlsAlloc() retval
-    }
-
-    return static_cast<uint32_t>(Key);
-  }
+//  static inline uint32_t AllocTlsSlot() {
+//    // allocate a per-thread mem slot
+//    pthread_key_t Key = 0;
+//
+//    if (pthread_key_create(&Key, NULL) != 0) {
+//      Key = 0xFFFFFFFF;  // matches the Windows TlsAlloc() retval
+//    }
+//
+//    return static_cast<uint32_t>(Key);
+//  }
 
   /**
    * Sets a value in the specified TLS slot
@@ -58,18 +58,18 @@ class TlsHelper {
    *
    * @return the value stored in the slot
    */
-  static inline void *GetTlsValue(uint32_t slotIndex) {
-    return pthread_getspecific((pthread_key_t)slotIndex);
-  }
+//  static inline void *GetTlsValue(uint32_t slotIndex) {
+//    return pthread_getspecific((pthread_key_t)slotIndex);
+//  }
 
   /**
    * Frees a previously allocated TLS slot
    *
    * @param slotIndex the TLS index to store it in
    */
-  static inline void FreeTlsSlot(uint32_t slotIndex) {
-    pthread_key_delete((pthread_key_t)slotIndex);
-  }
+//  static inline void FreeTlsSlot(uint32_t slotIndex) {
+//    pthread_key_delete((pthread_key_t)slotIndex);
+//  }
 };
 
 }  // namespace self_dns

@@ -13,7 +13,7 @@ typedef int (*HTTPDNSSendToUnity)(const char *jsonStr);
 
 __attribute__ ((visibility ("default"))) HTTPDNSSendToUnity HTTPDNSGetBridge();
 
-__attribute__ ((visibility ("default"))) void HTTPDNSSetBridge(HTTPDNSSendToUnity bridge);
+//__attribute__ ((visibility ("default"))) void HTTPDNSSetBridge(HTTPDNSSendToUnity bridge);
 
 namespace self_dns {
 

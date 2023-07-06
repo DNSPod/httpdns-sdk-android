@@ -71,7 +71,7 @@ DnsConfig dnsConfigBuilder = DnsConfig.Builder()
     .dnsId("xxx")
     //（必填）dns 解析 key，即授权 id 对应的 key（加密密钥），在申请 SDK 后的邮箱里，腾讯云官网（https://console.cloud.tencent.com/httpdns）申请获得，用于域名解析鉴权
     .dnsKey("xxx")
-    //（必填）Channel为desHttp()或aesHttp()时使用 119.29.29.98（默认填写这个就行），channel为https()时使用 119.29.29.99
+    //（必填）[V4.5.0废弃]由sdk内部调度。Channel为desHttp()或aesHttp()时使用 119.29.29.98（默认填写这个就行），channel为https()时使用 119.29.29.99
     .dnsIp("xxx")
     //（可选）channel配置：基于 HTTP 请求的 DES 加密形式，默认为 desHttp()，另有 aesHttp()、https() 可选。（注意仅当选择 https 的 channel 需要选择 119.29.29.99 的dnsip并传入token，例如：.dnsIp('119.29.29.99').https().token('....') ）。
     .desHttp()
@@ -96,6 +96,8 @@ DnsConfig dnsConfigBuilder = DnsConfig.Builder()
     .setUseExpiredIpEnable(true)
     //（可选）[V4.3.0] 设置是否启用本地缓存（Room），默认false
     .setCachedIpEnable(true)
+    // (可选）[V4.5.0] DNS 请求的 ECS（EDNS-Client-Subnet）值，默认情况下 HTTPDNS 服务器会查询客户端出口 IP 为 DNS 线路查询 IP，可以指定线路 IP 地址。支持 IPv4/IPv6 地址传入
+    .routeIp("XXX")
     // 以build()结束
     .build();
     

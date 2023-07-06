@@ -18,8 +18,6 @@ add_library( # Sets the name of the library.
         src/main/cpp/stack/NetworkStack.cpp
         src/main/cpp/Jni.cpp
         src/main/cpp/JniHelper.cpp
-        src/main/cpp/des/des.cpp
-        src/main/cpp/aes/aes.cpp
         src/main/cpp/adapter/HttpDnsBridge.cpp
         )
 

@@ -29,6 +29,7 @@ public final class ReportManager {
     private static List<IReporter> sBuiltInReporters = Collections.emptyList();
     private static List<IReporter> sCustomReporters = Collections.emptyList();
 
+    @Deprecated
     public static void init(int channel) {
         sBuiltInReporters = ReporterFactory.getReporters(channel);
     }
@@ -90,17 +91,20 @@ public final class ReportManager {
         if (TextUtils.isEmpty(eventName) || null == eventInfo) {
             return;
         }
-        DnsLog.d("HTTPDNS_SDK_VER:" + BuildConfig.VERSION_NAME  + ", Try to report %s", eventName);
 
-        // NOTE: 上报打印太耗时, 仅在命令行将日志打印层级设为允许VERBOSE级别打印时才打印
+        // 上报打印太耗时, 仅在命令行将日志打印层级设为允许VERBOSE级别打印时才打印
         if (DnsLog.canLog(Log.VERBOSE)) {
             for (Map.Entry<String, String> infoItem : eventInfo.entrySet()) {
                 DnsLog.d("%s: %s", infoItem.getKey(), infoItem.getValue());
             }
         }
-        if (!ReporterFactory.canReport) {
+
+        if(!canReport()) {
             return;
         }
+
+        DnsLog.d("HTTPDNS_SDK_VER:" + BuildConfig.VERSION_NAME  + ", Try to report %s", eventName);
+
         for (IReporter reporter : sBuiltInReporters) {
             if (!reporter.report(env, eventName, eventInfo)) {
                 DnsLog.d("%s report failed", reporter.getName());

@@ -7,6 +7,7 @@ import com.tencent.msdk.dns.base.log.DnsLog;
 import java.lang.reflect.Method;
 import java.util.Map;
 
+@Deprecated
 final class BeaconReporterImpl extends AbsReporter<BeaconReporterInitParameters> {
 
     private static final String BEACON_REPORTER_NAME = BeaconReporterImpl.class.getSimpleName();

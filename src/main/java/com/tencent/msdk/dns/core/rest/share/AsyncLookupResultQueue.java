@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Vector;
 
+@Deprecated
 public final class AsyncLookupResultQueue {
 
     private static final List<LookupResult> DNS_RESULTS = new Vector<>();

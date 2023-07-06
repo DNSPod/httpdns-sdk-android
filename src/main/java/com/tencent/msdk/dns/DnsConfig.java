@@ -25,9 +25,8 @@ public final class DnsConfig {
     public final String appId;
     public String userId;
 
+    @Deprecated
     public final boolean initBuiltInReporters;
-
-    public final String dnsIp;
 
     public final LookupExtra lookupExtra;
 
@@ -61,21 +60,22 @@ public final class DnsConfig {
 
     public boolean enableDomainServer = false;
 
+    public String routeIp;
+
     private DnsConfig(int logLevel,
                       String appId, String userId, boolean initBuiltInReporters,
-                      String dnsIp, String dnsId, String dnsKey, String token,
+                      String dnsId, String dnsKey, String token,
                       int timeoutMills,
                       Set<WildcardDomain> protectedDomains,
                       Set<String> preLookupDomains, boolean enablePersistentCache, Set<String> persistentCacheDomains,
                       Set<IpRankItem> ipRankItems, String channel, boolean enableReport, boolean blockFirst,
                       int customNetStack, DnsExecutors.ExecutorSupplier executorSupplier,
                       ILookedUpListener lookedUpListener, List<ILogNode> logNodes,
-                      List<IReporter> reporters, boolean useExpiredIpEnable, boolean cachedIpEnable) {
+                      List<IReporter> reporters, boolean useExpiredIpEnable, boolean cachedIpEnable, String routeIp) {
         this.logLevel = logLevel;
         this.appId = appId;
         this.userId = userId;
         this.initBuiltInReporters = initBuiltInReporters;
-        this.dnsIp = dnsIp;
         this.ipRankItems = ipRankItems;
         this.lookupExtra = new LookupExtra(dnsId, dnsKey, token);
         this.timeoutMills = timeoutMills;
@@ -93,6 +93,7 @@ public final class DnsConfig {
         this.reporters = reporters;
         this.useExpiredIpEnable = useExpiredIpEnable;
         this.cachedIpEnable = cachedIpEnable;
+        this.routeIp = routeIp;
     }
 
     boolean needProtect(/* @Nullable */String hostname) {
@@ -135,6 +136,7 @@ public final class DnsConfig {
                 ", useExpiredIpEnable=" + useExpiredIpEnable +
                 ", cachedIpEnable=" + cachedIpEnable +
                 ", enableDomainServer=" + enableDomainServer +
+                ", routeIp=" + routeIp +
                 '}';
     }
 
@@ -188,9 +190,10 @@ public final class DnsConfig {
         private String mAppId = "";
         private String mUserId = "";
 
-        // CHANGE: 默认不初始化灯塔的key
+        @Deprecated
         private boolean mInitBuiltInReporters = false;
 
+        @Deprecated
         private String mDnsIp = "";
         private String mDnsId = "";
         private String mDnsKey = "";
@@ -222,6 +225,7 @@ public final class DnsConfig {
         private List<IReporter> mReporters = null;
         private boolean mUseExpiredIpEnable = false;
         private boolean mCachedIpEnable = false;
+        private String mRouteIp = "";
 
         /**
          * 设置最低日志等级, 低于设置等级的日志不会输出
@@ -246,7 +250,7 @@ public final class DnsConfig {
         /**
          * 设置AppId, 进行数据上报时用于区分业务
          *
-         * @param appId AppId, 即灯塔AppId, 从<a href="https://console.cloud.tencent.com/HttpDNS">腾讯云官网</a>申请获得
+         * @param appId AppId, 从<a href="https://console.cloud.tencent.com/HttpDNS">腾讯云官网</a>申请获得
          * @return 当前Builder实例, 方便链式调用
          * @throws IllegalArgumentException appId为空时抛出
          */
@@ -290,6 +294,7 @@ public final class DnsConfig {
          *
          * @return 当前Builder实例, 方便链式调用
          */
+        @Deprecated
         public Builder initBuiltInReporters() {
             mInitBuiltInReporters = true;
             return this;
@@ -301,23 +306,21 @@ public final class DnsConfig {
          *
          * @return 当前Builder实例, 方便链式调用
          */
+        @Deprecated
         public Builder notInitBuiltInReporters() {
             mInitBuiltInReporters = false;
             return this;
         }
 
         /**
-         * 设置DnsIp
+         * 设置DnsIp 【V4.5.0版本起废弃】
          *
          * @param dnsIp HTTPDNS IP 地址
          * @return 当前Builder实例, 方便链式调用
          * @throws IllegalArgumentException dnsIp为空时抛出
          */
+        @Deprecated
         public Builder dnsIp(String dnsIp) {
-            if (TextUtils.isEmpty(dnsIp)) {
-                throw new IllegalArgumentException("dnsIp".concat(Const.EMPTY_TIPS));
-            }
-            mDnsIp = dnsIp;
             return this;
         }
 
@@ -579,6 +582,13 @@ public final class DnsConfig {
             return this;
         }
 
+        /**
+         * 解析日志上报开关，【V4.4.0废弃】
+         *
+         * @param enableReport
+         * @return
+         */
+        @Deprecated
         public Builder enableReport(boolean enableReport) {
             mEnableReport = enableReport;
             return this;
@@ -702,19 +712,30 @@ public final class DnsConfig {
         }
 
         /**
+         * 设置DNS 请求的 ECS（EDNS-Client-Subnet）值
+         *
+         * @param routeIp IPV4/IPv6 地址值
+         * @return 当前Builder实例, 方便链式调用
+         */
+        public Builder routeIp(String routeIp) {
+            mRouteIp = routeIp;
+            return this;
+        }
+
+        /**
          * 构建DnsConfig实例
          *
          * @return DnsConfig实例
          */
         public DnsConfig build() {
             return new DnsConfig(mLogLevel,
-                    mAppId, mUserId, mInitBuiltInReporters, mDnsIp, mDnsId, mDnsKey, mToken,
+                    mAppId, mUserId, mInitBuiltInReporters, mDnsId, mDnsKey, mToken,
                     mTimeoutMills,
                     mProtectedDomains, mPreLookupDomains, mEnablePersistentCache, mPersistentCacheDomains,
                     mIpRankItems, mChannel, mEnableReport, mBlockFirst,
                     mCustomNetStack, mExecutorSupplier,
                     mLookedUpListener, mLogNodes,
-                    mReporters, mUseExpiredIpEnable, mCachedIpEnable);
+                    mReporters, mUseExpiredIpEnable, mCachedIpEnable, mRouteIp);
         }
     }
 }

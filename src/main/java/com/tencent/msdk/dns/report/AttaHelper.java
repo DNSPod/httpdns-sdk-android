@@ -27,6 +27,7 @@ public class AttaHelper {
     public static Runnable report(final String carrier,
                                   final String networkType,
                                   final String dnsId,
+                                  final String appId,
                                   final String encryptType,
                                   final String eventName,
                                   final long eventTime,
@@ -53,6 +54,7 @@ public class AttaHelper {
                             + "&carrier=" + carrier
                             + "&networkType=" + networkType
                             + "&dnsId=" + dnsId
+                            + "&appId=" + appId
                             + "&encryptType=" + encryptType
                             + "&eventName=" + eventName
                             + "&eventTime=" + eventTime
