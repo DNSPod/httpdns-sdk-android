@@ -166,10 +166,13 @@ public abstract class AbsRestDns implements IDns<LookupExtra> {
                     return mStat.ips;
                 }
                 rsp = responseInternal();
-                if (rsp != Response.EMPTY && rsp != Response.NEED_CONTINUE) {
-                    mStat.errorCode = ErrorCode.SUCCESS;
+                if (mStat.errorCode == ErrorCode.SUCCESS) {
                     mCacheHelper.put(mLookupContext.asLookupParameters(), rsp);
                 }
+//                if (rsp != Response.EMPTY && rsp != Response.NEED_CONTINUE && rsp.ips.length > 0) {
+//                    mStat.errorCode = ErrorCode.SUCCESS;
+//                    mCacheHelper.put(mLookupContext.asLookupParameters(), rsp);
+//                }
                 mStat.clientIp = rsp.clientIp;
                 mStat.ttl = rsp.ttl;
                 mStat.expiredTime = System.currentTimeMillis() + rsp.ttl * 1000;
