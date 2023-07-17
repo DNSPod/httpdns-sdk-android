@@ -200,7 +200,7 @@ public final class ReportHelper {
                 backupInfo.setErrorCount(0);
                 DnsExecutors.MAIN.execute(AttaHelper.report(carrierCode, statMerge.netType, sDnsConfig.lookupExtra.bizId, sDnsConfig.appId, sDnsConfig.channel, eventName, System.currentTimeMillis(), dnsIp, statMerge.restDnsStat.costTimeMills, statMerge.hostname, reqType, sDnsConfig.timeoutMills, statMerge.restDnsStat.ttl, statMerge.restDnsStat.errorCode, statMerge.restDnsStat.statusCode, statMerge.restDnsStat.cached, 1, CommonUtils.toStringList(statMerge.localDnsStat.ips, ReportConst.IP_SPLITTER), CommonUtils.toStringList(statMerge.restDnsStat.ips, ReportConst.IP_SPLITTER)));
             } else {
-                //  ErrorCode==2 进行容灾处理
+                //  ErrorCode==2 (超时)进行容灾处理，https请求存在请求异常超时时间>timeoutMills,此时errCode为1
                 if (statMerge.restDnsStat.errorCode == 2 || (Const.HTTPS_CHANNEL.equals(sDnsConfig.channel) && (statMerge.restDnsStat.errorCode == 1))) {
                     // 解析失败，仅当达到最大失败次数满足切换IP时候上报
                     if (backupInfo.getCanReport(backupInfo.getErrorCount() + 1)) {

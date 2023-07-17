@@ -109,8 +109,12 @@ public abstract class AbsHttpDns extends AbsRestDns {
                 reader.close();
                 stat.statusCode = connection.getResponseCode();
             } catch (Exception e) {
-                stat.errorCode = ErrorCode.RESPONSE_FAILED_FOR_EXCEPTION_ERROR_CODE;
+                if (!(e instanceof java.net.SocketTimeoutException)) {
+                    stat.errorCode = ErrorCode.RESPONSE_FAILED_FOR_EXCEPTION_ERROR_CODE;
+                }
                 stat.errorMsg = e.getMessage();
+                stat.isGetEmptyResponse = true;
+                // return new LookupResult<>(stat.ips, stat);
                 throw e;
             }
 
@@ -141,10 +145,7 @@ public abstract class AbsHttpDns extends AbsRestDns {
             //  返回值正常处理
             mCacheHelper.put(lookupParams, rsp);
             stat.errorCode = ErrorCode.SUCCESS;
-            stat.clientIp = rsp.clientIp;
-            stat.ttl = rsp.ttl;
             stat.expiredTime = System.currentTimeMillis() + rsp.ttl * 1000;
-            stat.ips = rsp.ips;
         } catch (Exception e) {
             DnsLog.d(e, getTag() + "lookup failed");
         } finally {
