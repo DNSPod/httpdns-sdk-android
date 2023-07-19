@@ -129,5 +129,9 @@ public final class LocalDns implements IDns<IDns.ILookupExtra> {
                     '}';
         }
 
+       @Override
+       public boolean lookupPartCached() {
+           return false;
+       }
     }
 }

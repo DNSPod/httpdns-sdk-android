@@ -61,7 +61,7 @@ public abstract class AbsHttpDns extends AbsRestDns {
             throw new IllegalArgumentException("lookupParams".concat(Const.NULL_POINTER_TIPS));
         }
 
-        String hostname = lookupParams.hostname;
+        String hostname = lookupParams.requestHostname;
         int timeoutMills = lookupParams.timeoutMills;
         String dnsIp = lookupParams.dnsIp;
         LookupExtra lookupExtra = lookupParams.lookupExtra;
@@ -296,7 +296,7 @@ public abstract class AbsHttpDns extends AbsRestDns {
         protected int requestInternal() {
             // non-block mode
             String dnsIp = mLookupContext.dnsIp();
-            String hostname = mLookupContext.hostname();
+            String hostname = mLookupContext.requestHostname();
             LookupExtra lookupExtra = mLookupContext.lookupExtra();
             String urlStr = getTargetUrl(dnsIp, hostname, lookupExtra);
             if (TextUtils.isEmpty(urlStr)) {

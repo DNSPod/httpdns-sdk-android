@@ -33,6 +33,8 @@ public final class LookupParameters<LookupExtra extends IDns.ILookupExtra> {
     public final int curRetryTime;
     public final boolean netChangeLookup;
 
+    public String requestHostname;
+
 
     private LookupParameters(
             Context appContext,
@@ -79,6 +81,10 @@ public final class LookupParameters<LookupExtra extends IDns.ILookupExtra> {
                 CommonUtils.equals(dnsIp, that.dnsIp) &&
                 CommonUtils.equals(lookupExtra, that.lookupExtra) &&
                 CommonUtils.equals(channel, that.channel);
+    }
+
+    public void setRequestHostname(String hostname) {
+        this.requestHostname = hostname;
     }
 
     @Override

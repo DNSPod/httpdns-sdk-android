@@ -40,6 +40,11 @@ public interface IStatisticsMerge<LookupExtra extends IDns.ILookupExtra> extends
                         return false;
                     }
 
+                   @Override
+                   public boolean lookupPartCached() {
+                       return false;
+                   }
+
                     @Override
                     public String toJsonResult() {
                         return "{\"v4_ips\":\"\",\"v4_ttl\":\"\",\"v4_client_ip\":\"\",\"v6_ips\":\"\",\"v6_ttl\":\"\",\"v6_client_ip\":\"\"}";

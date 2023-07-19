@@ -72,6 +72,8 @@ public final class StatisticsMerge implements IStatisticsMerge<LookupExtra> {
 
     private boolean hasBeenMerge = false;
 
+    private boolean hasPartCache = false;
+
     public StatisticsMerge(Context context) {
         if (null == context) {
             throw new IllegalArgumentException("context".concat(Const.NULL_POINTER_TIPS));
@@ -97,6 +99,7 @@ public final class StatisticsMerge implements IStatisticsMerge<LookupExtra> {
             lookupSuccess = lookupSuccess && stat.lookupSuccess();
         }
         lookupFailed = lookupFailed && stat.lookupFailed();
+        hasPartCache = stat.lookupPartCached();
         DnsDescription dnsDesc = dns.getDescription();
         if (Const.LOCAL_CHANNEL.equals(dnsDesc.channel)) {
             localDnsStat = (LocalDns.Statistics) stat;
@@ -139,6 +142,12 @@ public final class StatisticsMerge implements IStatisticsMerge<LookupExtra> {
     public boolean lookupFailed() {
         return lookupFailed;
     }
+
+   @Override
+   public boolean lookupPartCached() {
+       return hasPartCache;
+   }
+
 
     @Override
     public String toJsonResult() {

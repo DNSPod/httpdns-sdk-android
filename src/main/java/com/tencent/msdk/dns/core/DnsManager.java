@@ -17,6 +17,7 @@ import com.tencent.msdk.dns.core.stat.StatisticsMergeFactory;
 import java.io.IOException;
 import java.nio.channels.Selector;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -132,7 +133,7 @@ public final class DnsManager {
         }
 
         LookupResult lookupResultFromCache = dns.getResultFromCache(lookupParams);
-        if (lookupResultFromCache.stat.lookupSuccess()) {
+        if (lookupResultFromCache.stat.lookupSuccess() || lookupResultFromCache.stat.lookupPartCached()) {
             lookupContext.sorter().put(dns, lookupResultFromCache.ipSet.ips);
             lookupContext.statisticsMerge()
                     .merge(dns, lookupResultFromCache.stat);
@@ -145,6 +146,7 @@ public final class DnsManager {
                     lookupResult.ipSet + "; " + lookupResult.stat);
             return lookupResult;
         }
+
         return new LookupResult<IStatisticsMerge>(
                 IpSet.EMPTY, statMerge);
     }
@@ -233,17 +235,19 @@ public final class DnsManager {
         // NOTE: sessions仅会被当前线程访问
         List<IDns.ISession> sessions = new ArrayList<>();
         lookupContext.sessions(sessions);
+        LookupResult<IStatisticsMerge> lookupResultFromCache = new LookupResult<IStatisticsMerge>(
+                IpSet.EMPTY, new StatisticsMerge(lookupParams.appContext));
         try {
             // NOTE: 当前对外API上, 不支持AAAA记录的解析, 需要保留LocalDns的解析结果作为AAAA解析结果
             // 暂时不忽略LocalDns解析结果(即超时时间内会等待LocalDns解析结果, 无论RestDns是否已经解析成功)
             if (null != restDnsGroup) {
                 // 先查缓存，有其一即可
-                LookupResult<IStatisticsMerge> lookupResult = getResultFromCache(lookupParams);
-                DnsLog.d("getResultFromCache: " + lookupResult);
-                if (lookupResult.stat.lookupSuccess()) {
-                    lookupResultHolder.mLookupResult = lookupResult;
+                lookupResultFromCache = getResultFromCache(lookupParams);
+                DnsLog.d("getResultFromCache: " + lookupResultFromCache);
+                if (lookupResultFromCache.stat.lookupSuccess()) {
+                    lookupResultHolder.mLookupResult = lookupResultFromCache;
                     DnsLog.d("DnsManager lookup getResultFromCache success");
-                    return lookupResult;
+                    return lookupResultFromCache;
                 }
                 // 打开Selector
                 prepareTasks(restDnsGroup, lookupContext);
@@ -291,6 +295,19 @@ public final class DnsManager {
                     }
                 }
                 IpSet ipSet = sorter.sort();
+                // todo 阻塞 合并
+                if(lookupResultFromCache.stat.lookupPartCached()) {
+                    IpSet ipSet1 = lookupResultFromCache.ipSet;
+                    int ipSetLen = ipSet.ips.length;
+                    int ipSetLen1 = ipSet1.ips.length;
+                    String[] str1 = Arrays.copyOf(ipSet.ips, ipSetLen + ipSetLen1);
+                    System.arraycopy(ipSet1, 0, str1, ipSetLen, ipSetLen1);
+//                    ipSet.ips = str1;
+//                    IpSet(str1);
+                    ipSet = new IpSet(str1);
+                }
+
+
                 statMerge.statResult(ipSet);
                 LookupResult<IStatisticsMerge> lookupResult =
                         new LookupResult<IStatisticsMerge>(ipSet, statMerge);
@@ -337,6 +354,9 @@ public final class DnsManager {
             } catch (Exception ignored) {
             }
             IpSet ipSet = sorter.sort();
+            if (lookupResultFromCache.stat.lookupPartCached()) {
+                // todo part cached
+            }
             statMerge.statResult(ipSet);
             LookupResult<IStatisticsMerge> lookupResult =
                     new LookupResult<IStatisticsMerge>(ipSet, statMerge);
