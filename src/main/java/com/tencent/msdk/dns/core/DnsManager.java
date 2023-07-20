@@ -249,6 +249,11 @@ public final class DnsManager {
                     DnsLog.d("DnsManager lookup getResultFromCache success");
                     return lookupResultFromCache;
                 }
+
+                if (lookupResultFromCache.stat.lookupPartCached()) {
+                    lookupContext.sorter().putPartCache(lookupResultFromCache.ipSet);
+
+                }
                 // 打开Selector
                 prepareTasks(restDnsGroup, lookupContext);
                 if (!lookupContext.allDnsLookedUp() && null != localDnsGroup) {
@@ -295,19 +300,6 @@ public final class DnsManager {
                     }
                 }
                 IpSet ipSet = sorter.sort();
-                // todo 阻塞 合并
-                if(lookupResultFromCache.stat.lookupPartCached()) {
-                    IpSet ipSet1 = lookupResultFromCache.ipSet;
-                    int ipSetLen = ipSet.ips.length;
-                    int ipSetLen1 = ipSet1.ips.length;
-                    String[] str1 = Arrays.copyOf(ipSet.ips, ipSetLen + ipSetLen1);
-                    System.arraycopy(ipSet1, 0, str1, ipSetLen, ipSetLen1);
-//                    ipSet.ips = str1;
-//                    IpSet(str1);
-                    ipSet = new IpSet(str1);
-                }
-
-
                 statMerge.statResult(ipSet);
                 LookupResult<IStatisticsMerge> lookupResult =
                         new LookupResult<IStatisticsMerge>(ipSet, statMerge);
@@ -354,9 +346,6 @@ public final class DnsManager {
             } catch (Exception ignored) {
             }
             IpSet ipSet = sorter.sort();
-            if (lookupResultFromCache.stat.lookupPartCached()) {
-                // todo part cached
-            }
             statMerge.statResult(ipSet);
             LookupResult<IStatisticsMerge> lookupResult =
                     new LookupResult<IStatisticsMerge>(ipSet, statMerge);

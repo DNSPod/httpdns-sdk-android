@@ -10,5 +10,7 @@ public interface ISorter {
     // NOTE: ips可能为空数组
     void put(IDns dns, String[] ips);
 
+    void putPartCache(IpSet ipSet);
+
     IpSet sort();
 }

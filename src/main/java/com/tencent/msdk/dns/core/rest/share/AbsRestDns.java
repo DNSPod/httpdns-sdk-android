@@ -48,7 +48,6 @@ public abstract class AbsRestDns implements IDns<LookupExtra> {
         // todo 解耦批量域名
         final String[] hostnameArr = lookupParams.hostname.split(",");
         List<String> tempCachedips = new ArrayList<>();
-        String[] ips = new String[0];
         String[] tempIps;
         // 对批量域名返回值做处理
         boolean cached = true;
@@ -72,9 +71,9 @@ public abstract class AbsRestDns implements IDns<LookupExtra> {
         } else {
             LookupResult lookupResult = mCacheHelper.get(hostnameArr[0]);
             if (null != lookupResult && !CommonUtils.isEmpty(tempIps = lookupResult.ipSet.ips)) {
-                cached = true;
                 stat.ips = tempIps;
             } else {
+                cached = false;
                 requestHostname = hostnameArr[0];
             }
         }
@@ -91,6 +90,7 @@ public abstract class AbsRestDns implements IDns<LookupExtra> {
             DnsLog.d("Lookup for %s, cache hit", lookupParams.hostname);
             return true;
         }
+
         if (tempCachedips.size() > 0) {
             stat.hadPartCachedIps = true;
             lookupParams.setRequestHostname(requestHostname);

@@ -35,7 +35,6 @@ public final class LookupParameters<LookupExtra extends IDns.ILookupExtra> {
 
     public String requestHostname;
 
-
     private LookupParameters(
             Context appContext,
             String hostname, int timeoutMills, String dnsIp, LookupExtra lookupExtra,
@@ -56,6 +55,7 @@ public final class LookupParameters<LookupExtra extends IDns.ILookupExtra> {
         this.enableAsyncLookup = enableAsyncLookup;
         this.curRetryTime = curRetryTime;
         this.netChangeLookup = netChangeLookup;
+        setRequestHostname(hostname);
     }
 
     @Override
