@@ -44,8 +44,7 @@ public abstract class AbsRestDns implements IDns<LookupExtra> {
         if (lookupParams.enableAsyncLookup) {
             return false;
         }
-//        String hostname = lookupParams.hostname;
-        // todo 解耦批量域名
+
         final String[] hostnameArr = lookupParams.hostname.split(",");
         List<String> tempCachedips = new ArrayList<>();
         String[] tempIps;
@@ -80,13 +79,11 @@ public abstract class AbsRestDns implements IDns<LookupExtra> {
 
         if (cached) {
             stat.cached = true;
-//            Statistics cachedStat = (Statistics) lookupResult.stat;
             stat.errorCode = ErrorCode.SUCCESS;
             // todo 命中缓存的clientIp和ttl如何处理
 //            stat.clientIp = cachedStat.clientIp;
 //            stat.ttl = cachedStat.ttl;
 //            stat.expiredTime = cachedStat.expiredTime;
-//            stat.cached = true;
             DnsLog.d("Lookup for %s, cache hit", lookupParams.hostname);
             return true;
         }
@@ -94,7 +91,6 @@ public abstract class AbsRestDns implements IDns<LookupExtra> {
         if (tempCachedips.size() > 0) {
             stat.hadPartCachedIps = true;
             lookupParams.setRequestHostname(requestHostname);
-//            stat.cachedIps = tempCachedips.toArray(new String[tempCachedips.size()]);
         }
 
         return false;
@@ -111,6 +107,20 @@ public abstract class AbsRestDns implements IDns<LookupExtra> {
         tryGetResultFromCache(lookupParams, stat);
         stat.endLookup();
         return new LookupResult<>(stat.ips, stat);
+    }
+
+    public String[] ipTemplate(String[] ips, LookupParameters<LookupExtra> lookupParameters) {
+        String requestHostname = lookupParameters.requestHostname;
+        if (ips.length > 0 && !lookupParameters.requestHostname.equals(lookupParameters.hostname) && requestHostname.split(",").length == 1) {
+            // 批量解析中单个域名下发请求的格式处理
+            List<String> list = new ArrayList<>();
+            for (String ip : ips) {
+                list.add(requestHostname + ":" + ip);
+            }
+            return list.toArray(new String[list.size()]);
+        } else {
+            return ips;
+        }
     }
 
     /**
@@ -203,15 +213,16 @@ public abstract class AbsRestDns implements IDns<LookupExtra> {
                 if (tryGetResultFromCache(mLookupContext.asLookupParameters(), mStat)) {
                     return mStat.ips;
                 }
+                LookupParameters<LookupExtra> lookupParameters = mLookupContext.asLookupParameters();
                 rsp = responseInternal();
                 if (rsp != Response.EMPTY && rsp != Response.NEED_CONTINUE) {
                     mStat.errorCode = ErrorCode.SUCCESS;
-                    mCacheHelper.put(mLookupContext.asLookupParameters(), rsp);
+                    mCacheHelper.put(lookupParameters, rsp);
                 }
                 mStat.clientIp = rsp.clientIp;
                 mStat.ttl = rsp.ttl;
                 mStat.expiredTime = System.currentTimeMillis() + rsp.ttl * 1000;
-                mStat.ips = rsp.ips;
+                mStat.ips = ipTemplate(rsp.ips, lookupParameters);
             } finally {
                 if (rsp != Response.NEED_CONTINUE) {
                     end();
@@ -364,10 +375,8 @@ public abstract class AbsRestDns implements IDns<LookupExtra> {
         }
 
         /**
-         * 批量解析部分缓存结果
+         * 是否仅部分命中缓存（使用于批量解析中）
          */
-        public String[] cachedIps = Const.EMPTY_IPS;
-
         public boolean hadPartCachedIps = false;
 
         /**
@@ -436,7 +445,7 @@ public abstract class AbsRestDns implements IDns<LookupExtra> {
 
         @Override
         public boolean lookupSuccess() {
-            return Const.EMPTY_IPS != ips && !lookupPartCached();
+            return Const.EMPTY_IPS != ips;
         }
 
         @Override

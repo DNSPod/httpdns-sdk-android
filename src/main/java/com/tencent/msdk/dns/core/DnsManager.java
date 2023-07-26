@@ -235,25 +235,24 @@ public final class DnsManager {
         // NOTE: sessions仅会被当前线程访问
         List<IDns.ISession> sessions = new ArrayList<>();
         lookupContext.sessions(sessions);
-        LookupResult<IStatisticsMerge> lookupResultFromCache = new LookupResult<IStatisticsMerge>(
-                IpSet.EMPTY, new StatisticsMerge(lookupParams.appContext));
         try {
             // NOTE: 当前对外API上, 不支持AAAA记录的解析, 需要保留LocalDns的解析结果作为AAAA解析结果
             // 暂时不忽略LocalDns解析结果(即超时时间内会等待LocalDns解析结果, 无论RestDns是否已经解析成功)
             if (null != restDnsGroup) {
                 // 先查缓存，有其一即可
-                lookupResultFromCache = getResultFromCache(lookupParams);
+                LookupResult<IStatisticsMerge> lookupResultFromCache = getResultFromCache(lookupParams);
                 DnsLog.d("getResultFromCache: " + lookupResultFromCache);
                 if (lookupResultFromCache.stat.lookupSuccess()) {
-                    lookupResultHolder.mLookupResult = lookupResultFromCache;
-                    DnsLog.d("DnsManager lookup getResultFromCache success");
-                    return lookupResultFromCache;
+                    if (lookupResultFromCache.stat.lookupPartCached()) {
+                        // 仅部分命中缓存
+                        lookupContext.sorter().putPartCache(lookupResultFromCache.ipSet);
+                    } else {
+                        lookupResultHolder.mLookupResult = lookupResultFromCache;
+                        DnsLog.d("DnsManager lookup getResultFromCache success");
+                        return lookupResultFromCache;
+                    }
                 }
 
-                if (lookupResultFromCache.stat.lookupPartCached()) {
-                    lookupContext.sorter().putPartCache(lookupResultFromCache.ipSet);
-
-                }
                 // 打开Selector
                 prepareTasks(restDnsGroup, lookupContext);
                 if (!lookupContext.allDnsLookedUp() && null != localDnsGroup) {
