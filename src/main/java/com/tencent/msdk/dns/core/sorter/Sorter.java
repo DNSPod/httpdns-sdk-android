@@ -65,7 +65,7 @@ public final class Sorter implements ISorter {
     }
 
     @Override
-    public synchronized void putPartCache(IpSet ipSet){
+    public synchronized void putPartCache(IpSet ipSet) {
         String[] v4Ips = ipSet.v4Ips;
         String[] v6Ips = ipSet.v6Ips;
         if (v4Ips.length > 0) {
@@ -80,8 +80,10 @@ public final class Sorter implements ISorter {
     public IpSet sort() {
         List<String> v4IpSet = new ArrayList<>();
         if (0 != (mCurNetStack & NetworkStack.IPV4_ONLY)) {
-            if (!mV4IpsFromRest.isEmpty()) {
+            if (!mV4IpsFromCache.isEmpty()) {
                 v4IpSet.addAll(mV4IpsFromCache);
+            }
+            if (!mV4IpsFromRest.isEmpty()) {
                 v4IpSet.addAll(mV4IpsFromRest);
             } else if (null != mV4IpFromLocal) {
                 v4IpSet.addAll(mV4IpFromLocal);
@@ -89,8 +91,10 @@ public final class Sorter implements ISorter {
         }
         List<String> v6IpSet = new ArrayList<>();
         if (0 != (mCurNetStack & NetworkStack.IPV6_ONLY)) {
-            if (!mV6IpsFromRest.isEmpty()) {
+            if (!mV6IpsFromCache.isEmpty()) {
                 v6IpSet.addAll(mV6IpsFromCache);
+            }
+            if (!mV6IpsFromRest.isEmpty()) {
                 v6IpSet.addAll(mV6IpsFromRest);
             } else if (null != mV6IpFromLocal) {
                 v6IpSet.addAll(mV6IpFromLocal);

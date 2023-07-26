@@ -42,7 +42,7 @@ public final class LocalDns implements IDns<IDns.ILookupExtra> {
         Statistics stat = new Statistics();
         stat.startLookup();
 
-        String[] ips = lookup(lookupParams.hostname);
+        String[] ips = lookup(lookupParams.requestHostname);
 
         stat.endLookup();
         stat.ips = ips;
