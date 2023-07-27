@@ -142,14 +142,14 @@ public abstract class AbsHttpDns extends AbsRestDns {
             stat.clientIp = rsp.clientIp;
             stat.ttl = rsp.ttl;
             stat.expiredTime = System.currentTimeMillis() + rsp.ttl * 1000;
-            stat.ips = ipTemplate(rsp.ips, lookupParams);
+            stat.ips = rsp.ips;
         } catch (Exception e) {
             DnsLog.d(e, getTag() + "lookup failed");
         } finally {
             CommonUtils.closeQuietly(reader);
             stat.endLookup();
         }
-        return new LookupResult<>(stat.ips, stat);
+        return new LookupResult<>(ipTemplate(stat.ips, lookupParams), stat);
     }
 
     @Override

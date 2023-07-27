@@ -22,6 +22,7 @@ interface ReportConst {
 
     String CHANNEL_KEY = "channel";
     String HOSTNAME_KEY = "domain";
+    String REQUEST_HOSTNAME_KEY = "request_domain";
     String NETWORK_STACK_KEY = "net_stack";
 
     String LOCAL_LOOKUP_IPS_KEY = "ldns_ip";

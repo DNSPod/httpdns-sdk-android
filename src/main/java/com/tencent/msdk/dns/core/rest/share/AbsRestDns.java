@@ -209,11 +209,12 @@ public abstract class AbsRestDns implements IDns<LookupExtra> {
             }
 
             Response rsp = Response.EMPTY;
+            LookupParameters<LookupExtra> lookupParameters = mLookupContext.asLookupParameters();
             try {
-                if (tryGetResultFromCache(mLookupContext.asLookupParameters(), mStat)) {
+                if (tryGetResultFromCache(lookupParameters, mStat)) {
                     return mStat.ips;
                 }
-                LookupParameters<LookupExtra> lookupParameters = mLookupContext.asLookupParameters();
+
                 rsp = responseInternal();
                 if (rsp != Response.EMPTY && rsp != Response.NEED_CONTINUE) {
                     mStat.errorCode = ErrorCode.SUCCESS;
@@ -222,7 +223,7 @@ public abstract class AbsRestDns implements IDns<LookupExtra> {
                 mStat.clientIp = rsp.clientIp;
                 mStat.ttl = rsp.ttl;
                 mStat.expiredTime = System.currentTimeMillis() + rsp.ttl * 1000;
-                mStat.ips = ipTemplate(rsp.ips, lookupParameters);
+                mStat.ips = rsp.ips;
             } finally {
                 if (rsp != Response.NEED_CONTINUE) {
                     end();
@@ -230,7 +231,7 @@ public abstract class AbsRestDns implements IDns<LookupExtra> {
                     syncState();
                 }
             }
-            return mStat.ips;
+            return ipTemplate(mStat.ips, lookupParameters);
         }
 
         @Override

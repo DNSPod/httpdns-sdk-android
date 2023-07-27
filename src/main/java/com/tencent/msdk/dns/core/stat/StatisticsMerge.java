@@ -31,6 +31,11 @@ public final class StatisticsMerge implements IStatisticsMerge<LookupExtra> {
      * 域名
      */
     public String hostname = Const.INVALID_HOSTNAME;
+
+    /**
+     * 下发解析域名(批量解析)
+     */
+    public String requestHostname = Const.INVALID_HOSTNAME;
     /**
      * 访问HTTPDNS服务使用的协议, UDP或者HTTP
      */
@@ -115,6 +120,7 @@ public final class StatisticsMerge implements IStatisticsMerge<LookupExtra> {
         }
 
         hostname = lookupContext.hostname();
+        requestHostname = lookupContext.requestHostname();
         channel = lookupContext.channel();
         curNetStack = lookupContext.currentNetworkStack();
     }
