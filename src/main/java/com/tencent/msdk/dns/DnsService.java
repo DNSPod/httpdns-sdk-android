@@ -334,6 +334,7 @@ public final class DnsService {
             try {
                 JSONObject temp = new JSONObject(result);
                 long expiredTime = Long.parseLong(temp.get("expired_time").toString());
+                final String requestDomain = temp.get("request_name").toString();
                 long current = System.currentTimeMillis();
                 if (expiredTime < current) {
                     // 缓存过期，发起异步请求
@@ -341,7 +342,7 @@ public final class DnsService {
                         @Override
                         public void run() {
                             DnsLog.d("async look up send");
-                            getAddrsByName(domain, true, true);
+                            getAddrsByName(requestDomain, true, true);
                         }
                     });
                     // 缓存过期且不允许使用过期缓存
