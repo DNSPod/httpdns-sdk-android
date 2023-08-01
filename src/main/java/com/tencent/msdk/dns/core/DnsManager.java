@@ -117,7 +117,6 @@ public final class DnsManager {
                 sStatMergeFactory.create(
                         (Class<LookupExtra>) lookupExtra.getClass(), lookupParams.appContext);
         lookupContext.statisticsMerge(statMerge);
-        statMerge.statContext(lookupContext);
 
         IDns dns;
         switch (currentNetworkStack) {
@@ -133,6 +132,7 @@ public final class DnsManager {
         }
 
         LookupResult lookupResultFromCache = dns.getResultFromCache(lookupParams);
+        statMerge.statContext(lookupContext);
         if (lookupResultFromCache.stat.lookupSuccess() || lookupResultFromCache.stat.lookupPartCached()) {
             lookupContext.sorter().put(dns, lookupResultFromCache.ipSet.ips);
             lookupContext.statisticsMerge()

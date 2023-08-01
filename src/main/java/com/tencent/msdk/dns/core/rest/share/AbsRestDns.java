@@ -51,13 +51,12 @@ public abstract class AbsRestDns implements IDns<LookupExtra> {
         String[] tempIps;
         // 对批量域名返回值做处理
         boolean cached = true;
-        // 未命中缓存的请求域名
+        // 未命中缓存的请求域名&乐观DNS场景下，缓存过期需要请求的域名
         String requestHostname = "";
-        // 缓存过期需要请求的域名，用于乐观dns场景
-        String expiredHostname = "";
         int ttl = 600;
         long expiredTime = System.currentTimeMillis() + ttl * 1000;
         String clientIp = "";
+        Boolean useExpiredIpEnable = DnsService.getDnsConfig().useExpiredIpEnable;
         if (hostnameArr.length > 1) {
             for (String hostname : hostnameArr) {
                 LookupResult lookupResult = mCacheHelper.get(hostname);
@@ -69,8 +68,8 @@ public abstract class AbsRestDns implements IDns<LookupExtra> {
                     ttl = Math.min(ttl, cachedStat.ttl);
                     expiredTime = Math.min(expiredTime, cachedStat.expiredTime);
                     clientIp = cachedStat.clientIp;
-                    if (cachedStat.expiredTime < System.currentTimeMillis()) {
-                        expiredHostname += hostname + ',';
+                    if (useExpiredIpEnable && cachedStat.expiredTime < System.currentTimeMillis()) {
+                        requestHostname += hostname + ',';
                     }
                 } else {
                     cached = false;
@@ -78,7 +77,6 @@ public abstract class AbsRestDns implements IDns<LookupExtra> {
                 }
             }
             requestHostname = requestHostname.length() > 0 ? requestHostname.substring(0, requestHostname.length() - 1) : "";
-            expiredHostname = expiredHostname.length() > 0 ? expiredHostname.substring(0, expiredHostname.length() - 1) : "";
             if (tempCachedips.size() > 0) {
                 stat.ips = tempCachedips.toArray(new String[tempCachedips.size()]);
             }
@@ -90,11 +88,17 @@ public abstract class AbsRestDns implements IDns<LookupExtra> {
                 ttl = cachedStat.ttl;
                 expiredTime = cachedStat.expiredTime;
                 clientIp = cachedStat.clientIp;
-                expiredHostname = expiredTime < System.currentTimeMillis() ? hostnameArr[0] : "";
+                if (useExpiredIpEnable && cachedStat.expiredTime < System.currentTimeMillis()) {
+                    requestHostname = hostnameArr[0];
+                }
             } else {
                 cached = false;
                 requestHostname = hostnameArr[0];
             }
+        }
+
+        if (!requestHostname.isEmpty()) {
+            lookupParams.setRequestHostname(requestHostname);
         }
 
         if (cached) {
@@ -104,16 +108,11 @@ public abstract class AbsRestDns implements IDns<LookupExtra> {
             stat.ttl = ttl;
             stat.expiredTime = expiredTime;
             DnsLog.d("Lookup for %s, cache hit", lookupParams.hostname);
-            // 乐观DNS默认全部命中缓存，请求host设置
-            if (DnsService.getDnsConfig().useExpiredIpEnable && !expiredHostname.isEmpty()) {
-                lookupParams.setRequestHostname(expiredHostname);
-            }
             return true;
         }
 
         if (tempCachedips.size() > 0) {
             stat.hadPartCachedIps = true;
-            lookupParams.setRequestHostname(requestHostname);
         }
 
         return false;
