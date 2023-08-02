@@ -52,11 +52,11 @@ public abstract class AbsRestDns implements IDns<LookupExtra> {
         // 对批量域名返回值做处理
         boolean cached = true;
         // 未命中缓存的请求域名&乐观DNS场景下，缓存过期需要请求的域名
-        String requestHostname = "";
+        StringBuilder requestHostname = new StringBuilder();
         int ttl = 600;
         long expiredTime = System.currentTimeMillis() + ttl * 1000;
         String clientIp = "";
-        Boolean useExpiredIpEnable = DnsService.getDnsConfig().useExpiredIpEnable;
+        boolean useExpiredIpEnable = DnsService.getDnsConfig().useExpiredIpEnable;
         if (hostnameArr.length > 1) {
             for (String hostname : hostnameArr) {
                 LookupResult lookupResult = mCacheHelper.get(hostname);
@@ -69,14 +69,14 @@ public abstract class AbsRestDns implements IDns<LookupExtra> {
                     expiredTime = Math.min(expiredTime, cachedStat.expiredTime);
                     clientIp = cachedStat.clientIp;
                     if (useExpiredIpEnable && cachedStat.expiredTime < System.currentTimeMillis()) {
-                        requestHostname += hostname + ',';
+                        requestHostname.append(hostname).append(',');
                     }
                 } else {
                     cached = false;
-                    requestHostname += hostname + ',';
+                    requestHostname.append(hostname).append(',');
                 }
             }
-            requestHostname = requestHostname.length() > 0 ? requestHostname.substring(0, requestHostname.length() - 1) : "";
+            requestHostname = new StringBuilder(requestHostname.length() > 0 ? requestHostname.substring(0, requestHostname.length() - 1) : "");
             if (tempCachedips.size() > 0) {
                 stat.ips = tempCachedips.toArray(new String[tempCachedips.size()]);
             }
@@ -89,16 +89,16 @@ public abstract class AbsRestDns implements IDns<LookupExtra> {
                 expiredTime = cachedStat.expiredTime;
                 clientIp = cachedStat.clientIp;
                 if (useExpiredIpEnable && cachedStat.expiredTime < System.currentTimeMillis()) {
-                    requestHostname = hostnameArr[0];
+                    requestHostname = new StringBuilder(hostnameArr[0]);
                 }
             } else {
                 cached = false;
-                requestHostname = hostnameArr[0];
+                requestHostname = new StringBuilder(hostnameArr[0]);
             }
         }
 
-        if (!requestHostname.isEmpty()) {
-            lookupParams.setRequestHostname(requestHostname);
+        if (requestHostname.length() > 0) {
+            lookupParams.setRequestHostname(requestHostname.toString());
         }
 
         if (cached) {
@@ -230,7 +230,7 @@ public abstract class AbsRestDns implements IDns<LookupExtra> {
                 }
                 mStat.clientIp = rsp.clientIp;
                 mStat.ttl = rsp.ttl;
-                mStat.expiredTime = System.currentTimeMillis() + rsp.ttl * 1000;
+                mStat.expiredTime = System.currentTimeMillis() + rsp.ttl * 1000L;
                 mStat.ips = rsp.ips;
             } finally {
                 if (rsp != Response.NEED_CONTINUE) {
@@ -444,7 +444,7 @@ public abstract class AbsRestDns implements IDns<LookupExtra> {
             this.ips = ips;
             this.clientIp = clientIp;
             this.ttl = ttl;
-            this.expiredTime = System.currentTimeMillis() + ttl * 1000;
+            this.expiredTime = System.currentTimeMillis() + ttl * 1000L;
         }
 
         @Override

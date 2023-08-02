@@ -2,9 +2,9 @@ package com.tencent.msdk.dns.core.rest.share;
 
 import android.text.TextUtils;
 
+import com.tencent.msdk.dns.BackupResolver;
 import com.tencent.msdk.dns.BuildConfig;
 import com.tencent.msdk.dns.DnsService;
-import com.tencent.msdk.dns.BackupResolver;
 import com.tencent.msdk.dns.base.compat.CollectionCompat;
 import com.tencent.msdk.dns.base.executor.DnsExecutors;
 import com.tencent.msdk.dns.base.log.DnsLog;
