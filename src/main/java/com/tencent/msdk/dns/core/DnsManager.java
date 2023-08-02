@@ -17,7 +17,6 @@ import com.tencent.msdk.dns.core.stat.StatisticsMergeFactory;
 import java.io.IOException;
 import java.nio.channels.Selector;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;

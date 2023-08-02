@@ -8,7 +8,6 @@ import com.tencent.msdk.dns.base.lifecycle.ActivityLifecycleDetector;
 import com.tencent.msdk.dns.base.log.DnsLog;
 import com.tencent.msdk.dns.base.log.ILogNode;
 import com.tencent.msdk.dns.base.network.NetworkChangeManager;
-import com.tencent.msdk.dns.base.report.BeaconReporterInitParameters;
 import com.tencent.msdk.dns.base.report.IReporter;
 import com.tencent.msdk.dns.base.report.ReportManager;
 import com.tencent.msdk.dns.base.utils.CommonUtils;
@@ -92,11 +91,11 @@ public final class DnsService {
         ActivityLifecycleDetector.install(appContext);
         // Room 本地数据读取
         DnsExecutors.WORK.execute(new Runnable() {
-                @Override
-                public void run() {
-                    Cache.readFromDb();
-                }
-            });
+            @Override
+            public void run() {
+                Cache.readFromDb();
+            }
+        });
         ReportHelper.init(config);
         DnsExecutors.sExecutorSupplier = sConfig.executorSupplier;
         setLookedUpListener(config.lookedUpListener);
@@ -171,6 +170,7 @@ public final class DnsService {
 
     /**
      * 设置是否上报，是否启用域名服务（获取底层配置）
+     *
      * @param mEnableReport
      * @param mEnableDomainServer
      */

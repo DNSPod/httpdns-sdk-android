@@ -149,10 +149,10 @@ public final class StatisticsMerge implements IStatisticsMerge<LookupExtra> {
         return lookupFailed;
     }
 
-   @Override
-   public boolean lookupPartCached() {
-       return hasPartCache;
-   }
+    @Override
+    public boolean lookupPartCached() {
+        return hasPartCache;
+    }
 
 
     @Override
