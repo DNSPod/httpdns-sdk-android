@@ -2,6 +2,7 @@ package com.tencent.msdk.dns.core.rest.share;
 
 import android.text.TextUtils;
 
+import com.tencent.msdk.dns.DnsService;
 import com.tencent.msdk.dns.base.log.DnsLog;
 import com.tencent.msdk.dns.base.utils.CommonUtils;
 import com.tencent.msdk.dns.core.Const;
@@ -44,20 +45,76 @@ public abstract class AbsRestDns implements IDns<LookupExtra> {
         if (lookupParams.enableAsyncLookup) {
             return false;
         }
-        String hostname = lookupParams.hostname;
-        LookupResult lookupResult = mCacheHelper.get(hostname);
-        String[] ips;
-        if (null != lookupResult && !CommonUtils.isEmpty(ips = lookupResult.ipSet.ips)) {
-            Statistics cachedStat = (Statistics) lookupResult.stat;
-            stat.errorCode = ErrorCode.SUCCESS;
-            stat.clientIp = cachedStat.clientIp;
-            stat.ttl = cachedStat.ttl;
-            stat.expiredTime = cachedStat.expiredTime;
-            stat.ips = ips;
+
+        final String[] hostnameArr = lookupParams.hostname.split(",");
+        List<String> tempCachedips = new ArrayList<>();
+        String[] tempIps;
+        // 对批量域名返回值做处理
+        boolean cached = true;
+        // 未命中缓存的请求域名&乐观DNS场景下，缓存过期需要请求的域名
+        String requestHostname = "";
+        int ttl = 600;
+        long expiredTime = System.currentTimeMillis() + ttl * 1000;
+        String clientIp = "";
+        Boolean useExpiredIpEnable = DnsService.getDnsConfig().useExpiredIpEnable;
+        if (hostnameArr.length > 1) {
+            for (String hostname : hostnameArr) {
+                LookupResult lookupResult = mCacheHelper.get(hostname);
+                if (null != lookupResult && !CommonUtils.isEmpty(tempIps = lookupResult.ipSet.ips)) {
+                    for (String ip : tempIps) {
+                        tempCachedips.add(hostname + ":" + ip);
+                    }
+                    Statistics cachedStat = (Statistics) lookupResult.stat;
+                    ttl = Math.min(ttl, cachedStat.ttl);
+                    expiredTime = Math.min(expiredTime, cachedStat.expiredTime);
+                    clientIp = cachedStat.clientIp;
+                    if (useExpiredIpEnable && cachedStat.expiredTime < System.currentTimeMillis()) {
+                        requestHostname += hostname + ',';
+                    }
+                } else {
+                    cached = false;
+                    requestHostname += hostname + ',';
+                }
+            }
+            requestHostname = requestHostname.length() > 0 ? requestHostname.substring(0, requestHostname.length() - 1) : "";
+            if (tempCachedips.size() > 0) {
+                stat.ips = tempCachedips.toArray(new String[tempCachedips.size()]);
+            }
+        } else {
+            LookupResult lookupResult = mCacheHelper.get(hostnameArr[0]);
+            if (null != lookupResult && !CommonUtils.isEmpty(tempIps = lookupResult.ipSet.ips)) {
+                stat.ips = tempIps;
+                Statistics cachedStat = (Statistics) lookupResult.stat;
+                ttl = cachedStat.ttl;
+                expiredTime = cachedStat.expiredTime;
+                clientIp = cachedStat.clientIp;
+                if (useExpiredIpEnable && cachedStat.expiredTime < System.currentTimeMillis()) {
+                    requestHostname = hostnameArr[0];
+                }
+            } else {
+                cached = false;
+                requestHostname = hostnameArr[0];
+            }
+        }
+
+        if (!requestHostname.isEmpty()) {
+            lookupParams.setRequestHostname(requestHostname);
+        }
+
+        if (cached) {
             stat.cached = true;
-            DnsLog.d("Lookup for %s, cache hit", hostname);
+            stat.errorCode = ErrorCode.SUCCESS;
+            stat.clientIp = clientIp;
+            stat.ttl = ttl;
+            stat.expiredTime = expiredTime;
+            DnsLog.d("Lookup for %s, cache hit", lookupParams.hostname);
             return true;
         }
+
+        if (tempCachedips.size() > 0) {
+            stat.hadPartCachedIps = true;
+        }
+
         return false;
     }
 
@@ -143,8 +200,7 @@ public abstract class AbsRestDns implements IDns<LookupExtra> {
             try {
                 requestRes = requestInternal();
             } finally {
-                if (requestRes != NonBlockResult.NON_BLOCK_RESULT_NEED_CONTINUE &&
-                        State.ENDED != mState) {
+                if (requestRes != NonBlockResult.NON_BLOCK_RESULT_NEED_CONTINUE && State.ENDED != mState) {
                     mState = State.READABLE;
                 }
             }
@@ -161,11 +217,14 @@ public abstract class AbsRestDns implements IDns<LookupExtra> {
             }
 
             Response rsp = Response.EMPTY;
+            LookupParameters<LookupExtra> lookupParameters = mLookupContext.asLookupParameters();
             try {
-                if (tryGetResultFromCache(mLookupContext.asLookupParameters(), mStat)) {
+                if (tryGetResultFromCache(lookupParameters, mStat)) {
                     return mStat.ips;
                 }
+
                 rsp = responseInternal();
+
                 if (mStat.errorCode == ErrorCode.SUCCESS) {
                     mCacheHelper.put(mLookupContext.asLookupParameters(), rsp);
                 }
@@ -184,7 +243,7 @@ public abstract class AbsRestDns implements IDns<LookupExtra> {
                     syncState();
                 }
             }
-            return mStat.ips;
+            return CommonUtils.templateIps(mStat.ips, lookupParameters);
         }
 
         @Override
@@ -329,6 +388,11 @@ public abstract class AbsRestDns implements IDns<LookupExtra> {
         }
 
         /**
+         * 是否仅部分命中缓存（使用于批量解析中）
+         */
+        public boolean hadPartCachedIps = false;
+
+        /**
          * 域名解析错误码
          */
         public int errorCode = ErrorCode.LOOKUP_TIMEOUT;
@@ -385,6 +449,16 @@ public abstract class AbsRestDns implements IDns<LookupExtra> {
             this.clientIp = clientIp;
             this.ttl = ttl;
             this.expiredTime = System.currentTimeMillis() + ttl * 1000;
+        }
+
+        @Override
+        public boolean lookupPartCached() {
+            return hadPartCachedIps;
+        }
+
+        @Override
+        public boolean lookupSuccess() {
+            return Const.EMPTY_IPS != ips;
         }
 
         @Override

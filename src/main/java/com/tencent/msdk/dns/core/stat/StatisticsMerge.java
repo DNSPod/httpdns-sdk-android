@@ -31,6 +31,11 @@ public final class StatisticsMerge implements IStatisticsMerge<LookupExtra> {
      * 域名
      */
     public String hostname = Const.INVALID_HOSTNAME;
+
+    /**
+     * 下发解析域名(批量解析)
+     */
+    public String requestHostname = Const.INVALID_HOSTNAME;
     /**
      * 访问HTTPDNS服务使用的协议, UDP或者HTTP
      */
@@ -72,6 +77,8 @@ public final class StatisticsMerge implements IStatisticsMerge<LookupExtra> {
 
     private boolean hasBeenMerge = false;
 
+    private boolean hasPartCache = false;
+
     public StatisticsMerge(Context context) {
         if (null == context) {
             throw new IllegalArgumentException("context".concat(Const.NULL_POINTER_TIPS));
@@ -97,6 +104,7 @@ public final class StatisticsMerge implements IStatisticsMerge<LookupExtra> {
             lookupSuccess = lookupSuccess && stat.lookupSuccess();
         }
         lookupFailed = lookupFailed && stat.lookupFailed();
+        hasPartCache = stat.lookupPartCached();
         DnsDescription dnsDesc = dns.getDescription();
         if (Const.LOCAL_CHANNEL.equals(dnsDesc.channel)) {
             localDnsStat = (LocalDns.Statistics) stat;
@@ -112,6 +120,7 @@ public final class StatisticsMerge implements IStatisticsMerge<LookupExtra> {
         }
 
         hostname = lookupContext.hostname();
+        requestHostname = lookupContext.requestHostname();
         channel = lookupContext.channel();
         curNetStack = lookupContext.currentNetworkStack();
     }
@@ -140,12 +149,19 @@ public final class StatisticsMerge implements IStatisticsMerge<LookupExtra> {
         return lookupFailed;
     }
 
+   @Override
+   public boolean lookupPartCached() {
+       return hasPartCache;
+   }
+
+
     @Override
     public String toJsonResult() {
         JSONObject jsonObject = new JSONObject();
         try {
             jsonObject.put("v4_ips", ipSet == null ? "" : CommonUtils.toStringList(ipSet.v4Ips, ","));
             jsonObject.put("v6_ips", ipSet == null ? "" : CommonUtils.toStringList(ipSet.v6Ips, ","));
+            jsonObject.put("request_name", requestHostname);
             jsonObject.put("ttl", String.valueOf(restDnsStat.ttl));
             jsonObject.put("client_ip", String.valueOf(restDnsStat.clientIp));
             jsonObject.put("expired_time", String.valueOf(restDnsStat.expiredTime));

@@ -121,6 +121,9 @@ public final class ReportHelper {
         lookupMethodCalledEventMap.put(ReportConst.CHANNEL_KEY, statMerge.channel);
         lookupMethodCalledEventMap.put(ReportConst.NETWORK_TYPE_KEY, statMerge.netType);
         lookupMethodCalledEventMap.put(ReportConst.HOSTNAME_KEY, statMerge.hostname);
+        if (statMerge.requestHostname != statMerge.hostname) {
+            lookupMethodCalledEventMap.put(ReportConst.REQUEST_HOSTNAME_KEY, statMerge.requestHostname);
+        }
         lookupMethodCalledEventMap.put(ReportConst.NETWORK_STACK_KEY,
                 String.valueOf(statMerge.curNetStack));
 
@@ -247,7 +250,7 @@ public final class ReportHelper {
         eventMap.put(ReportConst.SDK_VERSION_KEY, BuildConfig.VERSION_NAME);
         eventMap.put(ReportConst.APP_ID_KEY, sDnsConfig.appId);
         eventMap.put(ReportConst.BIZ_ID_KEY, sDnsConfig.lookupExtra.bizId);
-        eventMap.put(ReportConst.USER_ID_KEY, sDnsConfig.userId);
+//        eventMap.put(ReportConst.USER_ID_KEY, sDnsConfig.userId);
     }
 
     private static void report(String eventName, Map<String, String> eventMap) {
