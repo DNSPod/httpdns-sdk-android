@@ -149,7 +149,7 @@ public abstract class AbsHttpDns extends AbsRestDns {
             CommonUtils.closeQuietly(reader);
             stat.endLookup();
         }
-        return new LookupResult<>(ipTemplate(stat.ips, lookupParams), stat);
+        return new LookupResult<>(CommonUtils.templateIps(stat.ips, lookupParams), stat);
     }
 
     @Override

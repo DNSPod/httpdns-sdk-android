@@ -131,20 +131,6 @@ public abstract class AbsRestDns implements IDns<LookupExtra> {
         return new LookupResult<>(stat.ips, stat);
     }
 
-    public String[] ipTemplate(String[] ips, LookupParameters<LookupExtra> lookupParameters) {
-        String requestHostname = lookupParameters.requestHostname;
-        if (ips.length > 0 && !lookupParameters.requestHostname.equals(lookupParameters.hostname) && requestHostname.split(",").length == 1) {
-            // 批量解析中单个域名下发请求的格式处理
-            List<String> list = new ArrayList<>();
-            for (String ip : ips) {
-                list.add(requestHostname + ":" + ip);
-            }
-            return list.toArray(new String[list.size()]);
-        } else {
-            return ips;
-        }
-    }
-
     /**
      * @hide 负责亲子关系管理，token管理
      * 子类负责请求响应的具体实现，channel(DatagramChannel/SocketChannel/...)的管理和session实例的创建
@@ -253,7 +239,7 @@ public abstract class AbsRestDns implements IDns<LookupExtra> {
                     syncState();
                 }
             }
-            return ipTemplate(mStat.ips, lookupParameters);
+            return CommonUtils.templateIps(mStat.ips, lookupParameters);
         }
 
         @Override
