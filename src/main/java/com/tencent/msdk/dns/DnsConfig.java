@@ -590,7 +590,7 @@ public final class DnsConfig {
          */
         @Deprecated
         public Builder enableReport(boolean enableReport) {
-            mEnableReport = enableReport;
+//            mEnableReport = enableReport;
             return this;
         }
 
