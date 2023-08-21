@@ -83,8 +83,8 @@ DnsConfig dnsConfigBuilder = DnsConfig.Builder()
     .preLookupDomains("baidu.com", "qq.com")
     //（可选）手动指定网络栈支持情况，仅进行 IPv4 解析传 1，仅进行 IPv6 解析传 2，进行 IPv4、IPv6 双栈解析传 3。默认为根据客户端本地网络栈支持情况发起对应的解析请求。
     .setCustomNetStack(3)
-    //（可选）设置域名解析请求超时时间，默认为1000ms
-    .timeoutMills(1000)
+    //（可选）设置域名解析请求超时时间，默认为2000ms
+    .timeoutMills(2000)
     //（可选）[V4.4.0废弃]是否开启解析异常上报，默认false，不上报
     .enableReport(true)
     //（可选）[V4.1.0] 解析缓存自动刷新, 以域名形式进行配置，填写形式："baidu.com", "qq.com"。配置的域名会在 TTL * 75% 时自动发起解析请求更新缓存，实现配置域名解析时始终命中缓存。此项建议不要设置太多域名，当前限制为最多 10 个域名。与预解析分开独立配置。
@@ -126,7 +126,7 @@ ii. 老版本初始化方法
  * @param dnskey dns解析key，即授权id对应的 key（加密密钥），在申请 SDK 后的邮箱里，腾讯云官网（https://console.cloud.tencent.com/httpdns）申请获得，用于域名解析鉴权
  * @param dnsIp 由外部传入的dnsIp，可选："119.29.29.98"，以腾讯云文档（https://cloud.tencent.com/document/product/379/54976）提供的 IP 为准
  * @param debug 是否开启 debug 日志，true 为打开，false 为关闭，建议测试阶段打开，正式上线时关闭
- * @param timeout dns请求超时时间，单位ms，建议设置1000
+ * @param timeout dns请求超时时间，单位ms，建议设置2000
  */
 MSDKDnsResolver.getInstance().init(MainActivity.this, appkey, dnsid, dnskey, dnsIp, debug, timeout);
 ```
@@ -144,7 +144,7 @@ MSDKDnsResolver.getInstance().init(MainActivity.this, appkey, dnsid, dnskey, dns
  * @param dnskey dns解析key，即授权id对应的 key（加密密钥），在申请 SDK 后的邮箱里，腾讯云官网（https://console.cloud.tencent.com/httpdns）申请获得，用于域名解析鉴权
  * @param dnsIp 由外部传入的dnsIp，可选："119.29.29.98"（仅支持 http 请求，channel为DesHttp和AesHttp时选择），"119.29.29.99"（仅支持 https 请求，channel为Https时选择）以腾讯云文档（https://cloud.tencent.com/document/product/379/54976）提供的 IP 为准
  * @param debug 是否开启 debug 日志，true 为打开，false 为关闭，建议测试阶段打开，正式上线时关闭
- * @param timeout dns请求超时时间，单位ms，建议设置1000
+ * @param timeout dns请求超时时间，单位ms，建议设置2000
  * @param enableReport 是否开启解析异常上报，默认false，不上报
  */
 MSDKDnsResolver.getInstance().init(MainActivity.this, appkey, dnsid, dnskey, dnsIp, debug, timeout, enableReport);
@@ -163,7 +163,7 @@ MSDKDnsResolver.getInstance().init(MainActivity.this, appkey, dnsid, dnskey, dns
  * @param dnskey dns解析key，即授权id对应的 key（加密密钥），在申请 SDK 后的邮箱里，腾讯云官网（https://console.cloud.tencent.com/httpdns）申请获得，用于域名解析鉴权
  * @param dnsIp 由外部传入的dnsIp，可选："119.29.29.98"（仅支持 http 请求，channel为DesHttp和AesHttp时选择），"119.29.29.99"（仅支持 https 请求，channel为Https时选择）以腾讯云文档（https://cloud.tencent.com/document/product/379/54976）提供的 IP 为准
  * @param debug 是否开启 debug 日志，true 为打开，false 为关闭，建议测试阶段打开，正式上线时关闭
- * @param timeout dns请求超时时间，单位ms，建议设置1000
+ * @param timeout dns请求超时时间，单位ms，建议设置2000
  * @param channel 设置 channel，可选：DesHttp（默认）, AesHttp, Https
  * @param token 腾讯云官网（https://console.cloud.tencent.com/httpdns）申请获得，用于 HTTPS 校验
  * @param enableReport 是否开启解析异常上报，默认false，不上报

@@ -199,7 +199,7 @@ public final class DnsConfig {
         private String mDnsKey = "";
         private String mToken = "";
 
-        private int mTimeoutMills = 1000;
+        private int mTimeoutMills = 2000;
 
         private int mMaxNumOfPreLookupDomains = DEFAULT_MAX_NUM_OF_PRE_LOOKUP_DOMAINS;
         private int mMaxNumOfIpRankItems = DEFAULT_MAX_NUM_OF_IP_RANK_ITEMS;
@@ -372,7 +372,7 @@ public final class DnsConfig {
 
         /**
          * 设置域名解析请求超时时间
-         * 不设置时, 默认为1000ms
+         * 不设置时, 默认为2000ms
          *
          * @param timeoutMills 域名解析请求超时时间, 单位为ms
          * @return 当前Builder实例, 方便链式调用
