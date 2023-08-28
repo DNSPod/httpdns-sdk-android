@@ -327,7 +327,7 @@ public final class DnsService {
                 @Override
                 public void run() {
                     // 下发解析请求
-                    getAddrsByName(domain, true, true);
+                    getAddrsByName(domain, false, true);
                 }
             });
         } else {
@@ -342,7 +342,7 @@ public final class DnsService {
                         @Override
                         public void run() {
                             DnsLog.d("async look up send");
-                            getAddrsByName(requestDomain, true, true);
+                            getAddrsByName(requestDomain, false, true);
                         }
                     });
                     // 缓存过期且不允许使用过期缓存
