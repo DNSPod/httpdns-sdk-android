@@ -29,7 +29,7 @@ public final class ReportHelper {
     private static Runnable sReportAsyncLookupEventTask = new Runnable() {
         @Override
         public void run() {
-            // attta上报统计数据
+            // atta上报统计数据
             Map<String, Object[]> cacheStatisticsMap = CacheStatisticsReport.offerAll();
             attaReportStatisticsEvent(cacheStatisticsMap);
             DnsExecutors.MAIN.cancel(sReportAsyncLookupEventTask);
@@ -121,6 +121,9 @@ public final class ReportHelper {
         lookupMethodCalledEventMap.put(ReportConst.CHANNEL_KEY, statMerge.channel);
         lookupMethodCalledEventMap.put(ReportConst.NETWORK_TYPE_KEY, statMerge.netType);
         lookupMethodCalledEventMap.put(ReportConst.HOSTNAME_KEY, statMerge.hostname);
+        if (statMerge.requestHostname != statMerge.hostname) {
+            lookupMethodCalledEventMap.put(ReportConst.REQUEST_HOSTNAME_KEY, statMerge.requestHostname);
+        }
         lookupMethodCalledEventMap.put(ReportConst.NETWORK_STACK_KEY,
                 String.valueOf(statMerge.curNetStack));
 
@@ -193,26 +196,29 @@ public final class ReportHelper {
         String dnsIp = backupInfo.getDnsIp();
         String reqType = AttaHelper.getReqType(statMerge.curNetStack);
 
-        //  ErrorCode==2 进行容灾处理
-        if (statMerge.restDnsStat.errorCode == 2 || (Const.HTTPS_CHANNEL.equals(sDnsConfig.channel) && (statMerge.restDnsStat.errorCode == 1))) {
-            // 解析失败，仅当达到最大失败次数满足切换IP时候上报
-            if (sDnsConfig.enableReport && backupInfo.getCanReport(backupInfo.getErrorCount() + 1)) {
+        if (sDnsConfig.enableReport && !statMerge.restDnsStat.cached) {
+            //  请求正常时的上报逻辑全量上报
+            if (statMerge.restDnsStat.errorCode == 0) {
+                //  请求成功后将ErrorCount置为0
+                backupInfo.setErrorCount(0);
                 DnsExecutors.MAIN.execute(AttaHelper.report(carrierCode, statMerge.netType, sDnsConfig.lookupExtra.bizId, sDnsConfig.appId, sDnsConfig.channel, eventName, System.currentTimeMillis(), dnsIp, statMerge.restDnsStat.costTimeMills, statMerge.hostname, reqType, sDnsConfig.timeoutMills, statMerge.restDnsStat.ttl, statMerge.restDnsStat.errorCode, statMerge.restDnsStat.statusCode, statMerge.restDnsStat.cached, 1, CommonUtils.toStringList(statMerge.localDnsStat.ips, ReportConst.IP_SPLITTER), CommonUtils.toStringList(statMerge.restDnsStat.ips, ReportConst.IP_SPLITTER)));
-            }
-            // 报错记录+1
-            backupInfo.incrementErrorCount();
-            DnsLog.d("dnsip连接失败, 当前失败次数：" + backupInfo.getErrorCount());
-        }
-
-        //  请求正常时的上报逻辑全量上报
-        if (statMerge.restDnsStat.errorCode == 0 && !statMerge.restDnsStat.cached) {
-            //  请求成功后将ErrorCount置为0
-            backupInfo.setErrorCount(0);
-            if (sDnsConfig.enableReport) {
-                DnsExecutors.MAIN.execute(AttaHelper.report(carrierCode, statMerge.netType, sDnsConfig.lookupExtra.bizId, sDnsConfig.appId, sDnsConfig.channel, eventName, System.currentTimeMillis(), dnsIp, statMerge.restDnsStat.costTimeMills, statMerge.hostname, reqType, sDnsConfig.timeoutMills, statMerge.restDnsStat.ttl, statMerge.restDnsStat.errorCode, statMerge.restDnsStat.statusCode, statMerge.restDnsStat.cached, 1, CommonUtils.toStringList(statMerge.localDnsStat.ips, ReportConst.IP_SPLITTER), CommonUtils.toStringList(statMerge.restDnsStat.ips, ReportConst.IP_SPLITTER)));
+            } else {
+                //  ErrorCode==2 (超时)进行容灾处理，https请求存在请求异常超时时间>timeoutMills,此时errCode为1
+                if (statMerge.restDnsStat.errorCode == 2 || (Const.HTTPS_CHANNEL.equals(sDnsConfig.channel) && (statMerge.restDnsStat.errorCode == 1))) {
+                    // 解析失败，仅当达到最大失败次数满足切换IP时候上报
+                    if (backupInfo.getCanReport(backupInfo.getErrorCount() + 1)) {
+                        DnsExecutors.MAIN.execute(AttaHelper.report(carrierCode, statMerge.netType, sDnsConfig.lookupExtra.bizId, sDnsConfig.appId, sDnsConfig.channel, eventName, System.currentTimeMillis(), dnsIp, statMerge.restDnsStat.costTimeMills, statMerge.hostname, reqType, sDnsConfig.timeoutMills, statMerge.restDnsStat.ttl, statMerge.restDnsStat.errorCode, statMerge.restDnsStat.statusCode, statMerge.restDnsStat.cached, 1, CommonUtils.toStringList(statMerge.localDnsStat.ips, ReportConst.IP_SPLITTER), CommonUtils.toStringList(statMerge.restDnsStat.ips, ReportConst.IP_SPLITTER)));
+                    }
+                    // 报错记录+1
+                    backupInfo.incrementErrorCount();
+                    DnsLog.d("dnsip连接失败, 当前失败次数：" + backupInfo.getErrorCount());
+                } else {
+                    DnsExecutors.MAIN.execute(AttaHelper.report(carrierCode, statMerge.netType, sDnsConfig.lookupExtra.bizId, sDnsConfig.appId, sDnsConfig.channel, eventName, System.currentTimeMillis(), dnsIp, statMerge.restDnsStat.costTimeMills, statMerge.hostname, reqType, sDnsConfig.timeoutMills, statMerge.restDnsStat.ttl, statMerge.restDnsStat.errorCode, statMerge.restDnsStat.statusCode, statMerge.restDnsStat.cached, 1, CommonUtils.toStringList(statMerge.localDnsStat.ips, ReportConst.IP_SPLITTER), CommonUtils.toStringList(statMerge.restDnsStat.ips, ReportConst.IP_SPLITTER)));
+                }
             }
         }
     }
+
 
     private static void attaReportStatisticsEvent(Map<String, Object[]> cacheStatisticsMap) {
         if (!sDnsConfig.enableReport) {
@@ -244,7 +250,7 @@ public final class ReportHelper {
         eventMap.put(ReportConst.SDK_VERSION_KEY, BuildConfig.VERSION_NAME);
         eventMap.put(ReportConst.APP_ID_KEY, sDnsConfig.appId);
         eventMap.put(ReportConst.BIZ_ID_KEY, sDnsConfig.lookupExtra.bizId);
-        eventMap.put(ReportConst.USER_ID_KEY, sDnsConfig.userId);
+//        eventMap.put(ReportConst.USER_ID_KEY, sDnsConfig.userId);
     }
 
     private static void report(String eventName, Map<String, String> eventMap) {

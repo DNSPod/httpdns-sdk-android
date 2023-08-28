@@ -66,6 +66,8 @@ public interface IDns<LookupExtra extends IDns.ILookupExtra> {
         boolean lookupNeedRetry();
 
         boolean lookupFailed();
+
+       boolean lookupPartCached();
     }
 
     DnsDescription getDescription();

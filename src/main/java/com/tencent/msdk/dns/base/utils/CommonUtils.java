@@ -4,11 +4,15 @@ import android.text.TextUtils;
 
 import com.tencent.msdk.dns.base.log.DnsLog;
 import com.tencent.msdk.dns.core.IpSet;
+import com.tencent.msdk.dns.core.LookupParameters;
+import com.tencent.msdk.dns.core.rest.share.LookupExtra;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 public final class CommonUtils {
@@ -96,5 +100,19 @@ public final class CommonUtils {
             v6Ip = ipSet.v6Ips[0];
         }
         return v4Ip + ";" + v6Ip;
+    }
+
+    public static String[] templateIps(String[] ips, LookupParameters<LookupExtra> lookupParameters) {
+        String requestHostname = lookupParameters.requestHostname;
+        if (ips.length > 0 && !lookupParameters.requestHostname.equals(lookupParameters.hostname) && requestHostname.split(",").length == 1) {
+            // 批量解析中单个域名下发请求的格式处理
+            List<String> list = new ArrayList<>();
+            for (String ip : ips) {
+                list.add(requestHostname + ":" + ip);
+            }
+            return list.toArray(new String[list.size()]);
+        } else {
+            return ips;
+        }
     }
 }

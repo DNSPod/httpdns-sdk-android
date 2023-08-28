@@ -66,6 +66,10 @@ public final class LookupContext<LookupExtra extends IDns.ILookupExtra> {
         return mLookupParams.hostname;
     }
 
+    public String requestHostname() {
+        return mLookupParams.requestHostname;
+    }
+
     public int timeoutMills() {
         return mLookupParams.timeoutMills;
     }

@@ -4,6 +4,7 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import com.tencent.msdk.dns.base.log.DnsLog;
+import com.tencent.msdk.dns.base.utils.CommonUtils;
 import com.tencent.msdk.dns.core.Const;
 import com.tencent.msdk.dns.core.DnsDescription;
 import com.tencent.msdk.dns.core.IDns;
@@ -42,11 +43,11 @@ public final class LocalDns implements IDns<IDns.ILookupExtra> {
         Statistics stat = new Statistics();
         stat.startLookup();
 
-        String[] ips = lookup(lookupParams.hostname);
+        String[] ips = lookup(lookupParams.requestHostname);
 
         stat.endLookup();
         stat.ips = ips;
-        return new LookupResult<>(ips, stat);
+        return new LookupResult<>(CommonUtils.templateIps(stat.ips, lookupParams), stat);
     }
 
     @Override
@@ -129,5 +130,9 @@ public final class LocalDns implements IDns<IDns.ILookupExtra> {
                     '}';
         }
 
+       @Override
+       public boolean lookupPartCached() {
+           return false;
+       }
     }
 }

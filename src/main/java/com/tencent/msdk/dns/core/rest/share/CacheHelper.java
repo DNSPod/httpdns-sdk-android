@@ -2,9 +2,9 @@ package com.tencent.msdk.dns.core.rest.share;
 
 import android.text.TextUtils;
 
+import com.tencent.msdk.dns.BackupResolver;
 import com.tencent.msdk.dns.BuildConfig;
 import com.tencent.msdk.dns.DnsService;
-import com.tencent.msdk.dns.BackupResolver;
 import com.tencent.msdk.dns.base.compat.CollectionCompat;
 import com.tencent.msdk.dns.base.executor.DnsExecutors;
 import com.tencent.msdk.dns.base.log.DnsLog;
@@ -90,7 +90,7 @@ public final class CacheHelper {
             return;
         }
 
-        final String[] hostnameArr = lookupParams.hostname.split(",");
+        final String[] hostnameArr = lookupParams.requestHostname.split(",");
         Map<String, List<String>> ipsWithHostname = new HashMap<>();
         if (hostnameArr.length > 1) {
             // 对批量域名返回值做处理
@@ -130,13 +130,6 @@ public final class CacheHelper {
             }
         }
 
-        if (hostnameArr.length > 1) {
-            // todo:批量域名的存储逻辑仍先保留。批量域名解析查询缓存仍以整个hostname为索引。
-            AbsRestDns.Statistics stat = new AbsRestDns.Statistics(rsp.ips, rsp.clientIp, rsp.ttl);
-            stat.errorCode = ErrorCode.SUCCESS;
-            mCache.add(lookupParams.hostname, new LookupResult<>(rsp.ips, stat));
-            cacheUpdateTask(lookupParams, rsp, lookupParams.hostname);
-        }
     }
 
     private void cacheUpdateTask(LookupParameters<LookupExtra> lookupParams, Response rsp, final String hostname) {

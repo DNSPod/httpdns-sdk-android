@@ -130,7 +130,7 @@ public class MSDKDnsResolver {
      * @param dnsKey  dns解析key，即授权id对应的 key（加密密钥），在申请 SDK 后的邮箱里，腾讯云官网（https://console.cloud.tencent.com/httpdns）申请获得，用于域名解析鉴权
      * @param dnsIp   由外部传入的dnsIp，可选："119.29.29.98"（仅支持 http 请求），"119.29.29.99"（仅支持 https 请求）以腾讯云文档（https://cloud.tencent.com/document/product/379/54976）提供的 IP 为准
      * @param debug   是否开启 debug 日志，true 为打开，false 为关闭，建议测试阶段打开，正式上线时关闭
-     * @param timeout dns请求超时时间，单位ms，建议设置1000
+     * @param timeout dns请求超时时间，单位ms，建议设置2000
      * @param channel 设置 channel，可选：DesHttp（默认）, AesHttp, Https
      * @param token   腾讯云官网（https://console.cloud.tencent.com/httpdns）申请获得，用于 HTTPS 校验
      */

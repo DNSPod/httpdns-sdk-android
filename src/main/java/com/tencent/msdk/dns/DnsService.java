@@ -8,7 +8,6 @@ import com.tencent.msdk.dns.base.lifecycle.ActivityLifecycleDetector;
 import com.tencent.msdk.dns.base.log.DnsLog;
 import com.tencent.msdk.dns.base.log.ILogNode;
 import com.tencent.msdk.dns.base.network.NetworkChangeManager;
-import com.tencent.msdk.dns.base.report.BeaconReporterInitParameters;
 import com.tencent.msdk.dns.base.report.IReporter;
 import com.tencent.msdk.dns.base.report.ReportManager;
 import com.tencent.msdk.dns.base.utils.CommonUtils;
@@ -92,11 +91,11 @@ public final class DnsService {
         ActivityLifecycleDetector.install(appContext);
         // Room 本地数据读取
         DnsExecutors.WORK.execute(new Runnable() {
-                @Override
-                public void run() {
-                    Cache.readFromDb();
-                }
-            });
+            @Override
+            public void run() {
+                Cache.readFromDb();
+            }
+        });
         ReportHelper.init(config);
         DnsExecutors.sExecutorSupplier = sConfig.executorSupplier;
         setLookedUpListener(config.lookedUpListener);
@@ -171,6 +170,7 @@ public final class DnsService {
 
     /**
      * 设置是否上报，是否启用域名服务（获取底层配置）
+     *
      * @param mEnableReport
      * @param mEnableDomainServer
      */
@@ -334,6 +334,7 @@ public final class DnsService {
             try {
                 JSONObject temp = new JSONObject(result);
                 long expiredTime = Long.parseLong(temp.get("expired_time").toString());
+                final String requestDomain = temp.get("request_name").toString();
                 long current = System.currentTimeMillis();
                 if (expiredTime < current) {
                     // 缓存过期，发起异步请求
@@ -341,7 +342,7 @@ public final class DnsService {
                         @Override
                         public void run() {
                             DnsLog.d("async look up send");
-                            getAddrsByName(domain, true, true);
+                            getAddrsByName(requestDomain, true, true);
                         }
                     });
                     // 缓存过期且不允许使用过期缓存

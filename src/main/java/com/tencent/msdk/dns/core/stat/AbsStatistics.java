@@ -12,6 +12,7 @@ public abstract class AbsStatistics implements IDns.IStatistics {
      * 域名解析结果
      */
     public String[] ips = Const.EMPTY_IPS;
+
     /**
      * 域名解析结果
      */
@@ -31,6 +32,10 @@ public abstract class AbsStatistics implements IDns.IStatistics {
 
     public void endLookup() {
         costTimeMills = (int) (System.currentTimeMillis() - startLookupTimeMills);
+    }
+
+    public boolean lookupPartCached() {
+        return false;
     }
 
     @Override
