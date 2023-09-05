@@ -53,6 +53,21 @@ public final class Cache implements ICache {
         }
     }
 
+    public void clearCache(String hostname) {
+        if (TextUtils.isEmpty(hostname)) {
+            CacheHolder.instance.clear();
+        } else {
+            String[] hostnameArr = hostname.split(",");
+            if(hostnameArr.length > 1) {
+                for(String tempHostname: hostnameArr) {
+                    CacheHolder.instance.delete(tempHostname);
+                }
+            } else {
+                CacheHolder.instance.delete(hostname);
+            }
+        }
+    }
+
     @Override
     public LookupResult get(String hostname) {
         if (TextUtils.isEmpty(hostname)) {
