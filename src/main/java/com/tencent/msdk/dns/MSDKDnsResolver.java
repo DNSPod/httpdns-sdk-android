@@ -413,10 +413,10 @@ public class MSDKDnsResolver {
     /**
      * 清除指定域名缓存，hostname为null时清除所有域名缓存
      *
-     * @param hostname 指定域名，多个域名用,分割
+     * @param domain 指定域名，多个域名用,分割
      */
-    public void clearHostCache(@Nullable String hostname) {
-        Cache.getInstance().clearCache(hostname);
+    public void clearHostCache(@Nullable String domain) {
+        Cache.getInstance().clearCache(domain);
     }
 
     @SuppressWarnings("unused")
