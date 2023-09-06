@@ -29,7 +29,7 @@ public abstract class AbsRestDns implements IDns<LookupExtra> {
     protected static final int TCP_CONTINUOUS_RCV_BUF_SIZE = 1024;
     protected static final int RCV_ZERO_MAX = 128;
 
-    protected final CacheHelper mCacheHelper = new CacheHelper(this, new Cache());
+    protected final CacheHelper mCacheHelper = new CacheHelper(this);
 
     // NOTE: stat: 结果参数
     protected boolean tryGetResultFromCache(

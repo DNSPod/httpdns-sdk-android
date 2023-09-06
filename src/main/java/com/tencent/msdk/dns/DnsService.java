@@ -93,7 +93,7 @@ public final class DnsService {
         DnsExecutors.WORK.execute(new Runnable() {
             @Override
             public void run() {
-                Cache.readFromDb();
+                Cache.getInstance().readFromDb();
             }
         });
         ReportHelper.init(config);

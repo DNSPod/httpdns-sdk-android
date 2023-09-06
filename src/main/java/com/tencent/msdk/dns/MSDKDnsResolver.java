@@ -3,6 +3,8 @@ package com.tencent.msdk.dns;
 import android.content.Context;
 import android.util.Log;
 
+import androidx.annotation.Nullable;
+
 import com.tencent.msdk.dns.base.executor.DnsExecutors;
 import com.tencent.msdk.dns.base.jni.JniWrapper;
 import com.tencent.msdk.dns.base.log.DnsLog;
@@ -11,6 +13,7 @@ import com.tencent.msdk.dns.base.utils.CommonUtils;
 import com.tencent.msdk.dns.base.utils.NetworkStack;
 import com.tencent.msdk.dns.core.Const;
 import com.tencent.msdk.dns.core.IpSet;
+import com.tencent.msdk.dns.core.cache.Cache;
 
 public class MSDKDnsResolver {
     public static final String DES_HTTP_CHANNEL = Const.DES_HTTP_CHANNEL;
@@ -398,6 +401,22 @@ public class MSDKDnsResolver {
     public int getNetworkStack() {
         DnsLog.v("MSDKDnsResolver.getNetworkStack() called.");
         return NetworkStack.get();
+    }
+
+    /**
+     * 清除所有缓存
+     */
+    public void clearHostCache() {
+        clearHostCache(null);
+    }
+
+    /**
+     * 清除指定域名缓存，hostname为null时清除所有域名缓存
+     *
+     * @param domain 指定域名，多个域名用,分割
+     */
+    public void clearHostCache(@Nullable String domain) {
+        Cache.getInstance().clearCache(domain);
     }
 
     @SuppressWarnings("unused")
