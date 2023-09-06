@@ -406,8 +406,8 @@ public class MSDKDnsResolver {
     /**
      * 清除所有缓存
      */
-    public void clearCache() {
-        clearCache(null);
+    public void clearHostCache() {
+        clearHostCache(null);
     }
 
     /**
@@ -415,7 +415,7 @@ public class MSDKDnsResolver {
      *
      * @param hostname 指定域名，多个域名用,分割
      */
-    public void clearCache(@Nullable String hostname) {
+    public void clearHostCache(@Nullable String hostname) {
         Cache.getInstance().clearCache(hostname);
     }
 
