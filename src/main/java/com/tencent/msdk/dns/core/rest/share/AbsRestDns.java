@@ -10,7 +10,6 @@ import com.tencent.msdk.dns.core.IDns;
 import com.tencent.msdk.dns.core.LookupContext;
 import com.tencent.msdk.dns.core.LookupParameters;
 import com.tencent.msdk.dns.core.LookupResult;
-import com.tencent.msdk.dns.core.cache.Cache;
 import com.tencent.msdk.dns.core.rest.share.rsp.Response;
 import com.tencent.msdk.dns.core.stat.AbsStatistics;
 

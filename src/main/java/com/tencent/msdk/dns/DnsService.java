@@ -286,7 +286,6 @@ public final class DnsService {
                             .enableAsyncLookup(enableAsyncLookup)
                             .customNetStack(sConfig.customNetStack)
                             .build());
-            ReportHelper.reportLookupMethodCalledEvent(lookupResult);
             return lookupResult.ipSet;
         }
         if (fallback2Local) {

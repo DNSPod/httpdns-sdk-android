@@ -14,7 +14,6 @@ import com.tencent.msdk.dns.base.log.DnsLog;
 import com.tencent.msdk.dns.base.report.ReportManager;
 import com.tencent.msdk.dns.base.utils.CommonUtils;
 import com.tencent.msdk.dns.core.Const;
-import com.tencent.msdk.dns.core.IpSet;
 import com.tencent.msdk.dns.core.LookupResult;
 import com.tencent.msdk.dns.core.stat.StatisticsMerge;
 
@@ -58,7 +57,7 @@ public final class ReportHelper {
         attaReportLookupEvent(ReportConst.PRE_LOOKUP_EVENT_NAME, lookupResult);
 
         // NOTE: 上报字段增减, 记得修改capacity
-        Map<String, String> preLookupEventMap = CollectionCompat.createMap(24);
+        Map<String, String> preLookupEventMap = CollectionCompat.createMap(16);
         StatisticsMerge statMerge = (StatisticsMerge) lookupResult.stat;
 
         preLookupEventMap.put(ReportConst.CHANNEL_KEY, sDnsConfig.channel);
@@ -110,13 +109,13 @@ public final class ReportHelper {
         }
 
         // NOTE: 上报字段增减, 记得修改capacity
-        Map<String, String> lookupMethodCalledEventMap = CollectionCompat.createMap(29);
+        Map<String, String> lookupMethodCalledEventMap = CollectionCompat.createMap(20);
 
-        IpSet ipSet = lookupResult.ipSet;
-        lookupMethodCalledEventMap.put(ReportConst.INET_LOOKUP_IPS_KEY,
-                CommonUtils.toStringList(ipSet.v4Ips, ReportConst.IP_SPLITTER));
-        lookupMethodCalledEventMap.put(ReportConst.INET6_LOOKUP_IPS_KEY,
-                CommonUtils.toStringList(ipSet.v6Ips, ReportConst.IP_SPLITTER));
+//        IpSet ipSet = lookupResult.ipSet;
+//        lookupMethodCalledEventMap.put(ReportConst.INET_LOOKUP_IPS_KEY,
+//                CommonUtils.toStringList(ipSet.v4Ips, ReportConst.IP_SPLITTER));
+//        lookupMethodCalledEventMap.put(ReportConst.INET6_LOOKUP_IPS_KEY,
+//                CommonUtils.toStringList(ipSet.v6Ips, ReportConst.IP_SPLITTER));
 
         lookupMethodCalledEventMap.put(ReportConst.CHANNEL_KEY, statMerge.channel);
         lookupMethodCalledEventMap.put(ReportConst.NETWORK_TYPE_KEY, statMerge.netType);
