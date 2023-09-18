@@ -180,6 +180,17 @@ public final class StatisticsMerge implements IStatisticsMerge<LookupExtra> {
 
     @Override
     public String toString() {
-        return super.toString() + "{" + "netType='" + netType + '\'' + ", hostname='" + hostname + '\'' + ", channel='" + channel + '\'' + ", curNetStack=" + curNetStack + ", localDnsStat=" + localDnsStat + ", restDnsStat=" + restDnsStat + ", ipSet=" + ipSet + ", lookupSuccess=" + lookupSuccess + ", lookupGetEmptyResponse=" + lookupFailed + ", hasBeenMerge=" + hasBeenMerge + '}';
+        return super.toString() + "{" +
+                "netType='" + netType + '\'' +
+                ", hostname='" + hostname + '\'' +
+                ", channel='" + channel + '\'' +
+                ", curNetStack=" + curNetStack +
+                ", localDnsStat=" + localDnsStat +
+                ", restDnsStat=" + restDnsStat +
+                ", ipSet=" + ipSet +
+                ", lookupSuccess=" + lookupSuccess +
+                ", lookupGetEmptyResponse=" + lookupFailed +
+                ", hasBeenMerge=" + hasBeenMerge +
+                '}';
     }
 }
