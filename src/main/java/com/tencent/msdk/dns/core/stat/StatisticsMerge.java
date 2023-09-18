@@ -2,7 +2,6 @@ package com.tencent.msdk.dns.core.stat;
 
 import android.content.Context;
 
-import com.tencent.msdk.dns.DnsService;
 import com.tencent.msdk.dns.base.log.DnsLog;
 import com.tencent.msdk.dns.base.utils.CommonUtils;
 import com.tencent.msdk.dns.base.utils.NetworkUtils;
@@ -114,17 +113,10 @@ public final class StatisticsMerge implements IStatisticsMerge<LookupExtra> {
         } else {
             restDnsStat = (AbsRestDns.Statistics) stat;
         }
-        // 1. 当httpdns和localdns都endLookup时，即costTimeMills不等于初始值0，即为两个线程解析结束，进行上报。
-        // 2. 当允许使用过期缓存配置下(httponly)，httpdns异步请求完成时，进行上报。
-        // 3. 当httpdns解析完成，（非异步请求）命中缓存时，进行上报。
-        if ((restDnsStat.costTimeMills > 0 && localDnsStat.costTimeMills > 0)
-                || DnsService.getDnsConfig().useExpiredIpEnable
-                || restDnsStat.cached) {
-            // 上报数据处理，上报仅使用statisticsMerge类。IpSet使用IpSet.EMPTY传参。
-            LookupResult<IStatisticsMerge> lookupResult = new LookupResult<IStatisticsMerge>(IpSet.EMPTY, this);
-            DnsLog.d("TESTTTTT------" + lookupResult);
-            ReportHelper.reportLookupMethodCalledEvent(lookupResult);
-        }
+
+        // 上报数据处理，上报仅使用statisticsMerge类。IpSet使用IpSet.EMPTY传参。
+        LookupResult<IStatisticsMerge> lookupResult = new LookupResult<IStatisticsMerge>(IpSet.EMPTY, this);
+        ReportHelper.reportLookupMethodCalledEvent(lookupResult);
     }
 
     @Override

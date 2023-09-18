@@ -97,15 +97,19 @@ public final class ReportHelper {
         }
         StatisticsMerge statMerge = (StatisticsMerge) lookupResult.stat;
 
+        // 1. 当httpdns解析完成，（非异步请求）命中缓存时，进行上报。
+        // 2. 当允许使用过期缓存配置下(httponly)，httpdns异步请求完成时，进行上报。
+        // 3. 当httpdns和localdns都endLookup时，即costTimeMills不等于初始值0，即为两个线程解析结束，进行上报。
+        // 其他，返回不再打印
         if (statMerge.restDnsStat.cached) {
             // 命中缓存的数据，统计上报
             CacheStatisticsReport.add(lookupResult);
+        } else if (sDnsConfig.useExpiredIpEnable) {
+            attaReportLookupEvent(ReportConst.EXPIRED_ASYNC_LOOKUP_EVENT_NAME, lookupResult);
+        } else if (statMerge.restDnsStat.costTimeMills > 0 && statMerge.localDnsStat.costTimeMills > 0) {
+            attaReportLookupEvent(ReportConst.LOOKUP_METHOD_CALLED_EVENT_NAME, lookupResult);
         } else {
-            if (sDnsConfig.useExpiredIpEnable) {
-                attaReportLookupEvent(ReportConst.EXPIRED_ASYNC_LOOKUP_EVENT_NAME, lookupResult);
-            } else {
-                attaReportLookupEvent(ReportConst.LOOKUP_METHOD_CALLED_EVENT_NAME, lookupResult);
-            }
+            return;
         }
 
         // NOTE: 上报字段增减, 记得修改capacity
