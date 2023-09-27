@@ -104,13 +104,17 @@ public final class CacheHelper {
 
 
         for (final String hostname : hostnameArr) {
-            List<String> ipsList= ipsWithHostname.get(hostname);
+            List<String> ipsList = ipsWithHostname.get(hostname);
             if (ipsList != null) {
                 String[] ips = ipsList.toArray(new String[0]);
-                AbsRestDns.Statistics stat = new AbsRestDns.Statistics(ips, rsp.clientIp, rsp.ttl);
+                final int ttlOfHostname = hostnameArr.length > 1 ? rsp.ttl.get(hostname) : rsp.ttl.get("onehost");
+                Map<String, Integer> ttl = new HashMap<String, Integer>() {{
+                    put(hostname, ttlOfHostname);
+                }};
+                AbsRestDns.Statistics stat = new AbsRestDns.Statistics(ips, rsp.clientIp, ttl);
                 stat.errorCode = ErrorCode.SUCCESS;
                 mCache.add(hostname, new LookupResult<>(ips, stat));
-                cacheUpdateTask(lookupParams, rsp, hostname);
+                cacheUpdateTask(lookupParams, ttlOfHostname, hostname);
 
                 // 发起IP优选服务
                 mIpRankHelper.ipv4Rank(hostname, ips, new IpRankCallback() {
@@ -129,7 +133,7 @@ public final class CacheHelper {
 
     }
 
-    private void cacheUpdateTask(LookupParameters<LookupExtra> lookupParams, Response rsp, final String hostname) {
+    private void cacheUpdateTask(LookupParameters<LookupExtra> lookupParams, int ttl, final String hostname) {
         PendingTasks pendingTasks = mHostnamePendingTasksMap.get(hostname);
         if (null != pendingTasks) {
             if (null != pendingTasks.removeExpiredCacheTask) {
@@ -180,7 +184,7 @@ public final class CacheHelper {
             pendingTasks.asyncLookupTask = asyncLookupTask;
             mPendingTasks.add(asyncLookupTask);
             DnsExecutors.MAIN.schedule(
-                    asyncLookupTask, (long) (ASYNC_LOOKUP_FACTOR * rsp.ttl * 1000));
+                    asyncLookupTask, (long) (ASYNC_LOOKUP_FACTOR * ttl * 1000));
         } else {
             // 不允许使用过期缓存时，ttl*100%应执行缓存清空任务。
             final boolean useExpiredIpEnable = DnsService.getDnsConfig().useExpiredIpEnable;
@@ -195,7 +199,7 @@ public final class CacheHelper {
                 };
                 pendingTasks.removeExpiredCacheTask = removeExpiredCacheTask;
                 mPendingTasks.add(removeExpiredCacheTask);
-                DnsExecutors.MAIN.schedule(removeExpiredCacheTask, (long) (rsp.ttl * 1000));
+                DnsExecutors.MAIN.schedule(removeExpiredCacheTask, (long) (ttl * 1000));
             }
         }
 

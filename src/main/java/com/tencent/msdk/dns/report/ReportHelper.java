@@ -237,11 +237,11 @@ public final class ReportHelper {
             String reqType = AttaHelper.getReqType(statMerge.curNetStack);
             if (errCount > 0) {
                 // 为空的缓存统计项上报，解析结果不上报
-                DnsExecutors.MAIN.execute(AttaHelper.report(carrierCode, statMerge.netType, sDnsConfig.lookupExtra.bizId, sDnsConfig.appId, sDnsConfig.channel, ReportConst.LOOKUP_FROM_CACHED_EVENT_NAME, System.currentTimeMillis(), dnsIp, spendAvg, statMerge.hostname, reqType, sDnsConfig.timeoutMills, 0, 3, 0, true, errCount, null, null));
+                DnsExecutors.MAIN.execute(AttaHelper.report(carrierCode, statMerge.netType, sDnsConfig.lookupExtra.bizId, sDnsConfig.appId, sDnsConfig.channel, ReportConst.LOOKUP_FROM_CACHED_EVENT_NAME, System.currentTimeMillis(), dnsIp, spendAvg, statMerge.hostname, reqType, sDnsConfig.timeoutMills, null, 3, 0, true, errCount, null, null));
             }
             if (curCount > 0) {
                 // 有值的缓存统计项上报，解析结果不上报
-                DnsExecutors.MAIN.execute(AttaHelper.report(carrierCode, statMerge.netType, sDnsConfig.lookupExtra.bizId, sDnsConfig.appId, sDnsConfig.channel, ReportConst.LOOKUP_FROM_CACHED_EVENT_NAME, System.currentTimeMillis(), dnsIp, spendAvg, statMerge.hostname, reqType, sDnsConfig.timeoutMills, 0, 0, 0, true, curCount, null, null));
+                DnsExecutors.MAIN.execute(AttaHelper.report(carrierCode, statMerge.netType, sDnsConfig.lookupExtra.bizId, sDnsConfig.appId, sDnsConfig.channel, ReportConst.LOOKUP_FROM_CACHED_EVENT_NAME, System.currentTimeMillis(), dnsIp, spendAvg, statMerge.hostname, reqType, sDnsConfig.timeoutMills, null, 0, 0, true, curCount, null, null));
             }
         }
     }

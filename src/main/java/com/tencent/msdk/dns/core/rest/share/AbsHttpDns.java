@@ -145,7 +145,7 @@ public abstract class AbsHttpDns extends AbsRestDns {
             //  返回值正常处理
             mCacheHelper.put(lookupParams, rsp);
             stat.errorCode = ErrorCode.SUCCESS;
-            stat.expiredTime = System.currentTimeMillis() + rsp.ttl * 1000;
+            stat.expiredTime = stat.getExpiredTime(rsp.ttl);
         } catch (Exception e) {
             DnsLog.d(e, getTag() + "lookup failed");
         } finally {

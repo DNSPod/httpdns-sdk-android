@@ -10,7 +10,6 @@ import com.tencent.msdk.dns.core.IDns;
 import com.tencent.msdk.dns.core.LookupContext;
 import com.tencent.msdk.dns.core.LookupParameters;
 import com.tencent.msdk.dns.core.LookupResult;
-import com.tencent.msdk.dns.core.cache.Cache;
 import com.tencent.msdk.dns.core.rest.share.rsp.Response;
 import com.tencent.msdk.dns.core.stat.AbsStatistics;
 
@@ -20,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 负责缓存管理
@@ -53,8 +53,7 @@ public abstract class AbsRestDns implements IDns<LookupExtra> {
         boolean cached = true;
         // 未命中缓存的请求域名&乐观DNS场景下，缓存过期需要请求的域名
         StringBuilder requestHostname = new StringBuilder();
-        int ttl = 600;
-        long expiredTime = System.currentTimeMillis() + ttl * 1000;
+        Map<String, Integer> ttl = null;
         String clientIp = "";
         boolean useExpiredIpEnable = DnsService.getDnsConfig().useExpiredIpEnable;
         if (hostnameArr.length > 1) {
@@ -65,8 +64,7 @@ public abstract class AbsRestDns implements IDns<LookupExtra> {
                         tempCachedips.add(hostname + ":" + ip);
                     }
                     Statistics cachedStat = (Statistics) lookupResult.stat;
-                    ttl = Math.min(ttl, cachedStat.ttl);
-                    expiredTime = Math.min(expiredTime, cachedStat.expiredTime);
+                    ttl.put(hostname, cachedStat.ttl.get(hostname));
                     clientIp = cachedStat.clientIp;
                     if (useExpiredIpEnable && cachedStat.expiredTime < System.currentTimeMillis()) {
                         requestHostname.append(hostname).append(',');
@@ -86,7 +84,6 @@ public abstract class AbsRestDns implements IDns<LookupExtra> {
                 stat.ips = tempIps;
                 Statistics cachedStat = (Statistics) lookupResult.stat;
                 ttl = cachedStat.ttl;
-                expiredTime = cachedStat.expiredTime;
                 clientIp = cachedStat.clientIp;
                 if (useExpiredIpEnable && cachedStat.expiredTime < System.currentTimeMillis()) {
                     requestHostname = new StringBuilder(hostnameArr[0]);
@@ -106,7 +103,7 @@ public abstract class AbsRestDns implements IDns<LookupExtra> {
             stat.errorCode = ErrorCode.SUCCESS;
             stat.clientIp = clientIp;
             stat.ttl = ttl;
-            stat.expiredTime = expiredTime;
+            stat.expiredTime = stat.getExpiredTime(ttl);
             DnsLog.d("Lookup for %s, cache hit", lookupParams.hostname);
             return true;
         }
@@ -234,7 +231,7 @@ public abstract class AbsRestDns implements IDns<LookupExtra> {
 //                }
                 mStat.clientIp = rsp.clientIp;
                 mStat.ttl = rsp.ttl;
-                mStat.expiredTime = System.currentTimeMillis() + rsp.ttl * 1000L;
+                mStat.expiredTime = mStat.getExpiredTime(rsp.ttl);
                 mStat.ips = rsp.ips;
             } finally {
                 if (rsp != Response.NEED_CONTINUE) {
@@ -408,7 +405,7 @@ public abstract class AbsRestDns implements IDns<LookupExtra> {
         /**
          * 解析结果TTL(缓存有效时间), 单位s
          */
-        public int ttl = Const.DEFAULT_TIME_INTERVAL;
+        public Map<String, Integer> ttl = null;
 
         public long expiredTime = 0;
         /**
@@ -434,21 +431,32 @@ public abstract class AbsRestDns implements IDns<LookupExtra> {
         public Statistics() {
         }
 
-        Statistics(String[] ips, String clientIp, int ttl) {
+        Statistics(String[] ips, String clientIp, Map<String, Integer> ttl) {
             if (null == ips) {
                 throw new IllegalArgumentException("ips".concat(Const.NULL_POINTER_TIPS));
             }
             if (TextUtils.isEmpty(clientIp)) {
                 throw new IllegalArgumentException("clientIp".concat(Const.EMPTY_TIPS));
             }
-            if (Response.isTtlInvalid(ttl)) {
+            if (null == ttl) {
                 throw new IllegalArgumentException("ttl".concat(Const.INVALID_TIPS));
             }
 
             this.ips = ips;
             this.clientIp = clientIp;
             this.ttl = ttl;
-            this.expiredTime = System.currentTimeMillis() + ttl * 1000L;
+            this.expiredTime = getExpiredTime(ttl);
+        }
+
+        public long getExpiredTime(Map<String, Integer> ttl) {
+            int min = Const.MAX_DEFAULT_TTL;
+            for (String key : ttl.keySet()) {
+                int value = ttl.get(key);
+                if (!Response.isTtlInvalid(value)) {
+                    min = Math.min(value, min);
+                }
+            }
+            return System.currentTimeMillis() + min * 1000L;
         }
 
         @Override

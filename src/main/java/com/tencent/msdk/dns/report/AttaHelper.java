@@ -9,6 +9,7 @@ import com.tencent.msdk.dns.base.log.DnsLog;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.Map;
 
 
 /**
@@ -36,7 +37,7 @@ public class AttaHelper {
                                   final String req_dn,
                                   final String req_type,
                                   final long req_timeout,
-                                  final int req_ttl,
+                                  final Map<String, Integer> req_ttl,
                                   final long errorCode,
                                   final int statusCode,
                                   final boolean isCache,
@@ -67,7 +68,8 @@ public class AttaHelper {
                             + "&req_dn=" + req_dn
                             + "&req_type=" + req_type
                             + "&req_timeout=" + req_timeout
-                            + "&req_ttl=" + req_ttl
+                            // todo: ttl需处理，先上报0
+                            + "&req_ttl= 0"
                             + "&errorCode=" + errorCode
                             + "&statusCode=" + statusCode
                             + "&sessionId=" + SESSIONID
