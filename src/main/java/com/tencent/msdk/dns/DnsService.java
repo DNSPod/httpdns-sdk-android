@@ -333,10 +333,9 @@ public final class DnsService {
         } else {
             try {
                 JSONObject temp = new JSONObject(result);
-                long expiredTime = Long.parseLong(temp.get("expired_time").toString());
-                final String requestDomain = temp.get("request_name").toString();
-                long current = System.currentTimeMillis();
-                if (expiredTime < current) {
+                final String requestDomain = (String) temp.get("request_name");
+                // requestDomain为过期域名统计
+                if (!requestDomain.isEmpty()) {
                     // 缓存过期，发起异步请求
                     DnsExecutors.WORK.execute(new Runnable() {
                         @Override

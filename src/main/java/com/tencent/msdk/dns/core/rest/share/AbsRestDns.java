@@ -95,9 +95,13 @@ public abstract class AbsRestDns implements IDns<LookupExtra> {
             }
         }
 
-        if (requestHostname.length() > 0) {
+        if (useExpiredIpEnable) {
+            // 乐观DNS以requestHostname来判断过期域名
+            lookupParams.setRequestHostname(requestHostname.toString());
+        } else if (requestHostname.length() > 0) {
             lookupParams.setRequestHostname(requestHostname.toString());
         }
+
 
         if (cached) {
             stat.cached = true;
