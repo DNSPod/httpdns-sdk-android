@@ -95,12 +95,11 @@ public final class ResponseParser {
         // format: ip;ip;ip;...,ttl|client ip
         // like: www.qq.com.:121.14.77.221;121.14.77.201,120-2402:4e00:1020:1404:0:9227:71a3:83d2;2402:4e00:1020:1404:0:9227:71ab:2b74,120|113.108.77.69
         //  批量查询情况
-        Map<String, Integer> ttl = null;
+        Map<String, Integer> ttl = new HashMap<>();
         if (rspList.length > 1) {
             ArrayList<String> inet4IpsList = new ArrayList();
             ArrayList<String> inet6IpsList = new ArrayList();
             String clientIp = "";
-//            int ttl = 0;
             // 遍历
             for (String rsp : rspList) {
                 //  批量情况会携带域名信息
@@ -149,9 +148,8 @@ public final class ResponseParser {
                 String[] inet4Ips = rspMatcher.group(1).split(IP_SPLITTER);
                 String[] inet6Ips = rspMatcher.group(3).split(IP_SPLITTER);
                 // ttl先按ipv4, ipv6的最小值的获取
-                DnsLog.d("TEEESSSTTT------"+rspMatcher.group(2));
                 int value = Math.min(Integer.parseInt(rspMatcher.group(2)), Integer.parseInt(rspMatcher.group(4)));
-                ttl.put("onehost", 35);
+                ttl.put("onehost", value);
 
                 return new Response(clientIp, inet4Ips, inet6Ips, ttl);
             } catch (Exception e) {

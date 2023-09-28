@@ -18,6 +18,7 @@ import java.nio.channels.SelectionKey;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -53,7 +54,7 @@ public abstract class AbsRestDns implements IDns<LookupExtra> {
         boolean cached = true;
         // 未命中缓存的请求域名&乐观DNS场景下，缓存过期需要请求的域名
         StringBuilder requestHostname = new StringBuilder();
-        Map<String, Integer> ttl = null;
+//        Map<String, Integer> ttl = new HashMap<>();
         String clientIp = "";
         boolean useExpiredIpEnable = DnsService.getDnsConfig().useExpiredIpEnable;
         if (hostnameArr.length > 1) {
@@ -64,7 +65,7 @@ public abstract class AbsRestDns implements IDns<LookupExtra> {
                         tempCachedips.add(hostname + ":" + ip);
                     }
                     Statistics cachedStat = (Statistics) lookupResult.stat;
-                    ttl.put(hostname, cachedStat.ttl.get(hostname));
+//                    ttl.put(hostname, cachedStat.ttl.get(hostname));
                     clientIp = cachedStat.clientIp;
                     if (useExpiredIpEnable && cachedStat.expiredTime < System.currentTimeMillis()) {
                         requestHostname.append(hostname).append(',');
@@ -83,7 +84,7 @@ public abstract class AbsRestDns implements IDns<LookupExtra> {
             if (null != lookupResult && !CommonUtils.isEmpty(tempIps = lookupResult.ipSet.ips)) {
                 stat.ips = tempIps;
                 Statistics cachedStat = (Statistics) lookupResult.stat;
-                ttl = cachedStat.ttl;
+//                ttl = cachedStat.ttl;
                 clientIp = cachedStat.clientIp;
                 if (useExpiredIpEnable && cachedStat.expiredTime < System.currentTimeMillis()) {
                     requestHostname = new StringBuilder(hostnameArr[0]);
@@ -102,8 +103,8 @@ public abstract class AbsRestDns implements IDns<LookupExtra> {
             stat.cached = true;
             stat.errorCode = ErrorCode.SUCCESS;
             stat.clientIp = clientIp;
-            stat.ttl = ttl;
-            stat.expiredTime = stat.getExpiredTime(ttl);
+//            stat.ttl = ttl;
+//            stat.expiredTime = stat.getExpiredTime(ttl);
             DnsLog.d("Lookup for %s, cache hit", lookupParams.hostname);
             return true;
         }
@@ -405,7 +406,7 @@ public abstract class AbsRestDns implements IDns<LookupExtra> {
         /**
          * 解析结果TTL(缓存有效时间), 单位s
          */
-        public Map<String, Integer> ttl = null;
+        public transient Map<String, Integer> ttl = new HashMap<>();
 
         public long expiredTime = 0;
         /**
@@ -438,7 +439,7 @@ public abstract class AbsRestDns implements IDns<LookupExtra> {
             if (TextUtils.isEmpty(clientIp)) {
                 throw new IllegalArgumentException("clientIp".concat(Const.EMPTY_TIPS));
             }
-            if (null == ttl) {
+            if (ttl.isEmpty()) {
                 throw new IllegalArgumentException("ttl".concat(Const.INVALID_TIPS));
             }
 
@@ -449,6 +450,9 @@ public abstract class AbsRestDns implements IDns<LookupExtra> {
         }
 
         public long getExpiredTime(Map<String, Integer> ttl) {
+            if (ttl.isEmpty()) {
+                throw new IllegalArgumentException("ttl".concat(Const.INVALID_TIPS));
+            }
             int min = Const.MAX_DEFAULT_TTL;
             for (String key : ttl.keySet()) {
                 int value = ttl.get(key);

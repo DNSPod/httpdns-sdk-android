@@ -8,15 +8,18 @@ import com.tencent.msdk.dns.core.Const;
 import com.tencent.msdk.dns.core.DnsDescription;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Map;
 
 public final class Response {
 
+    static HashMap<String, Integer> DEFAULT_TTL = new HashMap<>();
+
     public static final Response EMPTY =
-            new Response(Const.INVALID_IP, Const.EMPTY_IPS, null);
+            new Response(Const.INVALID_IP, Const.EMPTY_IPS, DEFAULT_TTL);
 
     public static final Response NEED_CONTINUE =
-            new Response(Const.INVALID_IP, Const.EMPTY_IPS, null);
+            new Response(Const.INVALID_IP, Const.EMPTY_IPS, DEFAULT_TTL);
 
     public final String clientIp;
     public final String[] ips;
@@ -37,9 +40,9 @@ public final class Response {
 //        if (CommonUtils.isEmpty(ips)) {
 //            throw new IllegalArgumentException("ips".concat(Const.EMPTY_TIPS));
 //        }
-//        if (isTtlInvalid(ttl)) {
-//            throw new IllegalArgumentException("ttl".concat(Const.INVALID_TIPS));
-//        }
+        if (ttl.isEmpty()) {
+            throw new IllegalArgumentException("ttl".concat(Const.INVALID_TIPS));
+        }
 
         this.clientIp = clientIp;
         this.ips = ips;
@@ -59,9 +62,9 @@ public final class Response {
         inet4Ips = fixIps(DnsDescription.Family.INET, inet4Ips);
         inet6Ips = fixIps(DnsDescription.Family.INET6, inet6Ips);
 
-//        if (isTtlInvalid(ttl)) {
-//            throw new IllegalArgumentException("ttl".concat(Const.INVALID_TIPS));
-//        }
+        if (ttl.isEmpty()) {
+            throw new IllegalArgumentException("ttl".concat(Const.INVALID_TIPS));
+        }
         int inet4IpsLength = inet4Ips.length;
         int inet6IpsLength = inet6Ips.length;
 
