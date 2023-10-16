@@ -183,6 +183,7 @@ public final class StatisticsMerge implements IStatisticsMerge<LookupExtra> {
         return super.toString() + "{" +
                 "netType='" + netType + '\'' +
                 ", hostname='" + hostname + '\'' +
+                ", requestHostname='" + requestHostname + '\'' +
                 ", channel='" + channel + '\'' +
                 ", curNetStack=" + curNetStack +
                 ", localDnsStat=" + localDnsStat +
