@@ -29,8 +29,7 @@ public final class ReportHelper {
         @Override
         public void run() {
             // atta上报统计数据
-            Map<String, Object[]> cacheStatisticsMap = CacheStatisticsReport.offerAll();
-            attaReportStatisticsEvent(cacheStatisticsMap);
+            attaReportStatisticsEvent();
             DnsExecutors.MAIN.cancel(sReportAsyncLookupEventTask);
             DnsExecutors.MAIN.schedule(
                     sReportAsyncLookupEventTask, REPORT_ASYNC_LOOKUP_EVENT_INTERVAL_MILLS);
@@ -223,8 +222,9 @@ public final class ReportHelper {
     }
 
 
-    private static void attaReportStatisticsEvent(Map<String, Object[]> cacheStatisticsMap) {
-        if (!sDnsConfig.enableReport) {
+    private static void attaReportStatisticsEvent() {
+        Map<String, Object[]> cacheStatisticsMap = CacheStatisticsReport.offerAll();
+        if (!sDnsConfig.enableReport || cacheStatisticsMap.isEmpty()) {
             return;
         }
         for (Map.Entry<String, Object[]> item : cacheStatisticsMap.entrySet()) {
