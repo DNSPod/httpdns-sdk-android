@@ -184,7 +184,7 @@ public final class DnsService {
 
     public static String getDnsDetail(String hostname) {
         String dnsIp = BackupResolver.getInstance().getDnsIp();
-        LookupResult<IStatisticsMerge> lookupResult = DnsManager.getResultFromCache(new LookupParameters.Builder<LookupExtra>()
+        final LookupResult<IStatisticsMerge> lookupResult = DnsManager.getResultFromCache(new LookupParameters.Builder<LookupExtra>()
                 .context(sAppContext)
                 .hostname(hostname)
                 .timeoutMills(sConfig.timeoutMills)
@@ -198,7 +198,12 @@ public final class DnsService {
                 .build());
 
         // 收集命中缓存的数据
-        CacheStatisticsReport.add(lookupResult);
+        DnsExecutors.WORK.execute(new Runnable() {
+            @Override
+            public void run() {
+                CacheStatisticsReport.add(lookupResult);
+            }
+        });
         StatisticsMerge statMerge = (StatisticsMerge) lookupResult.stat;
         return statMerge.toJsonResult();
     }

@@ -2,6 +2,7 @@ package com.tencent.msdk.dns.core.stat;
 
 import android.content.Context;
 
+import com.tencent.msdk.dns.base.executor.DnsExecutors;
 import com.tencent.msdk.dns.base.log.DnsLog;
 import com.tencent.msdk.dns.base.utils.CommonUtils;
 import com.tencent.msdk.dns.base.utils.NetworkUtils;
@@ -115,8 +116,14 @@ public final class StatisticsMerge implements IStatisticsMerge<LookupExtra> {
         }
 
         // 上报数据处理，上报仅使用statisticsMerge类。IpSet使用IpSet.EMPTY传参。
-        LookupResult<IStatisticsMerge> lookupResult = new LookupResult<IStatisticsMerge>(IpSet.EMPTY, this);
-        ReportHelper.reportLookupMethodCalledEvent(lookupResult);
+        final LookupResult<IStatisticsMerge> lookupResult = new LookupResult<IStatisticsMerge>(IpSet.EMPTY, this);
+        DnsExecutors.WORK.execute(new Runnable() {
+            @Override
+            public void run() {
+                ReportHelper.reportLookupMethodCalledEvent(lookupResult);
+            }
+        });
+
     }
 
     @Override

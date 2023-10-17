@@ -3,6 +3,7 @@ package com.tencent.msdk.dns.core;
 import android.os.SystemClock;
 
 import com.tencent.msdk.dns.base.compat.CollectionCompat;
+import com.tencent.msdk.dns.base.executor.DnsExecutors;
 import com.tencent.msdk.dns.base.log.DnsLog;
 import com.tencent.msdk.dns.base.utils.NetworkStack;
 import com.tencent.msdk.dns.core.local.LocalDns;
@@ -239,14 +240,20 @@ public final class DnsManager {
             // 暂时不忽略LocalDns解析结果(RestDns解析失败时，超时时间内会等待LocalDns解析结果)
             if (null != restDnsGroup) {
                 // 先查缓存，有其一即可
-                LookupResult<IStatisticsMerge> lookupResultFromCache = getResultFromCache(lookupParams);
+                final LookupResult<IStatisticsMerge> lookupResultFromCache = getResultFromCache(lookupParams);
                 DnsLog.d("getResultFromCache: " + lookupResultFromCache);
                 if (lookupResultFromCache.stat.lookupSuccess()) {
                     if (lookupResultFromCache.stat.lookupPartCached()) {
                         // 仅部分命中缓存
                         lookupContext.sorter().putPartCache(lookupResultFromCache.ipSet);
                         // 收集命中缓存的数据
-                        CacheStatisticsReport.add(lookupResultFromCache);
+                        DnsExecutors.WORK.execute(new Runnable() {
+                            @Override
+                            public void run() {
+                                CacheStatisticsReport.add(lookupResultFromCache);
+                            }
+                        });
+
                     } else {
                         lookupResultHolder.mLookupResult = lookupResultFromCache;
                         DnsLog.d("DnsManager lookup getResultFromCache success");
