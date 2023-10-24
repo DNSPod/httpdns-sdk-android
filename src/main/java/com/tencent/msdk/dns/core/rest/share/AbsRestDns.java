@@ -183,8 +183,8 @@ public abstract class AbsRestDns implements IDns<LookupExtra> {
             try {
                 connectRes = connectInternal();
             } finally {
-                if (connectRes != NonBlockResult.NON_BLOCK_RESULT_NEED_CONTINUE &&
-                        State.ENDED != mState) {
+                if (connectRes != NonBlockResult.NON_BLOCK_RESULT_NEED_CONTINUE
+                        && State.ENDED != mState) {
                     mState = State.WRITABLE;
                 }
             }
