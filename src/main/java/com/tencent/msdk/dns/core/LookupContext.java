@@ -242,16 +242,16 @@ public final class LookupContext<LookupExtra extends IDns.ILookupExtra> {
 
     @Override
     public String toString() {
-        return "LookupContext{" +
-                "mLookupParams=" + mLookupParams +
-                ", mCurNetStack=" + mCurNetStack +
-                ", mSorter=" + mSorter +
-                ", mStatMerge=" + mStatMerge +
-                ", mTransaction=" + mTransaction +
-                ", mCountDownLatch=" + mCountDownLatch +
-                ", mSelector=" + mSelector +
-                ", mDnses=" + mDnses +
-                ", mSessions=" + mSessions +
-                '}';
+        return "LookupContext{"
+                + "mLookupParams=" + mLookupParams
+                + ", mCurNetStack=" + mCurNetStack
+                + ", mSorter=" + mSorter
+                + ", mStatMerge=" + mStatMerge
+                + ", mTransaction=" + mTransaction
+                + ", mCountDownLatch=" + mCountDownLatch
+                + ", mSelector=" + mSelector
+                + ", mDnses=" + mDnses
+                + ", mSessions=" + mSessions
+                + '}';
     }
 }
