@@ -114,30 +114,30 @@ public final class DnsConfig {
 
     @Override
     public String toString() {
-        return "DnsConfig{" +
-                "logLevel=" + logLevel +
-                ", appId='" + appId + '\'' +
-                ", userId='" + userId + '\'' +
-                ", lookupExtra=" + lookupExtra +
-                ", timeoutMills=" + timeoutMills +
-                ", protectedDomains=" + CommonUtils.toString(protectedDomains) +
-                ", preLookupDomains=" + CommonUtils.toString(preLookupDomains) +
-                ", enablePersistentCache=" + enablePersistentCache +
-                ", persistentCacheDomains=" + CommonUtils.toString(persistentCacheDomains) +
-                ", IpRankItems=" + CommonUtils.toString(ipRankItems) +
-                ", channel='" + channel + '\'' +
-                ", enableReport='" + enableReport + '\'' +
-                ", blockFirst=" + blockFirst +
-                ", customNetStack=" + customNetStack +
-                ", executorSupplier=" + executorSupplier +
-                ", lookedUpListener=" + lookedUpListener +
-                ", logNodes=" + CommonUtils.toString(logNodes) +
-                ", reporters=" + CommonUtils.toString(reporters) +
-                ", useExpiredIpEnable=" + useExpiredIpEnable +
-                ", cachedIpEnable=" + cachedIpEnable +
-                ", enableDomainServer=" + enableDomainServer +
-                ", routeIp=" + routeIp +
-                '}';
+        return "DnsConfig{"
+                + "logLevel=" + logLevel
+                + ", appId='" + appId + '\''
+                + ", userId='" + userId + '\''
+                + ", lookupExtra=" + lookupExtra
+                + ", timeoutMills=" + timeoutMills
+                + ", protectedDomains=" + CommonUtils.toString(protectedDomains)
+                + ", preLookupDomains=" + CommonUtils.toString(preLookupDomains)
+                + ", enablePersistentCache=" + enablePersistentCache
+                + ", persistentCacheDomains=" + CommonUtils.toString(persistentCacheDomains)
+                + ", IpRankItems=" + CommonUtils.toString(ipRankItems)
+                + ", channel='" + channel + '\''
+                + ", enableReport='" + enableReport + '\''
+                + ", blockFirst=" + blockFirst
+                + ", customNetStack=" + customNetStack
+                + ", executorSupplier=" + executorSupplier
+                + ", lookedUpListener=" + lookedUpListener
+                + ", logNodes=" + CommonUtils.toString(logNodes)
+                + ", reporters=" + CommonUtils.toString(reporters)
+                + ", useExpiredIpEnable=" + useExpiredIpEnable
+                + ", cachedIpEnable=" + cachedIpEnable
+                + ", enableDomainServer=" + enableDomainServer
+                + ", routeIp=" + routeIp
+                + '}';
     }
 
     /* @VisibleForTesting */
@@ -342,7 +342,8 @@ public final class DnsConfig {
         /**
          * 设置DnsKey
          *
-         * @param dnsKey dnsKey, 即HTTPDNS服务的授权Id对应的加密密钥, 从<a href="https://console.cloud.tencent.com/HttpDNS">腾讯云官网</a>申请获得
+         * @param dnsKey dnsKey, 即HTTPDNS服务的授权Id对应的加密密钥, 从<a href="https://console.cloud.tencent.com/HttpDNS">腾讯云官网</a>
+         *               申请获得
          * @return 当前Builder实例, 方便链式调用
          * @throws IllegalArgumentException dnsKey为空时抛出
          */
@@ -690,8 +691,10 @@ public final class DnsConfig {
          * 允许使用过期缓存
          *
          * @param useExpiredIpEnable 默认false，解析时先取未过期的缓存结果，不满足则等待解析请求完成后返回解析结果
-         *                           设置为true时，会直接返回缓存的解析结果，没有缓存则返回0;0，用户可使用localdns（InetAddress）进行兜底。且在无缓存结果或缓存已过期时，会异步发起解析请求更新缓存。
-         *                           因异步API（getAddrByNameAsync，getAddrsByNameAsync）逻辑在回调中始终返回未过期的解析结果，设置为true时，异步API不可使用。建议使用同步API （getAddrByName，getAddrsByName）
+         *                           设置为true时，会直接返回缓存的解析结果，没有缓存则返回0;
+         *                           0，用户可使用localdns（InetAddress）进行兜底。且在无缓存结果或缓存已过期时，会异步发起解析请求更新缓存。
+         *                           因异步API（getAddrByNameAsync，getAddrsByNameAsync）逻辑在回调中始终返回未过期的解析结果，设置为true时，异步API
+         *                           不可使用。建议使用同步API （getAddrByName，getAddrsByName）
          * @return 当前Builder实例, 方便链式调用
          */
         public Builder setUseExpiredIpEnable(boolean useExpiredIpEnable) {

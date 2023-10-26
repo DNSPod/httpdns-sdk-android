@@ -75,6 +75,12 @@ public final class CacheHelper {
         mCache.add(hostname, lookupResult);
     }
 
+    /**
+     * 解析结果处理，缓存管理，IP优选
+     *
+     * @param lookupParams 解析参数
+     * @param rsp          解析返回结果
+     */
     public void put(LookupParameters<LookupExtra> lookupParams, Response rsp) {
         if (null == lookupParams) {
             throw new IllegalArgumentException("lookupParams".concat(Const.NULL_POINTER_TIPS));
@@ -104,7 +110,7 @@ public final class CacheHelper {
 
 
         for (final String hostname : hostnameArr) {
-            List<String> ipsList= ipsWithHostname.get(hostname);
+            List<String> ipsList = ipsWithHostname.get(hostname);
             if (ipsList != null) {
                 String[] ips = ipsList.toArray(new String[0]);
                 AbsRestDns.Statistics stat = new AbsRestDns.Statistics(ips, rsp.clientIp, rsp.ttl);
@@ -195,7 +201,7 @@ public final class CacheHelper {
                 };
                 pendingTasks.removeExpiredCacheTask = removeExpiredCacheTask;
                 mPendingTasks.add(removeExpiredCacheTask);
-                DnsExecutors.MAIN.schedule(removeExpiredCacheTask, (long) (rsp.ttl * 1000));
+                DnsExecutors.MAIN.schedule(removeExpiredCacheTask, rsp.ttl * 1000L);
             }
         }
 

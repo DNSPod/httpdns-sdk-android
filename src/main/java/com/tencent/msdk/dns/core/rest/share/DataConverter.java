@@ -4,11 +4,11 @@ import android.text.TextUtils;
 
 public final class DataConverter {
 
-    private static final char[] DIGITS = new char[] {
+    private static final char[] DIGITS = new char[]{
             '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
 
     public static String bytes2HexString(byte[] bytes) {
-        if (null == bytes|| 0 == bytes.length) {
+        if (null == bytes || 0 == bytes.length) {
             return "";
         }
         char[] buf = new char[2 * bytes.length];
@@ -28,8 +28,8 @@ public final class DataConverter {
         int len = hexString.length();
         byte[] data = new byte[len / 2];
         for (int i = 0; i + 1 < len; i += 2) {
-            data[i / 2] = (byte) ((Character.digit(hexString.charAt(i), 16) << 4) +
-                    Character.digit(hexString.charAt(i + 1), 16));
+            data[i / 2] = (byte) ((Character.digit(hexString.charAt(i), 16) << 4)
+                    + Character.digit(hexString.charAt(i + 1), 16));
         }
         return data;
     }

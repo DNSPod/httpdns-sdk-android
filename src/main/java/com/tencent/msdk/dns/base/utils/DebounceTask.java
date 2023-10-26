@@ -8,24 +8,24 @@ public class DebounceTask {
     private Long delay;
     private Runnable runnable;
 
-    public DebounceTask(Runnable runnable,  Long delay) {
+    public DebounceTask(Runnable runnable, Long delay) {
         this.runnable = runnable;
         this.delay = delay;
     }
 
-    public static DebounceTask build(Runnable runnable, Long delay){
+    public static DebounceTask build(Runnable runnable, Long delay) {
         return new DebounceTask(runnable, delay);
     }
 
-    public void run(){
-        if(timer!=null){
+    public void run() {
+        if (timer != null) {
             timer.cancel();
         }
         timer = new Timer();
         timer.schedule(new TimerTask() {
             @Override
             public void run() {
-                timer=null;
+                timer = null;
                 runnable.run();
             }
         }, delay);

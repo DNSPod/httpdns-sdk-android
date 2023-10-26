@@ -33,11 +33,11 @@ public class AttaHelper {
                                   final long eventTime,
                                   final String dnsIp,
                                   final long spend,
-                                  final long ldns_spend,
-                                  final String req_dn,
-                                  final String req_type,
-                                  final long req_timeout,
-                                  final int req_ttl,
+                                  final long ldnsSpend,
+                                  final String reqDn,
+                                  final String reqType,
+                                  final long reqTimeout,
+                                  final int reqTtl,
                                   final long errorCode,
                                   final int statusCode,
                                   final boolean isCache,
@@ -65,11 +65,11 @@ public class AttaHelper {
                             + "&systemName=" + SYSTEMNANE
                             + "&systemVersion=" + SYSTEMVERSION
                             + "&spend=" + spend
-                            + "&ldns_spend=" + ldns_spend
-                            + "&req_dn=" + req_dn
-                            + "&req_type=" + req_type
-                            + "&req_timeout=" + req_timeout
-                            + "&req_ttl=" + req_ttl
+                            + "&ldns_spend=" + ldnsSpend
+                            + "&req_dn=" + reqDn
+                            + "&req_type=" + reqType
+                            + "&req_timeout=" + reqTimeout
+                            + "&req_ttl=" + reqTtl
                             + "&errorCode=" + errorCode
                             + "&statusCode=" + statusCode
                             + "&sessionId=" + SESSIONID
@@ -87,11 +87,11 @@ public class AttaHelper {
                     //设置读取超时时间（毫秒）
                     connection.setReadTimeout(2000);
                     connection.connect();
-                    int respCode = connection.getResponseCode();
                 } catch (IOException e) {
                     e.printStackTrace();
                 } finally {
-                    if (connection != null) {//关闭连接
+                    if (connection != null) {
+                        //关闭连接
                         connection.disconnect();
                         DnsLog.d("Atta上报关闭");
                     }
@@ -114,7 +114,7 @@ public class AttaHelper {
         } else {
             // 通过getSimOperator方法获取运营商设备信息
             carrierCode = tm.getSimOperator();    //mobile data
-            //String netOperator = tm.getNetworkOperator();	//Dial Net
+            // String netOperator = tm.getNetworkOperator();    //Dial Net
             return carrierCode;
         }
     }
@@ -154,6 +154,8 @@ public class AttaHelper {
                 break;
             case 3:
                 reqType = "dual";
+                break;
+            default:
                 break;
         }
         return reqType;

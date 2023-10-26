@@ -171,7 +171,8 @@ public final class DnsManager {
                     "The same lookup task(for %s) is running, just wait for it", lookupParams);
             CountDownLatch lookupLatch = lookupLatchResultPair.mLookupLatch;
             try {
-                if (lookupLatch.await((long) (AWAIT_FOR_RUNNING_LOOKUP_FACTOR * lookupParams.timeoutMills), TimeUnit.MILLISECONDS)) {
+                if (lookupLatch.await((long) (AWAIT_FOR_RUNNING_LOOKUP_FACTOR * lookupParams.timeoutMills),
+                        TimeUnit.MILLISECONDS)) {
                     // NOTE: await之后mLookupResult不为null
                     return lookupLatchResultPair.mLookupResultHolder.mLookupResult;
                 }
@@ -180,8 +181,8 @@ public final class DnsManager {
                         IpSet.EMPTY, new StatisticsMerge(lookupParams.appContext));
             } catch (Exception e) {
                 DnsLog.w(e, "Await for running lookup for %s failed", lookupParams);
-                int fixedTimeoutMills = (int) (lookupParams.timeoutMills -
-                        (SystemClock.elapsedRealtime() - startTimeMills));
+                int fixedTimeoutMills = (int) (lookupParams.timeoutMills
+                        - (SystemClock.elapsedRealtime() - startTimeMills));
                 if (0 < fixedTimeoutMills) {
                     return lookup(new LookupParameters.Builder<>(lookupParams)
                             .timeoutMills(fixedTimeoutMills)
@@ -199,7 +200,7 @@ public final class DnsManager {
                 lookupParams, new LookupLatchResultPair(lookupLatch, lookupResultHolder));
 
         int timeoutMills = lookupParams.timeoutMills;
-        LookupExtra lookupExtra = lookupParams.lookupExtra;
+        final LookupExtra lookupExtra = lookupParams.lookupExtra;
         String channel = lookupParams.channel;
         boolean fallback2Local = lookupParams.fallback2Local;
 
@@ -286,19 +287,20 @@ public final class DnsManager {
                 DnsLog.d("selector is null");
                 // 仅阻塞解析
                 // NOTE: 非localDNS解析进行countDownLatch,HDNS不被localDNS阻塞
-                while (countDownLatch.getCount() > 0 &&
-                        SystemClock.elapsedRealtime() - startTimeMills < timeoutMills) {
+                while (countDownLatch.getCount() > 0
+                        && SystemClock.elapsedRealtime() - startTimeMills < timeoutMills) {
                     try {
                         countDownLatch.await(waitTimeMills, TimeUnit.MILLISECONDS);
 
                     } catch (Exception e) {
                         DnsLog.d(e, "sessions not empty, but exception");
                     }
-                    if (countDownLatch.getCount() > 0 && // 需要重试
-                            canRetry(startTimeMills, timeoutMills, maxRetryTimes, retriedTimes)) {
+                    if (countDownLatch.getCount() > 0
+                            // 需要重试
+                            && canRetry(startTimeMills, timeoutMills, maxRetryTimes, retriedTimes)) {
                         retriedTimes++;
-                        remainTimeMills = timeoutMills -
-                                (int) (SystemClock.elapsedRealtime() - startTimeMills);
+                        remainTimeMills = timeoutMills
+                                - (int) (SystemClock.elapsedRealtime() - startTimeMills);
                         LookupContext<LookupExtra> newLookupContext =
                                 lookupContext.newLookupContext(
                                         new LookupParameters.Builder<>(lookupParams)
@@ -318,8 +320,8 @@ public final class DnsManager {
 
             // 非阻塞解析
             // TODO: sessions加上对于解析结果可以忽略的支持(主要是支持LocalDns)
-            while (!sessions.isEmpty() &&
-                    SystemClock.elapsedRealtime() - startTimeMills < timeoutMills) {
+            while (!sessions.isEmpty()
+                    && SystemClock.elapsedRealtime() - startTimeMills < timeoutMills) {
                 // sleep以降低系统调用频率
                 try {
                     Thread.sleep(SYSTEM_CALL_INTERVAL_MILLS);
@@ -334,8 +336,9 @@ public final class DnsManager {
                 }
                 // Socket进行请求
                 tryLookup(lookupContext);
-                if (!sessions.isEmpty() && // 需要重试
-                        canRetry(startTimeMills, timeoutMills, maxRetryTimes, retriedTimes)) {
+                if (!sessions.isEmpty()
+                        // 需要重试
+                        && canRetry(startTimeMills, timeoutMills, maxRetryTimes, retriedTimes)) {
                     DnsLog.d("sessions is not empty, sessions:%d, enter retry", sessions.size());
                     retriedTimes++;
                     LookupContext<LookupExtra> newLookupContext = lookupContext.newLookupContext(
@@ -349,7 +352,8 @@ public final class DnsManager {
             remainTimeMills = timeoutMills - (int) (SystemClock.elapsedRealtime() - startTimeMills);
             try {
                 if (sessions.size() > 0) {
-                    DnsLog.d("selector wait for last timeout if sessions is not empty, sessions:%d, mills:%d", sessions.size(), waitTimeMills);
+                    DnsLog.d("selector wait for last timeout if sessions is not empty, sessions:%d, mills:%d",
+                            sessions.size(), waitTimeMills);
                 }
                 countDownLatch.await(remainTimeMills, TimeUnit.MILLISECONDS);
             } catch (Exception ignored) {
@@ -378,6 +382,7 @@ public final class DnsManager {
                     selector.close();
                     DnsLog.d("%s closed", selector);
                 } catch (IOException ignored) {
+                    DnsLog.e("exception: %s", ignored);
                 }
             }
         }
@@ -400,18 +405,18 @@ public final class DnsManager {
         boolean ignoreCurNetStack = lookupContext.ignoreCurrentNetworkStack();
 
         // ignoreCurNetStack = true / localdns, 双栈同时请求
-        if (null != dnsGroup.mUnspecDns &&
-                (ignoreCurNetStack || curNetStack == NetworkStack.DUAL_STACK || dnsGroup.mUnspecDns instanceof LocalDns)) {
+        if (null != dnsGroup.mUnspecDns
+                && (ignoreCurNetStack || curNetStack == NetworkStack.DUAL_STACK || dnsGroup.mUnspecDns instanceof LocalDns)) {
             //noinspection unchecked
             prepareTask((IDns<LookupExtra>) dnsGroup.mUnspecDns, lookupContext);
-        } else if (null != dnsGroup.mInetDns &&
+        } else if (null != dnsGroup.mInetDns
                 // 异步解析不关注当前网络栈
-                (ignoreCurNetStack || curNetStack == NetworkStack.IPV4_ONLY)) {
+                && (ignoreCurNetStack || curNetStack == NetworkStack.IPV4_ONLY)) {
             //noinspection unchecked
             prepareTask((IDns<LookupExtra>) dnsGroup.mInetDns, lookupContext);
-        } else if (null != dnsGroup.mInet6Dns &&
+        } else if (null != dnsGroup.mInet6Dns
                 // 异步解析不关注当前网络栈
-                (ignoreCurNetStack || curNetStack == NetworkStack.IPV6_ONLY)) {
+                && (ignoreCurNetStack || curNetStack == NetworkStack.IPV6_ONLY)) {
             //noinspection unchecked
             prepareTask((IDns<LookupExtra>) dnsGroup.mInet6Dns, lookupContext);
         }

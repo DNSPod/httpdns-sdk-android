@@ -17,7 +17,8 @@ public class SpendReportResolver {
     // 解析耗时上报的间隔时间
     private long mInterval = 5 * 60 * 1000;
 
-    public static SpendReportResolver getInstance() {//静态get方法
+    public static SpendReportResolver getInstance() {
+        // 静态get方法
         if (mSpendReportResolver == null) {
             synchronized (BackupResolver.class) {
                 if (mSpendReportResolver == null) {

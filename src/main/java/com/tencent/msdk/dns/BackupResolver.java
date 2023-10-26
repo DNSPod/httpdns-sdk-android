@@ -39,7 +39,8 @@ public class BackupResolver {
     // 尝试切回主ip的间隔时间，默认为10分钟
     private final long mInterval = 10 * 60 * 1000;
 
-    public static BackupResolver getInstance() {//静态get方法
+    public static BackupResolver getInstance() {
+        // 静态get方法
         if (mBackupResolver == null) {
             synchronized (BackupResolver.class) {
                 if (mBackupResolver == null) {
@@ -53,7 +54,7 @@ public class BackupResolver {
     public void init(DnsConfig dnsConfig) {
         mConfig = dnsConfig;
         mErrorCount = new AtomicInteger(0);
-        //  http和https是两个IP
+        // http和https是两个IP
         dnsIps = getBackUpIps();
     }
 
@@ -66,9 +67,11 @@ public class BackupResolver {
 
     private ArrayList getBackUpIps() {
         if (Const.HTTPS_CHANNEL.equals(mConfig.channel) && !BuildConfig.HTTPS_TOLERANCE_SERVER.isEmpty()) {
-            return new ArrayList<String>(Arrays.asList(BuildConfig.HTTPS_INIT_SERVER, BuildConfig.HTTPS_TOLERANCE_SERVER));
+            return new ArrayList<String>(Arrays.asList(BuildConfig.HTTPS_INIT_SERVER,
+                    BuildConfig.HTTPS_TOLERANCE_SERVER));
         } else {
-            return new ArrayList<String>(Arrays.asList(BuildConfig.HTTP_INIT_SERVER, BuildConfig.HTTP_TOLERANCE_SERVER));
+            return new ArrayList<String>(Arrays.asList(BuildConfig.HTTP_INIT_SERVER,
+                    BuildConfig.HTTP_TOLERANCE_SERVER));
         }
     }
 
@@ -97,12 +100,10 @@ public class BackupResolver {
 
     /**
      * 主IP故障，切换备份IP策略
-     * 1. 主备IP切换：在精确性、速度上折中处理，主IP解析的同时，会发起LocalDNS解析，若主IP首次解析不成功，立即返回 上次解析结果，如果没有上次解析结果，则返回LocalDNS解析结果，如果主IP 3次解析不成功，则切换到备份IP进行解析。
-     * <p>
-     * 2. 备份IP 切换 域名兜底：所有备份IP都经超过3次不通，切换到域名兜底解析。
-     * <p>
+     * 1. 主备IP切换：在精确性、速度上折中处理，主IP解析的同时，会发起LocalDNS解析，若主IP首次解析不成功，立即返回
+     * 上次解析结果，如果没有上次解析结果，则返回LocalDNS解析结果，如果主IP 3次解析不成功，则切换到备份IP进行解析。
+     * 2. 备份IP切换 域名兜底：所有备份IP都经超过3次不通，切换到域名兜底解析。
      * 3. 恢复：每隔10min切回测试一次主IP（不主动探测主备IP是否恢复）
-     * <p>
      * 4. 通过参数控制 切换策略的次数判断（默认3次）、恢复主IP策略的时间间隔（默认10min）
      */
     public String getDnsIp() {
