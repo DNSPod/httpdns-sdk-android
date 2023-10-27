@@ -16,6 +16,7 @@ import com.tencent.msdk.dns.core.ICache;
 import com.tencent.msdk.dns.core.IDns;
 import com.tencent.msdk.dns.core.LookupParameters;
 import com.tencent.msdk.dns.core.LookupResult;
+import com.tencent.msdk.dns.core.cache.Cache;
 import com.tencent.msdk.dns.core.ipRank.IpRankCallback;
 import com.tencent.msdk.dns.core.ipRank.IpRankHelper;
 import com.tencent.msdk.dns.core.rest.share.rsp.Response;
@@ -46,19 +47,15 @@ public final class CacheHelper {
                     CollectionCompat.<LookupParameters<LookupExtra>>createSet());
 
     private final IDns<LookupExtra> mDns;
-    private final ICache mCache;
+    private final ICache mCache = Cache.getInstance();
     private final IpRankHelper mIpRankHelper = new IpRankHelper();
 
-    CacheHelper(IDns<LookupExtra> dns, ICache cache) {
+    CacheHelper(IDns<LookupExtra> dns) {
         if (null == dns) {
             throw new IllegalArgumentException("dns".concat(Const.NULL_POINTER_TIPS));
         }
-        if (null == cache) {
-            throw new IllegalArgumentException("cache".concat(Const.NULL_POINTER_TIPS));
-        }
 
         mDns = dns;
-        mCache = cache;
         listenNetworkChange();
     }
 

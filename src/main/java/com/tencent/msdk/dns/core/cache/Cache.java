@@ -18,15 +18,26 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public final class Cache implements ICache {
 
-    private static final Map<String, LookupResult> mHostnameIpsMap = new ConcurrentHashMap<>();
+    private final Map<String, LookupResult> mHostnameIpsMap = new ConcurrentHashMap<>();
 
-    private static final LookupCacheDao lookupCacheDao = LookupCacheDatabase.getInstance(DnsService.getAppContext()).lookupCacheDao();
+    private final LookupCacheDao lookupCacheDao = LookupCacheDatabase.getInstance(DnsService.getAppContext()).lookupCacheDao();
 
-    private static boolean getCachedIpEnable() {
+    private boolean getCachedIpEnable() {
         return DnsService.getDnsConfig().cachedIpEnable;
     }
 
-    public static void readFromDb() {
+    private Cache() {
+    }
+
+    private static final class CacheHolder {
+        static final Cache instance = new Cache();
+    }
+
+    public static Cache getInstance() {
+        return CacheHolder.instance;
+    }
+
+    public void readFromDb() {
         if (getCachedIpEnable()) {
             List<LookupCache> allCache = lookupCacheDao.getAll();
             ArrayList<LookupCache> expired = new ArrayList<>();
@@ -39,6 +50,21 @@ public final class Cache implements ICache {
             }
             // 内存读取后，清空本地已过期的缓存
             lookupCacheDao.deleteLookupCaches(expired);
+        }
+    }
+
+    public void clearCache(String hostname) {
+        if (TextUtils.isEmpty(hostname)) {
+            CacheHolder.instance.clear();
+        } else {
+            String[] hostnameArr = hostname.split(",");
+            if(hostnameArr.length > 1) {
+                for(String tempHostname: hostnameArr) {
+                    CacheHolder.instance.delete(tempHostname);
+                }
+            } else {
+                CacheHolder.instance.delete(hostname);
+            }
         }
     }
 

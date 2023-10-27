@@ -10,7 +10,6 @@ import com.tencent.msdk.dns.core.IDns;
 import com.tencent.msdk.dns.core.LookupContext;
 import com.tencent.msdk.dns.core.LookupParameters;
 import com.tencent.msdk.dns.core.LookupResult;
-import com.tencent.msdk.dns.core.cache.Cache;
 import com.tencent.msdk.dns.core.rest.share.rsp.Response;
 import com.tencent.msdk.dns.core.stat.AbsStatistics;
 
@@ -29,7 +28,7 @@ public abstract class AbsRestDns implements IDns<LookupExtra> {
     protected static final int TCP_CONTINUOUS_RCV_BUF_SIZE = 1024;
     protected static final int RCV_ZERO_MAX = 128;
 
-    protected final CacheHelper mCacheHelper = new CacheHelper(this, new Cache());
+    protected final CacheHelper mCacheHelper = new CacheHelper(this);
 
     // NOTE: stat: 结果参数
     protected boolean tryGetResultFromCache(
