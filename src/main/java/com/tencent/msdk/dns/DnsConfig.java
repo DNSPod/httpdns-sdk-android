@@ -9,7 +9,7 @@ import com.tencent.msdk.dns.base.log.ILogNode;
 import com.tencent.msdk.dns.base.report.IReporter;
 import com.tencent.msdk.dns.base.utils.CommonUtils;
 import com.tencent.msdk.dns.core.Const;
-import com.tencent.msdk.dns.core.ipRank.IpRankItem;
+import com.tencent.msdk.dns.core.rank.IpRankItem;
 import com.tencent.msdk.dns.core.rest.share.LookupExtra;
 
 import java.util.ArrayList;

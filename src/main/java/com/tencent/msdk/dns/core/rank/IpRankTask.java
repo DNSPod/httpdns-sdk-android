@@ -1,4 +1,4 @@
-package com.tencent.msdk.dns.core.ipRank;
+package com.tencent.msdk.dns.core.rank;
 
 import android.util.Pair;
 
