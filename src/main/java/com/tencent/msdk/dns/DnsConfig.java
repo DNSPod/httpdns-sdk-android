@@ -62,16 +62,13 @@ public final class DnsConfig {
 
     public String routeIp;
 
-    private DnsConfig(int logLevel,
-                      String appId, String userId, boolean initBuiltInReporters,
-                      String dnsId, String dnsKey, String token,
-                      int timeoutMills,
-                      Set<WildcardDomain> protectedDomains,
-                      Set<String> preLookupDomains, boolean enablePersistentCache, Set<String> persistentCacheDomains,
-                      Set<IpRankItem> ipRankItems, String channel, boolean enableReport, boolean blockFirst,
+    private DnsConfig(int logLevel, String appId, String userId, boolean initBuiltInReporters, String dnsId,
+                      String dnsKey, String token, int timeoutMills, Set<WildcardDomain> protectedDomains,
+                      Set<String> preLookupDomains, boolean enablePersistentCache, Set<String> persistentCacheDomains
+            , Set<IpRankItem> ipRankItems, String channel, boolean enableReport, boolean blockFirst,
                       int customNetStack, DnsExecutors.ExecutorSupplier executorSupplier,
-                      ILookedUpListener lookedUpListener, List<ILogNode> logNodes,
-                      List<IReporter> reporters, boolean useExpiredIpEnable, boolean cachedIpEnable, String routeIp) {
+                      ILookedUpListener lookedUpListener, List<ILogNode> logNodes, List<IReporter> reporters,
+                      boolean useExpiredIpEnable, boolean cachedIpEnable, String routeIp) {
         this.logLevel = logLevel;
         this.appId = appId;
         this.userId = userId;
@@ -169,10 +166,10 @@ public final class DnsConfig {
 
         @Override
         public String toString() {
-            return "WildcardDomain{" +
-                    "mIsWildcard=" + mIsWildcard +
-                    ", mNakedDomain='" + mNakedDomain + '\'' +
-                    '}';
+            return "WildcardDomain{"
+                    + "mIsWildcard=" + mIsWildcard
+                    + ", mNakedDomain='" + mNakedDomain + '\''
+                    + '}';
         }
     }
 
@@ -232,14 +229,18 @@ public final class DnsConfig {
          * SDK默认仅将日志通过logcat输出, tag统一使用HTTPDNS
          * 不设置时, 默认输出<a href="https://developer.android.google.cn/reference/android/util/Log.html#WARN">WARN</a>及以上等级的日志
          *
-         * @param logLevel 最低日志等级, 使用<a href="https://developer.android.google.cn/reference/android/util/Log">Log</a>类定义的常量, 可选值为
+         * @param logLevel 最低日志等级, 使用<a href="https://developer.android.google.cn/reference/android/util/Log">Log</a>
+         *                 类定义的常量, 可选值为
          *                 <a href="https://developer.android.google.cn/reference/android/util/Log.html#VERBOSE">VERBOSE</a>,
-         *                 <a href="https://developer.android.google.cn/reference/android/util/Log.html#DEBUG">DEBUG</a>,
+         *                 <a href="https://developer.android.google.cn/reference/android/util/Log.html#DEBUG">DEBUG</a>
+         *                 ,
          *                 <a href="https://developer.android.google.cn/reference/android/util/Log.html#INFO">INFO</a>,
          *                 <a href="https://developer.android.google.cn/reference/android/util/Log.html#WARN">WARN</a>,
-         *                 <a href="https://developer.android.google.cn/reference/android/util/Log.html#ERROR">ERROR</a>,
+         *                 <a href="https://developer.android.google.cn/reference/android/util/Log.html#ERROR">ERROR</a>
+         *                 ,
          *                 <a href="https://developer.android.google.cn/reference/android/util/Log.html#ASSERT">ASSERT</a>,
-         *                 其中<a href="https://developer.android.google.cn/reference/android/util/Log.html#ASSERT">ASSERT</a>即不输出任何日志
+         *                 其中
+         *                 <a href="https://developer.android.google.cn/reference/android/util/Log.html#ASSERT">ASSERT</a>即不输出任何日志
          * @return 当前Builder实例, 方便链式调用
          */
         public Builder logLevel(int logLevel) {
@@ -280,7 +281,7 @@ public final class DnsConfig {
         /**
          * 启停缓存自动刷新功能, 默认开启
          *
-         * @param enablePersistentCache, 启停缓存自动刷新功能
+         * @param enablePersistentCache 启停缓存自动刷新功能
          * @return 当前Builder实例, 方便链式调用
          */
         public Builder enablePersistentCache(boolean enablePersistentCache) {
@@ -392,8 +393,7 @@ public final class DnsConfig {
          */
         public Builder maxNumOfPreLookupDomains(int maxNumOfPreLookupDomains) {
             if (0 >= maxNumOfPreLookupDomains) {
-                throw new IllegalArgumentException(
-                        "maxNumOfPreLookupDomains".concat(Const.LESS_THAN_0_TIPS));
+                throw new IllegalArgumentException("maxNumOfPreLookupDomains".concat(Const.LESS_THAN_0_TIPS));
             }
             mMaxNumOfPreLookupDomains = maxNumOfPreLookupDomains;
             return this;
@@ -559,7 +559,8 @@ public final class DnsConfig {
 
         public Builder channel(String channel) {
             if (channel.equals(Const.HTTPS_CHANNEL) && BuildConfig.FLAVOR.equals("intl")) {
-                throw new IllegalArgumentException("httpdns-sdk-intl version still doesn't support " + Const.HTTPS_CHANNEL);
+                throw new IllegalArgumentException("httpdns-sdk-intl version still doesn't support "
+                        + Const.HTTPS_CHANNEL);
             }
             mChannel = channel;
             return this;
@@ -577,7 +578,8 @@ public final class DnsConfig {
 
         public Builder https() {
             if (BuildConfig.FLAVOR.equals("intl")) {
-                throw new IllegalArgumentException("httpdns-sdk-intl version still doesn't support " + Const.HTTPS_CHANNEL);
+                throw new IllegalArgumentException("httpdns-sdk-intl version still doesn't support "
+                        + Const.HTTPS_CHANNEL);
             }
             mChannel = Const.HTTPS_CHANNEL;
             return this;
@@ -619,16 +621,17 @@ public final class DnsConfig {
 
         /**
          * 设置{@link DnsExecutors.ExecutorSupplier}, 用于为SDK定制线程池
-         * 不设置时, 默认使用<a href="https://developer.android.com/reference/android/os/AsyncTask.html#THREAD_POOL_EXECUTOR">THREAD_POOL_EXECUTOR</a>作为SDK内部使用的线程池
+         * 不设置时, 默认使用
+         * <a href="https://developer.android.com/reference/android/os/AsyncTask.html#THREAD_POOL_EXECUTOR">THREAD_POOL_EXECUTOR</a>作为SDK内部使用的线程池
          *
-         * @param executorSupplier {@link DnsExecutors.ExecutorSupplier}接口实现类实例, SDK通过{@link DnsExecutors.ExecutorSupplier#get()}获取SDK内部使用的线程池
+         * @param executorSupplier {@link DnsExecutors.ExecutorSupplier}接口实现类实例,
+         *                         SDK通过{@link DnsExecutors.ExecutorSupplier#get()}获取SDK内部使用的线程池
          * @return 当前Builder实例, 方便链式调用
          * @throws IllegalArgumentException executorSupplier为null时抛出
          */
         public Builder executorSupplier(DnsExecutors.ExecutorSupplier executorSupplier) {
             if (null == executorSupplier) {
-                throw new IllegalArgumentException(
-                        "executorSupplier".concat(Const.NULL_POINTER_TIPS));
+                throw new IllegalArgumentException("executorSupplier".concat(Const.NULL_POINTER_TIPS));
             }
             mExecutorSupplier = executorSupplier;
             return this;
@@ -643,8 +646,7 @@ public final class DnsConfig {
          */
         public Builder lookedUpListener(ILookedUpListener lookedUpListener) {
             if (null == lookedUpListener) {
-                throw new IllegalArgumentException(
-                        "lookedUpListener".concat(Const.NULL_POINTER_TIPS));
+                throw new IllegalArgumentException("lookedUpListener".concat(Const.NULL_POINTER_TIPS));
             }
             mLookedUpListener = lookedUpListener;
             return this;
@@ -731,14 +733,11 @@ public final class DnsConfig {
          * @return DnsConfig实例
          */
         public DnsConfig build() {
-            return new DnsConfig(mLogLevel,
-                    mAppId, mUserId, mInitBuiltInReporters, mDnsId, mDnsKey, mToken,
-                    mTimeoutMills,
-                    mProtectedDomains, mPreLookupDomains, mEnablePersistentCache, mPersistentCacheDomains,
-                    mIpRankItems, mChannel, mEnableReport, mBlockFirst,
-                    mCustomNetStack, mExecutorSupplier,
-                    mLookedUpListener, mLogNodes,
-                    mReporters, mUseExpiredIpEnable, mCachedIpEnable, mRouteIp);
+            return new DnsConfig(mLogLevel, mAppId, mUserId, mInitBuiltInReporters, mDnsId, mDnsKey, mToken,
+                    mTimeoutMills, mProtectedDomains, mPreLookupDomains, mEnablePersistentCache,
+                    mPersistentCacheDomains, mIpRankItems, mChannel, mEnableReport, mBlockFirst, mCustomNetStack,
+                    mExecutorSupplier, mLookedUpListener, mLogNodes, mReporters, mUseExpiredIpEnable, mCachedIpEnable
+                    , mRouteIp);
         }
     }
 }

@@ -143,8 +143,8 @@ public final class DnsManager {
             statMerge.statResult(ipSet);
             LookupResult<IStatisticsMerge> lookupResult =
                     new LookupResult<IStatisticsMerge>(ipSet, statMerge);
-            DnsLog.d("getResultFromCache by httpdns cache:" +
-                    lookupResult.ipSet + "; " + lookupResult.stat);
+            DnsLog.d("getResultFromCache by httpdns cache:"
+                    + lookupResult.ipSet + "; " + lookupResult.stat);
             return lookupResult;
         }
 
@@ -406,7 +406,8 @@ public final class DnsManager {
 
         // ignoreCurNetStack = true / localdns, 双栈同时请求
         if (null != dnsGroup.mUnspecDns
-                && (ignoreCurNetStack || curNetStack == NetworkStack.DUAL_STACK || dnsGroup.mUnspecDns instanceof LocalDns)) {
+                && (ignoreCurNetStack || curNetStack == NetworkStack.DUAL_STACK
+                || dnsGroup.mUnspecDns instanceof LocalDns)) {
             //noinspection unchecked
             prepareTask((IDns<LookupExtra>) dnsGroup.mUnspecDns, lookupContext);
         } else if (null != dnsGroup.mInetDns

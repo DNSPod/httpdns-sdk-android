@@ -81,8 +81,8 @@ public final class AesCipherSuite {
      * 使用密码获取AES密钥
      */
     public static SecretKeySpec getSecretKey(String secretKey) throws UnsupportedEncodingException {
-        String Key = toMakeKey(secretKey);
-        return new SecretKeySpec(Key.getBytes(CHARSET), KEY_ALGORITHM);
+        String key = toMakeKey(secretKey);
+        return new SecretKeySpec(key.getBytes(CHARSET), KEY_ALGORITHM);
     }
 
     /**
