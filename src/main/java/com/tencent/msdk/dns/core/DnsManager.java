@@ -3,6 +3,7 @@ package com.tencent.msdk.dns.core;
 import android.os.SystemClock;
 
 import com.tencent.msdk.dns.base.compat.CollectionCompat;
+import com.tencent.msdk.dns.base.executor.DnsExecutors;
 import com.tencent.msdk.dns.base.log.DnsLog;
 import com.tencent.msdk.dns.base.utils.NetworkStack;
 import com.tencent.msdk.dns.core.local.LocalDns;
@@ -13,6 +14,7 @@ import com.tencent.msdk.dns.core.retry.Retry;
 import com.tencent.msdk.dns.core.sorter.Sorter;
 import com.tencent.msdk.dns.core.stat.StatisticsMerge;
 import com.tencent.msdk.dns.core.stat.StatisticsMergeFactory;
+import com.tencent.msdk.dns.report.CacheStatisticsReport;
 
 import java.io.IOException;
 import java.nio.channels.Selector;
@@ -235,22 +237,31 @@ public final class DnsManager {
         List<IDns.ISession> sessions = new ArrayList<>();
         lookupContext.sessions(sessions);
         try {
-            // NOTE: 当前对外API上, 不支持AAAA记录的解析, 需要保留LocalDns的解析结果作为AAAA解析结果
-            // 暂时不忽略LocalDns解析结果(即超时时间内会等待LocalDns解析结果, 无论RestDns是否已经解析成功)
+            // 暂时不忽略LocalDns解析结果(RestDns解析失败时，超时时间内会等待LocalDns解析结果)
             if (null != restDnsGroup) {
                 // 先查缓存，有其一即可
-                LookupResult<IStatisticsMerge> lookupResultFromCache = getResultFromCache(lookupParams);
+                final LookupResult<IStatisticsMerge> lookupResultFromCache = getResultFromCache(lookupParams);
                 DnsLog.d("getResultFromCache: " + lookupResultFromCache);
                 if (lookupResultFromCache.stat.lookupSuccess()) {
                     if (lookupResultFromCache.stat.lookupPartCached()) {
                         // 仅部分命中缓存
                         lookupContext.sorter().putPartCache(lookupResultFromCache.ipSet);
+                        // 收集命中缓存的数据
+                        DnsExecutors.WORK.execute(new Runnable() {
+                            @Override
+                            public void run() {
+                                CacheStatisticsReport.add(lookupResultFromCache);
+                            }
+                        });
+
                     } else {
                         lookupResultHolder.mLookupResult = lookupResultFromCache;
                         DnsLog.d("DnsManager lookup getResultFromCache success");
                         return lookupResultFromCache;
                     }
                 }
+                // statContext操作在读完缓存之后，下发解析请求前。结果会更新在lookupResult上
+                statMerge.statContext(lookupContext);
 
                 // 打开Selector
                 prepareTasks(restDnsGroup, lookupContext);
@@ -355,9 +366,6 @@ public final class DnsManager {
             endSessions(lookupContext);
             lookupLatch.countDown();
             RUNNING_LOOKUP_LATCH_MAP.remove(lookupParams);
-            // NOTE: statContext在前, 因为后续操作会清理lookupContext
-            // NOTE: 这里应该会在创建LookupResult实例之后执行, 但statMerge实例上的更新会更新到LookupResult上
-            statMerge.statContext(lookupContext);
             DnsLog.d("FINALLY statMerge: %s", statMerge.toJsonResult());
 
             // 解析完成, 清理lookupContext

@@ -34,6 +34,7 @@ public class AttaHelper {
                                   final long eventTime,
                                   final String dnsIp,
                                   final long spend,
+                                  final long ldns_spend,
                                   final String req_dn,
                                   final String req_type,
                                   final long req_timeout,
@@ -65,6 +66,7 @@ public class AttaHelper {
                             + "&systemName=" + SYSTEMNANE
                             + "&systemVersion=" + SYSTEMVERSION
                             + "&spend=" + spend
+                            + "&ldns_spend=" + ldns_spend
                             + "&req_dn=" + req_dn
                             + "&req_type=" + req_type
                             + "&req_timeout=" + req_timeout

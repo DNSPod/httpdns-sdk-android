@@ -112,7 +112,6 @@ public final class DnsService {
      * 设置UserId, 进行数据上报时区分用户, 出现问题时, 依赖该Id进行单用户问题排查
      *
      * @param userId 用户的唯一标识符, 腾讯业务建议直接使用OpenId, 腾讯云客户建议传入长度50位以内, 由字母数字下划线组合而成的字符串
-     * @return 是否设置成功, true为设置成功, false为设置失败
      * @throws IllegalStateException    没有初始化时抛出
      * @throws IllegalArgumentException userId为空时抛出
      */
@@ -171,8 +170,8 @@ public final class DnsService {
     /**
      * 设置是否上报，是否启用域名服务（获取底层配置）
      *
-     * @param mEnableReport
-     * @param mEnableDomainServer
+     * @param mEnableReport 启用日志上报
+     * @param mEnableDomainServer 启用域名服务
      */
     public static void setDnsConfigFromServer(boolean mEnableReport, boolean mEnableDomainServer) {
         if (!sInited) {
@@ -184,7 +183,7 @@ public final class DnsService {
 
     public static String getDnsDetail(String hostname) {
         String dnsIp = BackupResolver.getInstance().getDnsIp();
-        LookupResult<IStatisticsMerge> lookupResult = DnsManager.getResultFromCache(new LookupParameters.Builder<LookupExtra>()
+        final LookupResult<IStatisticsMerge> lookupResult = DnsManager.getResultFromCache(new LookupParameters.Builder<LookupExtra>()
                 .context(sAppContext)
                 .hostname(hostname)
                 .timeoutMills(sConfig.timeoutMills)
@@ -198,7 +197,12 @@ public final class DnsService {
                 .build());
 
         // 收集命中缓存的数据
-        CacheStatisticsReport.add(lookupResult);
+        DnsExecutors.WORK.execute(new Runnable() {
+            @Override
+            public void run() {
+                CacheStatisticsReport.add(lookupResult);
+            }
+        });
         StatisticsMerge statMerge = (StatisticsMerge) lookupResult.stat;
         return statMerge.toJsonResult();
     }
@@ -286,7 +290,6 @@ public final class DnsService {
                             .enableAsyncLookup(enableAsyncLookup)
                             .customNetStack(sConfig.customNetStack)
                             .build());
-            ReportHelper.reportLookupMethodCalledEvent(lookupResult);
             return lookupResult.ipSet;
         }
         if (fallback2Local) {

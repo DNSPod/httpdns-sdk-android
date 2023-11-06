@@ -2,6 +2,7 @@ package com.tencent.msdk.dns.core.stat;
 
 import android.content.Context;
 
+import com.tencent.msdk.dns.base.executor.DnsExecutors;
 import com.tencent.msdk.dns.base.log.DnsLog;
 import com.tencent.msdk.dns.base.utils.CommonUtils;
 import com.tencent.msdk.dns.base.utils.NetworkUtils;
@@ -11,9 +12,11 @@ import com.tencent.msdk.dns.core.IDns;
 import com.tencent.msdk.dns.core.IStatisticsMerge;
 import com.tencent.msdk.dns.core.IpSet;
 import com.tencent.msdk.dns.core.LookupContext;
+import com.tencent.msdk.dns.core.LookupResult;
 import com.tencent.msdk.dns.core.local.LocalDns;
 import com.tencent.msdk.dns.core.rest.share.AbsRestDns;
 import com.tencent.msdk.dns.core.rest.share.LookupExtra;
+import com.tencent.msdk.dns.report.ReportHelper;
 
 import org.json.JSONObject;
 
@@ -111,6 +114,16 @@ public final class StatisticsMerge implements IStatisticsMerge<LookupExtra> {
         } else {
             restDnsStat = (AbsRestDns.Statistics) stat;
         }
+
+        // 上报数据处理，上报仅使用statisticsMerge类。IpSet使用IpSet.EMPTY传参。
+        final LookupResult<IStatisticsMerge> lookupResult = new LookupResult<IStatisticsMerge>(IpSet.EMPTY, this);
+        DnsExecutors.WORK.execute(new Runnable() {
+            @Override
+            public void run() {
+                ReportHelper.reportLookupMethodCalledEvent(lookupResult);
+            }
+        });
+
     }
 
     @Override
@@ -177,6 +190,7 @@ public final class StatisticsMerge implements IStatisticsMerge<LookupExtra> {
         return super.toString() + "{" +
                 "netType='" + netType + '\'' +
                 ", hostname='" + hostname + '\'' +
+                ", requestHostname='" + requestHostname + '\'' +
                 ", channel='" + channel + '\'' +
                 ", curNetStack=" + curNetStack +
                 ", localDnsStat=" + localDnsStat +
