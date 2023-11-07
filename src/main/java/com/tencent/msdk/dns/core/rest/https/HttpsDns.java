@@ -2,9 +2,7 @@ package com.tencent.msdk.dns.core.rest.https;
 
 import com.tencent.msdk.dns.core.Const;
 import com.tencent.msdk.dns.core.DnsDescription;
-
 import com.tencent.msdk.dns.core.rest.share.AbsHttpDns;
-
 import com.tencent.msdk.dns.core.rest.share.AbsHttpDnsConfig;
 import com.tencent.msdk.dns.core.rest.share.LookupExtra;
 import com.tencent.msdk.dns.core.rest.share.RequestBuilder;
@@ -35,11 +33,14 @@ public final class HttpsDns extends AbsHttpDns {
         String reqContent;
         switch (mFamily) {
             case DnsDescription.Family.INET:
-                reqContent = RequestBuilder.buildHttpsInetRequest(hostname, lookupExtra.bizId, lookupExtra.token); break;
+                reqContent = RequestBuilder.buildHttpsInetRequest(hostname, lookupExtra.bizId, lookupExtra.token);
+                break;
             case DnsDescription.Family.INET6:
-                reqContent = RequestBuilder.buildHttpsInet6Request(hostname, lookupExtra.bizId, lookupExtra.token); break;
+                reqContent = RequestBuilder.buildHttpsInet6Request(hostname, lookupExtra.bizId, lookupExtra.token);
+                break;
             case DnsDescription.Family.UN_SPECIFIC:
-                reqContent = RequestBuilder.buildHttpsDoubRequest(hostname, lookupExtra.bizId, lookupExtra.token); break;
+                reqContent = RequestBuilder.buildHttpsDoubRequest(hostname, lookupExtra.bizId, lookupExtra.token);
+                break;
             default:
                 throw new IllegalStateException("Unexpected value: " + mFamily);
         }

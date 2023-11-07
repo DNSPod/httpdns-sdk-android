@@ -75,7 +75,8 @@ public abstract class AbsRestDns implements IDns<LookupExtra> {
                     requestHostname.append(hostname).append(',');
                 }
             }
-            requestHostname = new StringBuilder(requestHostname.length() > 0 ? requestHostname.substring(0, requestHostname.length() - 1) : "");
+            requestHostname = new StringBuilder(requestHostname.length() > 0 ? requestHostname.substring(0,
+                    requestHostname.length() - 1) : "");
             if (tempCachedips.size() > 0) {
                 stat.ips = tempCachedips.toArray(new String[tempCachedips.size()]);
             }
@@ -186,8 +187,8 @@ public abstract class AbsRestDns implements IDns<LookupExtra> {
             try {
                 connectRes = connectInternal();
             } finally {
-                if (connectRes != NonBlockResult.NON_BLOCK_RESULT_NEED_CONTINUE &&
-                        State.ENDED != mState) {
+                if (connectRes != NonBlockResult.NON_BLOCK_RESULT_NEED_CONTINUE
+                        && State.ENDED != mState) {
                     mState = State.WRITABLE;
                 }
             }
@@ -479,21 +480,21 @@ public abstract class AbsRestDns implements IDns<LookupExtra> {
 
         @Override
         public String toString() {
-            return "Statistics{" +
-                    "errorCode=" + errorCode +
-                    ", errorMsg='" + errorMsg + '\'' +
-                    ", statusCode=" + statusCode +
-                    ", clientIp='" + clientIp + '\'' +
-                    ", ttl=" + ttl +
-                    ", expiredTime=" + expiredTime +
-                    ", retryTimes=" + retryTimes +
-                    ", cached=" + cached +
-                    ", asyncLookup=" + asyncLookup +
-                    ", netChangeLookup=" + netChangeLookup +
-                    ", ips=" + Arrays.toString(ips) +
-                    ", costTimeMills=" + costTimeMills +
-                    ", startLookupTimeMills=" + startLookupTimeMills +
-                    '}';
+            return "Statistics{"
+                    + "errorCode=" + errorCode
+                    + ", errorMsg='" + errorMsg + '\''
+                    + ", statusCode=" + statusCode
+                    + ", clientIp='" + clientIp + '\''
+                    + ", ttl=" + ttl
+                    + ", expiredTime=" + expiredTime
+                    + ", retryTimes=" + retryTimes
+                    + ", cached=" + cached
+                    + ", asyncLookup=" + asyncLookup
+                    + ", netChangeLookup=" + netChangeLookup
+                    + ", ips=" + Arrays.toString(ips)
+                    + ", costTimeMills=" + costTimeMills
+                    + ", startLookupTimeMills=" + startLookupTimeMills
+                    + '}';
         }
     }
 }

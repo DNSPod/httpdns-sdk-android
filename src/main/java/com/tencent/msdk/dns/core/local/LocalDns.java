@@ -20,8 +20,8 @@ import java.util.Arrays;
 
 public final class LocalDns implements IDns<IDns.ILookupExtra> {
 
-    private final DnsDescription mDescription =
-            new DnsDescription(Const.LOCAL_CHANNEL, DnsDescription.Family.UN_SPECIFIC);
+    private final DnsDescription mDescription = new DnsDescription(Const.LOCAL_CHANNEL,
+            DnsDescription.Family.UN_SPECIFIC);
 
     /**
      * @hide
@@ -48,23 +48,6 @@ public final class LocalDns implements IDns<IDns.ILookupExtra> {
         stat.endLookup();
         stat.ips = ips;
         return new LookupResult<>(CommonUtils.templateIps(stat.ips, lookupParams), stat);
-    }
-
-    @Override
-    public LookupResult getResultFromCache(LookupParameters lookupParams) {
-        Statistics stat = new Statistics();
-        stat.startLookup();
-        stat.endLookup();
-        // Local DNS暂不作缓存
-        return new LookupResult<>(stat.ips, stat);
-    }
-
-    /**
-     * @hide
-     */
-    @Override
-    public ISession getSession(LookupContext lookupContext) {
-        return null;
     }
 
     private String[] lookup(String hostname) {
@@ -115,6 +98,23 @@ public final class LocalDns implements IDns<IDns.ILookupExtra> {
         return ips;
     }
 
+    @Override
+    public LookupResult getResultFromCache(LookupParameters lookupParams) {
+        Statistics stat = new Statistics();
+        stat.startLookup();
+        stat.endLookup();
+        // Local DNS暂不作缓存
+        return new LookupResult<>(stat.ips, stat);
+    }
+
+    /**
+     * @hide
+     */
+    @Override
+    public ISession getSession(LookupContext lookupContext) {
+        return null;
+    }
+
     /**
      * LocalDNS域名解析统计数据类
      */
@@ -124,15 +124,15 @@ public final class LocalDns implements IDns<IDns.ILookupExtra> {
 
         @Override
         public String toString() {
-            return "Statistics{" +
-                    "ips=" + Arrays.toString(ips) +
-                    ", costTimeMills=" + costTimeMills +
-                    '}';
+            return "Statistics{"
+                    + "ips=" + Arrays.toString(ips)
+                    + ", costTimeMills=" + costTimeMills
+                    + '}';
         }
 
-       @Override
-       public boolean lookupPartCached() {
-           return false;
-       }
+        @Override
+        public boolean lookupPartCached() {
+            return false;
+        }
     }
 }

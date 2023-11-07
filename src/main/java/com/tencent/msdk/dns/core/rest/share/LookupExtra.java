@@ -26,10 +26,10 @@ public final class LookupExtra implements IDns.ILookupExtra {
 
     @Override
     public String toString() {
-        return "LookupExtra{" +
-                "bizId='" + bizId + '\'' +
-                ", bizKey='" + bizKey + '\'' +
-                ", token='" + token + '\'' +
-                '}';
+        return "LookupExtra{"
+                + "bizId='" + bizId + '\''
+                + ", bizKey='" + bizKey + '\''
+                + ", token='" + token + '\''
+                + '}';
     }
 }

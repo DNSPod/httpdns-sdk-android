@@ -43,10 +43,12 @@ public class MSDKDnsResolver {
     /**
      * 初始化SDK
      *
-     * @param context <a href="https://developer.android.google.cn/reference/android/content/Context">Context</a>实例, SDK内部持有ApplicationContext用于监听网络切换等操作
+     * @param context <a href="https://developer.android.google.cn/reference/android/content/Context">Context</a>
+     *                实例, SDK内部持有ApplicationContext用于监听网络切换等操作
      * @param appId   即SDK appId, 从<a href="https://console.cloud.tencent.com/HttpDNS">腾讯云官网</a>申请获得
      * @param debug   是否输出调试日志, true为输出, false不输出, SDK默认仅将日志通过logcat输出, tag统一使用HTTPDNS
-     * @param dnsIp   由外部传入的dnsIp，可选："119.29.29.98"（仅支持 http 请求），"119.29.29.99"（仅支持 https 请求）以腾讯云文档（https://cloud.tencent.com/document/product/379/54976）提供的 IP 为准
+     * @param dnsIp   由外部传入的dnsIp，可选："119.29.29.98"（仅支持 http 请求），"119.29.29.99"（仅支持 https 请求）以腾讯云文档（https://cloud
+     *                .tencent.com/document/product/379/54976）提供的 IP 为准
      * @param timeout 域名解析请求超时时间, 单位为ms
      */
     public void init(Context context, String appId, String dnsIp, boolean debug, int timeout) {
@@ -60,11 +62,13 @@ public class MSDKDnsResolver {
     /**
      * 初始化SDK
      *
-     * @param context <a href="https://developer.android.google.cn/reference/android/content/Context">Context</a>实例, SDK内部持有ApplicationContext用于监听网络切换等操作
+     * @param context <a href="https://developer.android.google.cn/reference/android/content/Context">Context</a>
+     *                实例, SDK内部持有ApplicationContext用于监听网络切换等操作
      * @param appId   即SDK appId, 从<a href="https://console.cloud.tencent.com/httpdns">腾讯云官网</a>申请获得
      * @param dnsId   即HTTPDNS服务的授权Id, 从<a href="https://console.cloud.tencent.com/httpdns">腾讯云官网</a>申请获得
      * @param dnsKey  即HTTPDNS服务的授权Id对应的加密密钥, 从<a href="https://console.cloud.tencent.com/httpdns">腾讯云官网</a>申请获得
-     * @param dnsIp   由外部传入的dnsIp，可选："119.29.29.98"（仅支持 http 请求），"119.29.29.99"（仅支持 https 请求）以腾讯云文档（https://cloud.tencent.com/document/product/379/54976）提供的 IP 为准
+     * @param dnsIp   由外部传入的dnsIp，可选："119.29.29.98"（仅支持 http 请求），"119.29.29.99"（仅支持 https 请求）以腾讯云文档（https://cloud
+     *                .tencent.com/document/product/379/54976）提供的 IP 为准
      * @param debug   是否输出调试日志, true为输出, false不输出, SDK默认仅将日志通过logcat输出, tag统一使用HTTPDNS
      * @param timeout 域名解析请求超时时间, 单位为ms
      */
@@ -76,11 +80,13 @@ public class MSDKDnsResolver {
     /**
      * 初始化SDK
      *
-     * @param context <a href="https://developer.android.google.cn/reference/android/content/Context">Context</a>实例, SDK内部持有ApplicationContext用于监听网络切换等操作
+     * @param context <a href="https://developer.android.google.cn/reference/android/content/Context">Context</a>
+     *                实例, SDK内部持有ApplicationContext用于监听网络切换等操作
      * @param appId   即SDK appId, 从<a href="https://console.cloud.tencent.com/httpdns">腾讯云官网</a>申请获得
      * @param dnsId   即HTTPDNS服务的授权Id, 从<a href="https://console.cloud.tencent.com/httpdns">腾讯云官网</a>申请获得
      * @param dnsKey  即HTTPDNS服务的授权Id对应的加密密钥, 从<a href="https://console.cloud.tencent.com/httpdns">腾讯云官网</a>申请获得
-     * @param dnsIp   由外部传入的dnsIp，可选："119.29.29.98"（仅支持 http 请求），"119.29.29.99"（仅支持 https 请求）以腾讯云文档（https://cloud.tencent.com/document/product/379/54976）提供的 IP 为准
+     * @param dnsIp   由外部传入的dnsIp，可选："119.29.29.98"（仅支持 http 请求），"119.29.29.99"（仅支持 https 请求）以腾讯云文档（https://cloud
+     *                .tencent.com/document/product/379/54976）提供的 IP 为准
      * @param debug   是否输出调试日志, true为输出, false不输出, SDK默认仅将日志通过logcat输出, tag统一使用HTTPDNS
      * @param timeout 域名解析请求超时时间, 单位为ms
      */
@@ -130,8 +136,10 @@ public class MSDKDnsResolver {
      * @param context 应用上下文，最好传入 ApplicationContext
      * @param appID   业务 appkey，即 SDK AppID，腾讯云官网（https://console.cloud.tencent.com/httpdns）申请获得，用于上报
      * @param dnsId   dns解析id，即授权id，腾讯云官网（https://console.cloud.tencent.com/httpdns）申请获得，用于域名解析鉴权
-     * @param dnsKey  dns解析key，即授权id对应的 key（加密密钥），在申请 SDK 后的邮箱里，腾讯云官网（https://console.cloud.tencent.com/httpdns）申请获得，用于域名解析鉴权
-     * @param dnsIp   由外部传入的dnsIp，可选："119.29.29.98"（仅支持 http 请求），"119.29.29.99"（仅支持 https 请求）以腾讯云文档（https://cloud.tencent.com/document/product/379/54976）提供的 IP 为准
+     * @param dnsKey  dns解析key，即授权id对应的 key（加密密钥），在申请 SDK 后的邮箱里，腾讯云官网（https://console.cloud.tencent
+     *                .com/httpdns）申请获得，用于域名解析鉴权
+     * @param dnsIp   由外部传入的dnsIp，可选："119.29.29.98"（仅支持 http 请求），"119.29.29.99"（仅支持 https 请求）以腾讯云文档（https://cloud
+     *                .tencent.com/document/product/379/54976）提供的 IP 为准
      * @param debug   是否开启 debug 日志，true 为打开，false 为关闭，建议测试阶段打开，正式上线时关闭
      * @param timeout dns请求超时时间，单位ms，建议设置2000
      * @param channel 设置 channel，可选：DesHttp（默认）, AesHttp, Https
@@ -240,6 +248,19 @@ public class MSDKDnsResolver {
         }
     }
 
+    public String getAddrByName(String domain, boolean fallback2Local) {
+        DnsLog.v("MSDKDnsResolver.getAddrByName() called.");
+        IpSet ipSet = IpSet.EMPTY;
+        // NOTE: 兼容旧版本实现, 未调用init时不crash
+        try {
+            ipSet = DnsService.getAddrsByName(domain, fallback2Local);
+        } catch (Exception ignored) {
+            DnsLog.e("exception: %s", ignored);
+        }
+
+        return CommonUtils.getIpfromSet(ipSet);
+    }
+
     /**
      * 常规DNS解析逻辑
      *
@@ -248,18 +269,6 @@ public class MSDKDnsResolver {
      */
     private String getAddrByNameNormal(String domain) {
         return getAddrByName(domain, true);
-    }
-
-    public String getAddrByName(String domain, boolean fallback2Local) {
-        DnsLog.v("MSDKDnsResolver.getAddrByName() called.");
-        IpSet ipSet = IpSet.EMPTY;
-        // NOTE: 兼容旧版本实现, 未调用init时不crash
-        try {
-            ipSet = DnsService.getAddrsByName(domain, fallback2Local);
-        } catch (Exception ignored) {
-        }
-
-        return CommonUtils.getIpfromSet(ipSet);
     }
 
     /**
@@ -289,7 +298,8 @@ public class MSDKDnsResolver {
             });
         } else {
             try {
-                throw new IllegalAccessException("getAddrByNameAsync cannot be used when useExpiredIpEnable is set to true.");
+                throw new IllegalAccessException("getAddrByNameAsync cannot be used when useExpiredIpEnable is set "
+                        + "to true.");
             } catch (IllegalAccessException e) {
                 e.printStackTrace();
             }
@@ -314,7 +324,8 @@ public class MSDKDnsResolver {
      * 进行域名解析(批量情况)
      * 接口区分本地网络栈进行解析
      * 单独接口查询情况返回：IpSet{v4Ips=[xx.xx.xx.xx], v6Ips=[xxx], ips=null}
-     * 多域名批量查询返回：IpSet{v4Ips=[youtube.com:31.13.73.1, qq.com:123.151.137.18, qq.com:183.3.226.35, qq.com:61.129.7.47], v6Ips=[youtube.com.:2001::42d:9141], ips=null}
+     * 多域名批量查询返回：IpSet{v4Ips=[youtube.com:31.13.73.1, qq.com:123.151.137.18, qq.com:183.3.226.35, qq.com:61.129.7
+     * .47], v6Ips=[youtube.com.:2001::42d:9141], ips=null}
      *
      * @param domain 域名
      * @return 解析结果, 以';'分隔, ';'前为IPv4, ';'后为IPv6, 对应位置没有解析结果则为'0'
@@ -354,7 +365,8 @@ public class MSDKDnsResolver {
      * 异步进行域名解析（批量情况）
      * 接口区分本地网络栈进行解析
      * 单独接口查询情况返回：IpSet{v4Ips=[xx.xx.xx.xx], v6Ips=[xxx], ips=null}
-     * 多域名批量查询返回：IpSet{v4Ips=[youtube.com:31.13.73.1, qq.com:123.151.137.18, qq.com:183.3.226.35, qq.com:61.129.7.47], v6Ips=[youtube.com.:2001::42d:9141], ips=null}
+     * 多域名批量查询返回：IpSet{v4Ips=[youtube.com:31.13.73.1, qq.com:123.151.137.18, qq.com:183.3.226.35, qq.com:61.129.7
+     * .47], v6Ips=[youtube.com.:2001::42d:9141], ips=null}
      * 注意需要先通过setHttpDnsResponseObserver设置回调的监听
      *
      * @param domain 域名, 多域名以;分割
@@ -376,7 +388,8 @@ public class MSDKDnsResolver {
             });
         } else {
             try {
-                throw new IllegalAccessException("getAddrsByNameAsync cannot be used when useExpiredIpEnable is set to true.");
+                throw new IllegalAccessException("getAddrsByNameAsync cannot be used when useExpiredIpEnable is set "
+                        + "to true.");
             } catch (IllegalAccessException e) {
                 e.printStackTrace();
             }

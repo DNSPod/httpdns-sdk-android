@@ -46,9 +46,9 @@ public final class LookupResult<Statistics extends IDns.IStatistics> implements 
 
     @Override
     public String toString() {
-        return "LookupResult{" +
-                "ipSet=" + ipSet +
-                ", stat=" + stat +
-                '}';
+        return "LookupResult{"
+                + "ipSet=" + ipSet
+                + ", stat=" + stat
+                + '}';
     }
 }

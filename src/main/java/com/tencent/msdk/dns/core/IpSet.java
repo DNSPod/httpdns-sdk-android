@@ -52,10 +52,10 @@ public class IpSet implements Serializable {
 
     @Override
     public String toString() {
-        return "IpSet{" +
-                "v4Ips=" + Arrays.toString(v4Ips) +
-                ", v6Ips=" + Arrays.toString(v6Ips) +
-                ", ips=" + Arrays.toString(ips) +
-                '}';
+        return "IpSet{"
+                + "v4Ips=" + Arrays.toString(v4Ips)
+                + ", v6Ips=" + Arrays.toString(v6Ips)
+                + ", ips=" + Arrays.toString(ips)
+                + '}';
     }
 }

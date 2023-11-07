@@ -17,8 +17,8 @@ import com.tencent.msdk.dns.core.IDns;
 import com.tencent.msdk.dns.core.LookupParameters;
 import com.tencent.msdk.dns.core.LookupResult;
 import com.tencent.msdk.dns.core.cache.Cache;
-import com.tencent.msdk.dns.core.ipRank.IpRankCallback;
-import com.tencent.msdk.dns.core.ipRank.IpRankHelper;
+import com.tencent.msdk.dns.core.rank.IpRankCallback;
+import com.tencent.msdk.dns.core.rank.IpRankHelper;
 import com.tencent.msdk.dns.core.rest.share.rsp.Response;
 import com.tencent.msdk.dns.report.ReportHelper;
 
@@ -75,6 +75,12 @@ public final class CacheHelper {
         mCache.add(hostname, lookupResult);
     }
 
+    /**
+     * 解析结果处理，缓存管理，IP优选
+     *
+     * @param lookupParams 解析参数
+     * @param rsp          解析返回结果
+     */
     public void put(LookupParameters<LookupExtra> lookupParams, Response rsp) {
         if (null == lookupParams) {
             throw new IllegalArgumentException("lookupParams".concat(Const.NULL_POINTER_TIPS));
@@ -199,7 +205,7 @@ public final class CacheHelper {
                 };
                 pendingTasks.removeExpiredCacheTask = removeExpiredCacheTask;
                 mPendingTasks.add(removeExpiredCacheTask);
-                DnsExecutors.MAIN.schedule(removeExpiredCacheTask, (long) (ttl * 1000));
+                DnsExecutors.MAIN.schedule(removeExpiredCacheTask, rsp.ttl * 1000L);
             }
         }
 

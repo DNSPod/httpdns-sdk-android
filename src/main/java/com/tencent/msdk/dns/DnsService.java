@@ -57,7 +57,8 @@ public final class DnsService {
     /**
      * 初始化SDK
      *
-     * @param context <a href="https://developer.android.google.cn/reference/android/content/Context">Context</a>实例, SDK内部持有ApplicationContext用于监听网络切换等操作
+     * @param context <a href="https://developer.android.google.cn/reference/android/content/Context">Context</a>
+     *                实例, SDK内部持有ApplicationContext用于监听网络切换等操作
      * @param config  {@link DnsConfig}实例, 用于对SDK进行相关配置
      * @throws IllegalArgumentException context为null时抛出
      */
@@ -170,7 +171,7 @@ public final class DnsService {
     /**
      * 设置是否上报，是否启用域名服务（获取底层配置）
      *
-     * @param mEnableReport 启用日志上报
+     * @param mEnableReport       启用日志上报
      * @param mEnableDomainServer 启用域名服务
      */
     public static void setDnsConfigFromServer(boolean mEnableReport, boolean mEnableDomainServer) {
@@ -183,7 +184,8 @@ public final class DnsService {
 
     public static String getDnsDetail(String hostname) {
         String dnsIp = BackupResolver.getInstance().getDnsIp();
-        final LookupResult<IStatisticsMerge> lookupResult = DnsManager.getResultFromCache(new LookupParameters.Builder<LookupExtra>()
+        final LookupResult<IStatisticsMerge> lookupResult =
+                DnsManager.getResultFromCache(new LookupParameters.Builder<LookupExtra>()
                 .context(sAppContext)
                 .hostname(hostname)
                 .timeoutMills(sConfig.timeoutMills)
@@ -275,7 +277,8 @@ public final class DnsService {
         String dnsIp = BackupResolver.getInstance().getDnsIp();
 
         // NOTE: trim操作太重，下层默认不再处理
-        DnsLog.v("DnsService.getAddrsByName(%s, %s, %b, %b) called", hostname, channel, fallback2Local, enableAsyncLookup);
+        DnsLog.v("DnsService.getAddrsByName(%s, %s, %b, %b) called", hostname, channel, fallback2Local,
+                enableAsyncLookup);
         if (sConfig.needProtect(hostname)) {
             LookupResult lookupResult = DnsManager
                     .lookupWrapper(new LookupParameters.Builder<LookupExtra>()
@@ -316,7 +319,8 @@ public final class DnsService {
      * @param domain 域名
      * @return 解析结果
      * 单独接口查询情况返回：IpSet{v4Ips=[xx.xx.xx.xx], v6Ips=[xxx], ips=null}
-     * 多域名批量查询返回：IpSet{v4Ips=[youtube.com:31.13.73.1, qq.com:123.151.137.18, qq.com:183.3.226.35, qq.com:61.129.7.47], v6Ips=[youtube.com.:2001::42d:9141], ips=null}
+     * 多域名批量查询返回：IpSet{v4Ips=[youtube.com:31.13.73.1, qq.com:123.151.137.18, qq.com:183.3.226.35, qq.com:61.129.7
+     * .47], v6Ips=[youtube.com.:2001::42d:9141], ips=null}
      */
     public static IpSet getAddrsByNamesEnableExpired(final String domain) {
         if (!sInited) {
