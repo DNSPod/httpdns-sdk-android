@@ -64,7 +64,18 @@ public final class CacheHelper {
             throw new IllegalArgumentException("hostname".concat(Const.EMPTY_TIPS));
         }
 
-        return mCache.get(hostname);
+        LookupResult lookupResult = mCache.get(hostname);
+        if (lookupResult != null) {
+            AbsRestDns.Statistics cachedStat = (AbsRestDns.Statistics) lookupResult.stat;
+            final boolean useExpiredIpEnable = DnsService.getDnsConfig().useExpiredIpEnable;
+            // 乐观DNS或者未过期
+            if (useExpiredIpEnable || cachedStat.expiredTime > System.currentTimeMillis()) {
+                return lookupResult;
+            }
+            DnsLog.d("Cache of %s(%d) expired", hostname, mDns.getDescription().family);
+            mCache.delete(hostname);
+        }
+        return null;
     }
 
     public void update(String hostname, LookupResult lookupResult) {
@@ -142,11 +153,6 @@ public final class CacheHelper {
     private void cacheUpdateTask(LookupParameters<LookupExtra> lookupParams, int ttl, final String hostname) {
         PendingTasks pendingTasks = mHostnamePendingTasksMap.get(hostname);
         if (null != pendingTasks) {
-            if (null != pendingTasks.removeExpiredCacheTask) {
-                mPendingTasks.remove(pendingTasks.removeExpiredCacheTask);
-                DnsExecutors.MAIN.cancel(pendingTasks.removeExpiredCacheTask);
-                pendingTasks.removeExpiredCacheTask = null;
-            }
             if (null != pendingTasks.asyncLookupTask) {
                 mPendingTasks.remove(pendingTasks.asyncLookupTask);
                 DnsExecutors.MAIN.cancel(pendingTasks.asyncLookupTask);
@@ -191,22 +197,6 @@ public final class CacheHelper {
             mPendingTasks.add(asyncLookupTask);
             DnsExecutors.MAIN.schedule(
                     asyncLookupTask, (long) (ASYNC_LOOKUP_FACTOR * ttl * 1000));
-        } else {
-            // 不允许使用过期缓存时，ttl*100%应执行缓存清空任务。
-            final boolean useExpiredIpEnable = DnsService.getDnsConfig().useExpiredIpEnable;
-            if (!useExpiredIpEnable) {
-                final Runnable removeExpiredCacheTask = new Runnable() {
-                    @Override
-                    public void run() {
-                        DnsLog.d("Cache of %s(%d) expired", hostname, mDns.getDescription().family);
-                        mCache.delete(hostname);
-                        mPendingTasks.remove(this);
-                    }
-                };
-                pendingTasks.removeExpiredCacheTask = removeExpiredCacheTask;
-                mPendingTasks.add(removeExpiredCacheTask);
-                DnsExecutors.MAIN.schedule(removeExpiredCacheTask, ttl * 1000L);
-            }
         }
 
         if (!mHostnamePendingTasksMap.containsKey(hostname)) {

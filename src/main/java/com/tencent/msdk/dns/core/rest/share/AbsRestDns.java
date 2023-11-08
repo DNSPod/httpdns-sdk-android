@@ -456,7 +456,7 @@ public abstract class AbsRestDns implements IDns<LookupExtra> {
 
         public long getExpiredTime(Map<String, Integer> ttl) {
             if (ttl.isEmpty()) {
-                throw new IllegalArgumentException("ttl".concat(Const.INVALID_TIPS));
+                return 0;
             }
             int min = Const.MAX_DEFAULT_TTL;
             for (String key : ttl.keySet()) {
