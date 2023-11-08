@@ -198,24 +198,12 @@ public final class ReportHelper {
             if (statMerge.restDnsStat.errorCode == 0) {
                 //  请求成功后将ErrorCount置为0
                 backupInfo.setErrorCount(0);
-                MAIN.execute(AttaHelper.report(carrierCode,
-                        statMerge.netType,
-                        sDnsConfig.lookupExtra.bizId,
-                        sDnsConfig.appId,
-                        sDnsConfig.channel,
-                        eventName,
-                        System.currentTimeMillis(),
-                        dnsIp,
-                        statMerge.restDnsStat.costTimeMills,
-                        statMerge.localDnsStat.costTimeMills,
-                        statMerge.requestHostname,
-                        reqType,
-                        sDnsConfig.timeoutMills,
-                        statMerge.restDnsStat.ttl,
-                        statMerge.restDnsStat.errorCode,
-                        statMerge.restDnsStat.statusCode,
-                        statMerge.restDnsStat.cached,
-                        1,
+                MAIN.execute(AttaHelper.report(carrierCode, statMerge.netType, sDnsConfig.lookupExtra.bizId,
+                        sDnsConfig.appId, sDnsConfig.channel, eventName, System.currentTimeMillis(), dnsIp,
+                        statMerge.restDnsStat.costTimeMills, statMerge.localDnsStat.costTimeMills,
+                        statMerge.requestHostname, reqType, sDnsConfig.timeoutMills, statMerge.restDnsStat.ttl,
+                        statMerge.restDnsStat.errorCode, statMerge.restDnsStat.statusCode,
+                        statMerge.restDnsStat.cached, 1,
                         CommonUtils.toStringList(statMerge.localDnsStat.ips, ReportConst.IP_SPLITTER),
                         CommonUtils.toStringList(statMerge.restDnsStat.ips, ReportConst.IP_SPLITTER)));
             } else {
@@ -241,9 +229,9 @@ public final class ReportHelper {
                             statMerge.restDnsStat.costTimeMills, statMerge.localDnsStat.costTimeMills,
                             statMerge.requestHostname, reqType, sDnsConfig.timeoutMills, statMerge.restDnsStat.ttl,
                             statMerge.restDnsStat.errorCode, statMerge.restDnsStat.statusCode,
-                            statMerge.restDnsStat.cached, 1, CommonUtils.toStringList(statMerge.localDnsStat.ips,
-                                    ReportConst.IP_SPLITTER), CommonUtils.toStringList(statMerge.restDnsStat.ips,
-                                    ReportConst.IP_SPLITTER)));
+                            statMerge.restDnsStat.cached, 1,
+                            CommonUtils.toStringList(statMerge.localDnsStat.ips, ReportConst.IP_SPLITTER),
+                            CommonUtils.toStringList(statMerge.restDnsStat.ips, ReportConst.IP_SPLITTER)));
                 }
             }
         }
@@ -268,14 +256,14 @@ public final class ReportHelper {
                 // 为空的缓存统计项上报，解析结果不上报
                 MAIN.execute(AttaHelper.report(carrierCode, "", sDnsConfig.lookupExtra.bizId, sDnsConfig.appId,
                         sDnsConfig.channel, ReportConst.LOOKUP_FROM_CACHED_EVENT_NAME, System.currentTimeMillis(),
-                        dnsIp, spendAvg, 0, item.getKey(), "", sDnsConfig.timeoutMills, 0, 3, 0, true, errCount, null
+                        dnsIp, spendAvg, 0, item.getKey(), "", sDnsConfig.timeoutMills, null, 3, 0, true, errCount, null
                         , null));
             }
             if (curCount > 0) {
                 // 有值的缓存统计项上报，解析结果不上报
                 MAIN.execute(AttaHelper.report(carrierCode, "", sDnsConfig.lookupExtra.bizId, sDnsConfig.appId,
                         sDnsConfig.channel, ReportConst.LOOKUP_FROM_CACHED_EVENT_NAME, System.currentTimeMillis(),
-                        dnsIp, spendAvg, 0, item.getKey(), "", sDnsConfig.timeoutMills, 0, 0, 0, true, curCount, null
+                        dnsIp, spendAvg, 0, item.getKey(), "", sDnsConfig.timeoutMills, null, 0, 0, true, curCount, null
                         , null));
             }
         }

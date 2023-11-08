@@ -205,7 +205,7 @@ public final class CacheHelper {
                 };
                 pendingTasks.removeExpiredCacheTask = removeExpiredCacheTask;
                 mPendingTasks.add(removeExpiredCacheTask);
-                DnsExecutors.MAIN.schedule(removeExpiredCacheTask, rsp.ttl * 1000L);
+                DnsExecutors.MAIN.schedule(removeExpiredCacheTask, ttl * 1000L);
             }
         }
 
