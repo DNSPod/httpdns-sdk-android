@@ -12,7 +12,6 @@ import com.tencent.msdk.dns.base.network.IOnNetworkChangeListener;
 import com.tencent.msdk.dns.base.network.NetworkChangeManager;
 import com.tencent.msdk.dns.core.Const;
 import com.tencent.msdk.dns.core.DnsManager;
-import com.tencent.msdk.dns.core.ICache;
 import com.tencent.msdk.dns.core.IDns;
 import com.tencent.msdk.dns.core.LookupParameters;
 import com.tencent.msdk.dns.core.LookupResult;
@@ -47,7 +46,7 @@ public final class CacheHelper {
                     CollectionCompat.<LookupParameters<LookupExtra>>createSet());
 
     private final IDns<LookupExtra> mDns;
-    private final ICache mCache = Cache.getInstance();
+    private final Cache mCache = Cache.getInstance();
     private final IpRankHelper mIpRankHelper = new IpRankHelper();
 
     CacheHelper(IDns<LookupExtra> dns) {
@@ -101,6 +100,7 @@ public final class CacheHelper {
         }
 
         if (Response.EMPTY == rsp) {
+            mCache.clearCache(lookupParams.requestHostname);
             return;
         }
 
@@ -145,6 +145,8 @@ public final class CacheHelper {
                         }
                     }
                 });
+            } else {
+                mCache.clearCache(hostname);
             }
         }
 
@@ -202,6 +204,10 @@ public final class CacheHelper {
         if (!mHostnamePendingTasksMap.containsKey(hostname)) {
             mHostnamePendingTasksMap.put(hostname, pendingTasks);
         }
+    }
+
+    public void clearErrorRspCache(String hostname, int statusCode,  Response rsp) {
+        // todo
     }
 
     private void listenNetworkChange() {
