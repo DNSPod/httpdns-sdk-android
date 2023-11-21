@@ -105,7 +105,8 @@ public abstract class AbsHttpDns extends AbsRestDns {
                     rawRspContent += lineTxt;
                 }
                 // 去除最后的"\n"字符避免干扰 ResponseParser 区分批量查询的结果
-                rawRspContent = rawRspContent.length() > 0 ? rawRspContent.substring(0, rawRspContent.length() - 2) : "";
+                rawRspContent = rawRspContent.length() > 0 ? rawRspContent.substring(0, rawRspContent.length() - 2) :
+                        "";
                 reader.close();
                 stat.statusCode = connection.getResponseCode();
             } catch (Exception e) {
@@ -118,6 +119,9 @@ public abstract class AbsHttpDns extends AbsRestDns {
                 throw e;
             }
 
+            if (stat.statusCode == 401) {
+                mCacheHelper.clearErrorRspCache(hostname);
+            }
             //  解密
             String rspContent = decrypt(rawRspContent, lookupExtra.bizKey);
             DnsLog.d(getTag() + "lookup byUrl: %s, rsp:[%s]", urlStr, rspContent);
@@ -131,6 +135,9 @@ public abstract class AbsHttpDns extends AbsRestDns {
             if (rsp == Response.EMPTY) {
                 stat.isGetEmptyResponse = true;
                 stat.errorCode = ErrorCode.PARSE_RESPONSE_CONTENT_FAILED_ERROR_CODE;
+                if (stat.statusCode == 200) {
+                    mCacheHelper.clearErrorRspCache(hostname);
+                }
                 return new LookupResult<>(stat.ips, stat);
             }
             stat.clientIp = rsp.clientIp;
@@ -140,8 +147,12 @@ public abstract class AbsHttpDns extends AbsRestDns {
                 DnsLog.d(getTag() + "receive success, but no record");
                 stat.isGetEmptyResponse = true;
                 stat.errorCode = ErrorCode.NO_RECORD;
+                if (stat.statusCode == 200) {
+                    mCacheHelper.clearErrorRspCache(hostname);
+                }
                 return new LookupResult<>(stat.ips, stat);
             }
+
             //  返回值正常处理
             mCacheHelper.put(lookupParams, rsp);
             stat.errorCode = ErrorCode.SUCCESS;
@@ -256,7 +267,8 @@ public abstract class AbsHttpDns extends AbsRestDns {
                 }
                 try {
 //                    Selector注册监听
-                    mSelectionKey = mChannel.register(selector, SelectionKey.OP_CONNECT | SelectionKey.OP_READ | SelectionKey.OP_WRITE);
+                    mSelectionKey = mChannel.register(selector,
+                            SelectionKey.OP_CONNECT | SelectionKey.OP_READ | SelectionKey.OP_WRITE);
                     mSelectionKey.attach(mChannel);
                 } catch (Exception e) {
                     mStat.errorCode = ErrorCode.REGISTER_CHANNEL_FAILED_ERROR_CODE;
@@ -396,6 +408,9 @@ public abstract class AbsHttpDns extends AbsRestDns {
                 }
             } while (rspLen >= 0);
             DnsLog.d(getTag() + "receive response get total len:%d", totalLen);
+            String rspHttpRsp = sb.toString();
+            mStat.statusCode = HttpHelper.responseStatus(rspHttpRsp);
+            DnsLog.v(getTag() + "receive rspHttpRsp:{\n%s}", rspHttpRsp);
 
             if (rspLen == 0) {
                 DnsLog.d(getTag() + "receive response failed, need continue, for total len:%d", totalLen);
@@ -409,11 +424,9 @@ public abstract class AbsHttpDns extends AbsRestDns {
                 mStat.errorCode = ErrorCode.RESPONSE_FAILED_FOR_EXCEPTION_ERROR_CODE;
                 return Response.EMPTY;
             }
-            String rspHttpRsp = sb.toString();
-            DnsLog.v(getTag() + "receive rspHttpRsp:{\n%s}", rspHttpRsp);
+
             String rspBody = HttpHelper.responseBody(rspHttpRsp);
             String rspContent = decrypt(rspBody, lookupExtra.bizKey);
-            mStat.statusCode = HttpHelper.responseStatus(rspHttpRsp);
             DnsLog.d(getTag() + "receive rawLen:%d, raw:[%s], rsp body content:[%s]", totalLen, rspBody, rspContent);
             if (TextUtils.isEmpty(rspContent)) {
                 mStat.isGetEmptyResponse = true;

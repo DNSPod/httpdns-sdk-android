@@ -6,7 +6,6 @@ import com.tencent.msdk.dns.base.compat.CollectionCompat;
 import com.tencent.msdk.dns.base.executor.DnsExecutors;
 import com.tencent.msdk.dns.base.log.DnsLog;
 import com.tencent.msdk.dns.base.utils.NetworkStack;
-import com.tencent.msdk.dns.core.cache.Cache;
 import com.tencent.msdk.dns.core.local.LocalDns;
 import com.tencent.msdk.dns.core.rest.aeshttp.AesHttpDns;
 import com.tencent.msdk.dns.core.rest.deshttp.DesHttpDns;
@@ -392,11 +391,6 @@ public final class DnsManager {
     public static <LookupExtra extends IDns.ILookupExtra>
     LookupResult<IStatisticsMerge> lookupWrapper(LookupParameters<LookupExtra> lookupParams) {
         LookupResult<IStatisticsMerge> lookupResult = lookup(lookupParams);
-        StatisticsMerge stat = (StatisticsMerge) lookupResult.stat;
-        if (stat.restDnsStat.statusCode == 401 || stat.restDnsStat.statusCode == 200 && stat.restDnsStat.ips.length == 0 ) {
-            Cache.getInstance().clearCache(lookupParams.requestHostname);
-            // todo: 批量域名中部分域名返回异常，需清除缓存处理
-        }
         DnsLog.d("LookupResult %s", lookupResult.ipSet);
         if (null != sLookupListener) {
             sLookupListener.onLookedUp(lookupParams, lookupResult);

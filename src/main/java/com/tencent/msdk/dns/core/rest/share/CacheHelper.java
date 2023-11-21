@@ -100,7 +100,7 @@ public final class CacheHelper {
         }
 
         if (Response.EMPTY == rsp) {
-            mCache.clearCache(lookupParams.requestHostname);
+            clearErrorRspCache(lookupParams.requestHostname);
             return;
         }
 
@@ -146,7 +146,8 @@ public final class CacheHelper {
                     }
                 });
             } else {
-                mCache.clearCache(hostname);
+                // 批量解析中，解析结果不存在时处理。
+                clearErrorRspCache(hostname);
             }
         }
 
@@ -206,8 +207,11 @@ public final class CacheHelper {
         }
     }
 
-    public void clearErrorRspCache(String hostname, int statusCode,  Response rsp) {
-        // todo
+    public void clearErrorRspCache(String hostname) {
+        // 乐观DNS场景下，当httpdns请求服务正常返回解析结果异常（为空，解析结果不存在）时，清除缓存。
+        if (DnsService.getDnsConfig().useExpiredIpEnable) {
+            mCache.clearCache(hostname);
+        }
     }
 
     private void listenNetworkChange() {
