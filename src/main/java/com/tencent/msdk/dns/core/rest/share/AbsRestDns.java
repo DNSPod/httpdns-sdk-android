@@ -172,8 +172,7 @@ public abstract class AbsRestDns implements IDns<LookupExtra> {
 
             // NOTE: 先判断是否命中缓存, 改变状态
             // 获取解析结果统一由receiveResponse完成
-            if (!lookupContext.enableAsyncLookup() &&
-                    null != mCacheHelper.get(lookupContext.hostname())) {
+            if (!lookupContext.enableAsyncLookup() && null != mCacheHelper.get(lookupContext.hostname())) {
                 mState = State.READABLE;
             }
         }
@@ -228,7 +227,9 @@ public abstract class AbsRestDns implements IDns<LookupExtra> {
 
                 rsp = responseInternal();
 
-                if ((rsp == Response.EMPTY || rsp == Response.NEED_CONTINUE || rsp.ips.length == 0) && mStat.statusCode == 200 || mStat.statusCode == 401) {
+                if ((rsp == Response.EMPTY || rsp == Response.NEED_CONTINUE || rsp.ips.length == 0)
+                        && mStat.statusCode == 200
+                        || mStat.statusCode == 401) {
                     mCacheHelper.clearErrorRspCache(lookupParameters.requestHostname);
                 }
 

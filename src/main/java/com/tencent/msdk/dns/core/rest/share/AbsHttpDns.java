@@ -223,7 +223,9 @@ public abstract class AbsHttpDns extends AbsRestDns {
             @Override
             public boolean isWritable() {
                 if (null != mChannel) {
-                    DnsLog.d(getTag() + ", channel isConnected:" + mChannel.isConnected() + ", writable:" + super.isWritable());
+                    DnsLog.d(getTag()
+                            + ", channel isConnected:" + mChannel.isConnected()
+                            + ", writable:" + super.isWritable());
                     return mChannel.isConnected() && super.isWritable();
                 }
                 return super.isWritable();
@@ -364,7 +366,7 @@ public abstract class AbsHttpDns extends AbsRestDns {
         @Override
         protected Response responseInternal() {
             DnsLog.d(getTag() + "receive responseInternal call");
-            LookupExtra lookupExtra = mLookupContext.lookupExtra();
+            final LookupExtra lookupExtra = mLookupContext.lookupExtra();
             if (mReadBuffer == null) {
                 mReadBuffer = ByteBuffer.allocate(TCP_CONTINUOUS_RCV_BUF_SIZE);
             }
