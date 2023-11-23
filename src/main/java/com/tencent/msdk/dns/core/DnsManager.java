@@ -94,12 +94,10 @@ public final class DnsManager {
         sLookupListener = lookupListener;
     }
 
-    public static <LookupExtra extends IDns.ILookupExtra>
-    LookupResult<IStatisticsMerge> getResultFromCache(LookupParameters<LookupExtra> lookupParams) {
+    public static <LookupExtra extends IDns.ILookupExtra> LookupResult<IStatisticsMerge> getResultFromCache(LookupParameters<LookupExtra> lookupParams) {
         DnsGroup restDnsGroup = CHANNEL_DNS_GROUP_MAP.get(lookupParams.channel);
         if (restDnsGroup == null) {
-            return new LookupResult<IStatisticsMerge>(
-                    IpSet.EMPTY, new StatisticsMerge(lookupParams.appContext));
+            return new LookupResult<IStatisticsMerge>(IpSet.EMPTY, new StatisticsMerge(lookupParams.appContext));
         }
         LookupExtra lookupExtra = lookupParams.lookupExtra;
 
@@ -115,8 +113,7 @@ public final class DnsManager {
         lookupContext.sorter(sorter);
         // snapshot
         @SuppressWarnings("unchecked") IStatisticsMerge<LookupExtra> statMerge =
-                sStatMergeFactory.create(
-                        (Class<LookupExtra>) lookupExtra.getClass(), lookupParams.appContext);
+                sStatMergeFactory.create((Class<LookupExtra>) lookupExtra.getClass(), lookupParams.appContext);
         lookupContext.statisticsMerge(statMerge);
 
         IDns dns;
@@ -136,25 +133,20 @@ public final class DnsManager {
         statMerge.statContext(lookupContext);
         if (lookupResultFromCache.stat.lookupSuccess() || lookupResultFromCache.stat.lookupPartCached()) {
             lookupContext.sorter().put(dns, lookupResultFromCache.ipSet.ips);
-            lookupContext.statisticsMerge()
-                    .merge(dns, lookupResultFromCache.stat);
+            lookupContext.statisticsMerge().merge(dns, lookupResultFromCache.stat);
 
             IpSet ipSet = sorter.sort();
             statMerge.statResult(ipSet);
-            LookupResult<IStatisticsMerge> lookupResult =
-                    new LookupResult<IStatisticsMerge>(ipSet, statMerge);
-            DnsLog.d("getResultFromCache by httpdns cache:"
-                    + lookupResult.ipSet + "; " + lookupResult.stat);
+            LookupResult<IStatisticsMerge> lookupResult = new LookupResult<IStatisticsMerge>(ipSet, statMerge);
+            DnsLog.d("getResultFromCache by httpdns cache:" + lookupResult.ipSet + "; " + lookupResult.stat);
             return lookupResult;
         }
 
-        return new LookupResult<IStatisticsMerge>(
-                IpSet.EMPTY, statMerge);
+        return new LookupResult<IStatisticsMerge>(IpSet.EMPTY, statMerge);
     }
 
     // lookupParameters创建时会进行参数校验
-    public static <LookupExtra extends IDns.ILookupExtra>
-    LookupResult<IStatisticsMerge> lookup(LookupParameters<LookupExtra> lookupParams) {
+    public static <LookupExtra extends IDns.ILookupExtra> LookupResult<IStatisticsMerge> lookup(LookupParameters<LookupExtra> lookupParams) {
         if (null == lookupParams) {
             throw new IllegalArgumentException("lookupParams".concat(Const.NULL_POINTER_TIPS));
         }
@@ -167,8 +159,7 @@ public final class DnsManager {
 
         LookupLatchResultPair lookupLatchResultPair = RUNNING_LOOKUP_LATCH_MAP.get(lookupParams);
         if (null != lookupLatchResultPair) {
-            DnsLog.d(
-                    "The same lookup task(for %s) is running, just wait for it", lookupParams);
+            DnsLog.d("The same lookup task(for %s) is running, just wait for it", lookupParams);
             CountDownLatch lookupLatch = lookupLatchResultPair.mLookupLatch;
             try {
                 if (lookupLatch.await((long) (AWAIT_FOR_RUNNING_LOOKUP_FACTOR * lookupParams.timeoutMills),
@@ -177,27 +168,21 @@ public final class DnsManager {
                     return lookupLatchResultPair.mLookupResultHolder.mLookupResult;
                 }
                 DnsLog.d("Await for running lookup for %s timeout", lookupParams);
-                return new LookupResult<IStatisticsMerge>(
-                        IpSet.EMPTY, new StatisticsMerge(lookupParams.appContext));
+                return new LookupResult<IStatisticsMerge>(IpSet.EMPTY, new StatisticsMerge(lookupParams.appContext));
             } catch (Exception e) {
                 DnsLog.w(e, "Await for running lookup for %s failed", lookupParams);
-                int fixedTimeoutMills = (int) (lookupParams.timeoutMills
-                        - (SystemClock.elapsedRealtime() - startTimeMills));
+                int fixedTimeoutMills =
+                        (int) (lookupParams.timeoutMills - (SystemClock.elapsedRealtime() - startTimeMills));
                 if (0 < fixedTimeoutMills) {
-                    return lookup(new LookupParameters.Builder<>(lookupParams)
-                            .timeoutMills(fixedTimeoutMills)
-                            .build()
-                    );
+                    return lookup(new LookupParameters.Builder<>(lookupParams).timeoutMills(fixedTimeoutMills).build());
                 }
-                return new LookupResult<IStatisticsMerge>(
-                        IpSet.EMPTY, new StatisticsMerge(lookupParams.appContext));
+                return new LookupResult<IStatisticsMerge>(IpSet.EMPTY, new StatisticsMerge(lookupParams.appContext));
             }
         }
 //        初始化CountDownLatch同步计数器
         CountDownLatch lookupLatch = new CountDownLatch(1);
         LookupResultHolder lookupResultHolder = new LookupResultHolder();
-        RUNNING_LOOKUP_LATCH_MAP.put(
-                lookupParams, new LookupLatchResultPair(lookupLatch, lookupResultHolder));
+        RUNNING_LOOKUP_LATCH_MAP.put(lookupParams, new LookupLatchResultPair(lookupLatch, lookupResultHolder));
 
         int timeoutMills = lookupParams.timeoutMills;
         final LookupExtra lookupExtra = lookupParams.lookupExtra;
@@ -226,8 +211,7 @@ public final class DnsManager {
         // snapshot
         IRetry retry = sRetry;
         @SuppressWarnings("unchecked") IStatisticsMerge<LookupExtra> statMerge =
-                sStatMergeFactory.create(
-                        (Class<LookupExtra>) lookupExtra.getClass(), lookupParams.appContext);
+                sStatMergeFactory.create((Class<LookupExtra>) lookupExtra.getClass(), lookupParams.appContext);
         lookupContext.statisticsMerge(statMerge);
 
         CountDownManager.Transaction transaction = CountDownManager.beginTransaction();
@@ -274,10 +258,8 @@ public final class DnsManager {
             }
 
             int maxRetryTimes = retry.maxRetryTimes();
-            int remainTimeMills =
-                    timeoutMills - (int) (SystemClock.elapsedRealtime() - startTimeMills);
-            int waitTimeMills =
-                    0 < maxRetryTimes ? remainTimeMills / (maxRetryTimes + 1) : remainTimeMills;
+            int remainTimeMills = timeoutMills - (int) (SystemClock.elapsedRealtime() - startTimeMills);
+            int waitTimeMills = 0 < maxRetryTimes ? remainTimeMills / (maxRetryTimes + 1) : remainTimeMills;
             int retriedTimes = 0;
 
             CountDownLatch countDownLatch = transaction.commit();
@@ -299,8 +281,7 @@ public final class DnsManager {
                             // 需要重试
                             && canRetry(startTimeMills, timeoutMills, maxRetryTimes, retriedTimes)) {
                         retriedTimes++;
-                        remainTimeMills = timeoutMills
-                                - (int) (SystemClock.elapsedRealtime() - startTimeMills);
+                        remainTimeMills = timeoutMills - (int) (SystemClock.elapsedRealtime() - startTimeMills);
                         LookupContext<LookupExtra> newLookupContext =
                                 lookupContext.newLookupContext(
                                         new LookupParameters.Builder<>(lookupParams)
@@ -312,24 +293,22 @@ public final class DnsManager {
                 }
                 IpSet ipSet = sorter.sort();
                 statMerge.statResult(ipSet);
-                LookupResult<IStatisticsMerge> lookupResult =
-                        new LookupResult<IStatisticsMerge>(ipSet, statMerge);
+                LookupResult<IStatisticsMerge> lookupResult = new LookupResult<IStatisticsMerge>(ipSet, statMerge);
                 lookupResultHolder.mLookupResult = lookupResult;
                 return lookupResult;
             }
 
             // 非阻塞解析
             // TODO: sessions加上对于解析结果可以忽略的支持(主要是支持LocalDns)
-            while (!sessions.isEmpty()
-                    && SystemClock.elapsedRealtime() - startTimeMills < timeoutMills) {
+            while (!sessions.isEmpty() && SystemClock.elapsedRealtime() - startTimeMills < timeoutMills) {
                 // sleep以降低系统调用频率
                 try {
                     Thread.sleep(SYSTEM_CALL_INTERVAL_MILLS);
                 } catch (Exception ignored) {
+                    DnsLog.e("exception: %s", ignored);
                 }
                 try {
-                    DnsLog.d("selector %s wait for sessions:%d, mills:%d",
-                            selector, sessions.size(), waitTimeMills);
+                    DnsLog.d("selector %s wait for sessions:%d, mills:%d", selector, sessions.size(), waitTimeMills);
                     selector.select(waitTimeMills);
                 } catch (Exception e) {
                     DnsLog.d(e, "sessions not empty, but exception");
@@ -357,11 +336,11 @@ public final class DnsManager {
                 }
                 countDownLatch.await(remainTimeMills, TimeUnit.MILLISECONDS);
             } catch (Exception ignored) {
+                DnsLog.e("exception: %s", ignored);
             }
             IpSet ipSet = sorter.sort();
             statMerge.statResult(ipSet);
-            LookupResult<IStatisticsMerge> lookupResult =
-                    new LookupResult<IStatisticsMerge>(ipSet, statMerge);
+            LookupResult<IStatisticsMerge> lookupResult = new LookupResult<IStatisticsMerge>(ipSet, statMerge);
             lookupResultHolder.mLookupResult = lookupResult;
 
             return lookupResult;
@@ -398,8 +377,8 @@ public final class DnsManager {
         return lookupResult;
     }
 
-    private static <LookupExtra extends IDns.ILookupExtra>
-    void prepareTasks(DnsGroup dnsGroup, LookupContext<LookupExtra> lookupContext) {
+    private static <LookupExtra extends IDns.ILookupExtra> void prepareTasks(DnsGroup dnsGroup,
+                                                                             LookupContext<LookupExtra> lookupContext) {
         int curNetStack = lookupContext.currentNetworkStack();
 //        int family = lookupContext.family();
         boolean ignoreCurNetStack = lookupContext.ignoreCurrentNetworkStack();
@@ -424,8 +403,8 @@ public final class DnsManager {
 
     }
 
-    private static <LookupExtra extends IDns.ILookupExtra>
-    void prepareTask(final IDns<LookupExtra> dns, LookupContext<LookupExtra> lookupContext) {
+    private static <LookupExtra extends IDns.ILookupExtra> void prepareTask(final IDns<LookupExtra> dns,
+                                                                            LookupContext<LookupExtra> lookupContext) {
         DnsLog.d("prepareTask:" + dns);
         lookupContext.dnses().add(dns);
         if (lookupContext.blockFirst() ||
@@ -436,8 +415,7 @@ public final class DnsManager {
         }
         IDns.ISession session;
         // HTTPS情况下也采用HTTPCONNECTION做请求
-        if (!Const.HTTPS_CHANNEL.equals(lookupContext.channel()) && ((null != lookupContext.selector()) || tryOpenSelector(lookupContext)) &&
-                null != (session = dns.getSession(lookupContext))) {
+        if (!Const.HTTPS_CHANNEL.equals(lookupContext.channel()) && ((null != lookupContext.selector()) || tryOpenSelector(lookupContext)) && null != (session = dns.getSession(lookupContext))) {
             LookupHelper.prepareNonBlockLookupTask(session, lookupContext);
         } else {
             LookupHelper.prepareBlockLookupTask(dns, lookupContext);
@@ -456,8 +434,7 @@ public final class DnsManager {
         }
     }
 
-    private static <LookupExtra extends IDns.ILookupExtra>
-    void tryLookup(LookupContext<LookupExtra> lookupContext) {
+    private static <LookupExtra extends IDns.ILookupExtra> void tryLookup(LookupContext<LookupExtra> lookupContext) {
         Iterator<IDns.ISession> sessionIterator = lookupContext.sessions().iterator();
         while (sessionIterator.hasNext()) {
             IDns.ISession session = sessionIterator.next();
@@ -466,8 +443,7 @@ public final class DnsManager {
             }
             IDns.ISession.IToken token = session.getToken();
             if (token.isReadable()) {
-                DnsLog.d("%s event readable",
-                        session.getDns().getDescription());
+                DnsLog.d("%s event readable", session.getDns().getDescription());
                 String[] ips = session.receiveResponse();
                 if (session.getStatistics().lookupSuccess() || session.getStatistics().lookupFailed()) {
                     IDns dns = session.getDns();
@@ -476,19 +452,16 @@ public final class DnsManager {
                     if (session.getStatistics().lookupSuccess()) {
                         lookupContext.sorter().put(dns, ips);
                     }
-                    lookupContext.statisticsMerge()
-                            .merge(dns, session.getStatistics());
+                    lookupContext.statisticsMerge().merge(dns, session.getStatistics());
                     continue;
                 }
             } else if (token.isWritable()) {
-                DnsLog.d("%s event writable",
-                        session.getDns().getDescription());
+                DnsLog.d("%s event writable", session.getDns().getDescription());
                 // 发起请求
                 session.request();
             } else {
                 if (token.isConnectable()) {
-                    DnsLog.d("%s event connectable",
-                            session.getDns().getDescription());
+                    DnsLog.d("%s event connectable", session.getDns().getDescription());
                     session.connect();
                 }
                 // 如果不是writable，则每次都需要finishConnect
@@ -498,8 +471,7 @@ public final class DnsManager {
 
             // 每次检查下，及时清理
             if (!token.isAvailable()) {
-                DnsLog.d("%s event not available, maybe closed",
-                        session.getDns().getDescription());
+                DnsLog.d("%s event not available, maybe closed", session.getDns().getDescription());
                 IDns dns = session.getDns();
                 sessionIterator.remove();
                 lookupContext.dnses().remove(dns);
@@ -507,16 +479,14 @@ public final class DnsManager {
         }
     }
 
-    private static boolean canRetry(long startTimeMills, int timeoutMills,
-                                    int maxRetryTimes, int retriedTimes) {
-        return retriedTimes < maxRetryTimes &&
+    private static boolean canRetry(long startTimeMills, int timeoutMills, int maxRetryTimes, int retriedTimes) {
+        return retriedTimes < maxRetryTimes
                 // NOTE: 本次查询已经超时
-                (int) (SystemClock.elapsedRealtime() - startTimeMills) >
-                        timeoutMills * (retriedTimes + 1) / (maxRetryTimes + 1);
+                && (int) (SystemClock.elapsedRealtime() - startTimeMills)
+                > timeoutMills * (retriedTimes + 1) / (maxRetryTimes + 1);
     }
 
-    private static <LookupExtra extends IDns.ILookupExtra>
-    void endSessions(LookupContext<LookupExtra> lookupContext) {
+    private static <LookupExtra extends IDns.ILookupExtra> void endSessions(LookupContext<LookupExtra> lookupContext) {
         for (IDns.ISession session : lookupContext.sessions()) {
             session.end();
             lookupContext.statisticsMerge().merge(session.getDns(), session.getStatistics());
@@ -524,8 +494,7 @@ public final class DnsManager {
     }
 
     private static void clearEndedSession(LookupContext lookupContext) {
-        @SuppressWarnings("unchecked")
-        Iterator<IDns.ISession> sessionIterator = lookupContext.sessions().iterator();
+        @SuppressWarnings("unchecked") Iterator<IDns.ISession> sessionIterator = lookupContext.sessions().iterator();
         while (sessionIterator.hasNext()) {
             IDns.ISession session = sessionIterator.next();
             if (session.isEnd()) {
@@ -551,14 +520,12 @@ public final class DnsManager {
         final CountDownLatch mLookupLatch;
         final LookupResultHolder mLookupResultHolder;
 
-        public LookupLatchResultPair(
-                CountDownLatch lookupLatch, LookupResultHolder lookupResultHolder) {
+        public LookupLatchResultPair(CountDownLatch lookupLatch, LookupResultHolder lookupResultHolder) {
             if (null == lookupLatch) {
                 throw new IllegalArgumentException("lookupLatch".concat(Const.NULL_POINTER_TIPS));
             }
             if (null == lookupResultHolder) {
-                throw new IllegalArgumentException(
-                        "lookupResultHolder".concat(Const.NULL_POINTER_TIPS));
+                throw new IllegalArgumentException("lookupResultHolder".concat(Const.NULL_POINTER_TIPS));
             }
 
             mLookupLatch = lookupLatch;

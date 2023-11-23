@@ -40,7 +40,8 @@ public final class RequestBuilder {
         return buildRequest(encryptedHostname, bizId, DOUB_REQUEST_FORMAT, isServerHostname);
     }
 
-    private static String buildRequest(String encryptedHostname, String bizId, String format, boolean isServerHostname) {
+    private static String buildRequest(String encryptedHostname, String bizId, String format,
+                                       boolean isServerHostname) {
         if (TextUtils.isEmpty(bizId)) {
             throw new IllegalArgumentException("bizId".concat(Const.EMPTY_TIPS));
         }

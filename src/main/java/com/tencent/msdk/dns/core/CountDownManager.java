@@ -1,6 +1,7 @@
 package com.tencent.msdk.dns.core;
 
 import com.tencent.msdk.dns.base.executor.DnsExecutors;
+import com.tencent.msdk.dns.base.log.DnsLog;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -91,6 +92,7 @@ public final class CountDownManager {
             try {
                 mRealTask.run();
             } catch (Exception ignored) {
+                DnsLog.e("exception: %s", ignored);
             }
             if (!mRealTask.mIgnorable) {
                 mCountDownLatch.countDown();

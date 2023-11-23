@@ -182,21 +182,27 @@ public final class DnsService {
         sConfig.enableDomainServer = mEnableDomainServer;
     }
 
+    /**
+     * 获取DNS详情（命中缓存数据）
+     *
+     * @param hostname 域名，支持多个域名，用,拼接
+     * @return 解析数据
+     */
     public static String getDnsDetail(String hostname) {
         String dnsIp = BackupResolver.getInstance().getDnsIp();
         final LookupResult<IStatisticsMerge> lookupResult =
                 DnsManager.getResultFromCache(new LookupParameters.Builder<LookupExtra>()
-                .context(sAppContext)
-                .hostname(hostname)
-                .timeoutMills(sConfig.timeoutMills)
-                .dnsIp(dnsIp)
-                .lookupExtra(sConfig.lookupExtra)
-                .channel(sConfig.channel)
-                .fallback2Local(true)
-                .blockFirst(sConfig.blockFirst)
-                .enableAsyncLookup(false)
-                .customNetStack(sConfig.customNetStack)
-                .build());
+                        .context(sAppContext)
+                        .hostname(hostname)
+                        .timeoutMills(sConfig.timeoutMills)
+                        .dnsIp(dnsIp)
+                        .lookupExtra(sConfig.lookupExtra)
+                        .channel(sConfig.channel)
+                        .fallback2Local(true)
+                        .blockFirst(sConfig.blockFirst)
+                        .enableAsyncLookup(false)
+                        .customNetStack(sConfig.customNetStack)
+                        .build());
 
         // 收集命中缓存的数据
         DnsExecutors.WORK.execute(new Runnable() {
@@ -379,16 +385,14 @@ public final class DnsService {
 
         DnsManager.setLookupListener(new ILookupListener() {
             @Override
-            public void onLookedUp(LookupParameters lookupParameters,
-                                   LookupResult<IStatisticsMerge> lookupResult) {
+            public void onLookedUp(LookupParameters lookupParameters, LookupResult<IStatisticsMerge> lookupResult) {
                 String hostname = lookupParameters.hostname;
                 if (!(lookupResult.stat instanceof StatisticsMerge)) {
                     DnsLog.d("Looked up for %s may be by LocalDns", hostname);
                     return;
                 }
                 StatisticsMerge stat = (StatisticsMerge) lookupResult.stat;
-                LookupResult<StatisticsMerge> expectedLookupResult =
-                        new LookupResult<>(lookupResult.ipSet, stat);
+                LookupResult<StatisticsMerge> expectedLookupResult = new LookupResult<>(lookupResult.ipSet, stat);
                 if (lookupParameters.ignoreCurNetStack) {
                     if (DnsDescription.Family.UN_SPECIFIC == lookupParameters.family) {
                         lookedUpListener.onPreLookedUp(hostname, expectedLookupResult);
@@ -432,8 +436,7 @@ public final class DnsService {
         }
 
         final int numOfPreLookupDomain = sConfig.preLookupDomains.size();
-        final String[] preLookupDomainsList =
-                sConfig.preLookupDomains.toArray(new String[numOfPreLookupDomain]);
+        final String[] preLookupDomainsList = sConfig.preLookupDomains.toArray(new String[numOfPreLookupDomain]);
         final String preLookupDomains = CommonUtils.toStringList(preLookupDomainsList, ",");
 
         // 预解析调整为批量解析

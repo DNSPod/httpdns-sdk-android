@@ -55,7 +55,8 @@ public class MSDKDnsResolver {
         try {
             // NOTE: 兼容旧版本实现, 参数不合法时不crash
             init(context, appId, null, null, dnsIp, debug, timeout);
-        } catch (Exception e) {
+        } catch (Exception ignored) {
+            DnsLog.e("exception: %s", ignored);
         }
     }
 
@@ -356,6 +357,7 @@ public class MSDKDnsResolver {
         try {
             ipSet = DnsService.getAddrsByName(domain, useHttp);
         } catch (Exception ignored) {
+            DnsLog.e("exception: %s", ignored);
         }
 
         return ipSet;

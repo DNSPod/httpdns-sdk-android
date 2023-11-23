@@ -58,8 +58,8 @@ public final class ResponseParser {
                     clientIp = rspMatcher.group(4) + ",";
                     String[] tmpIps = rspMatcher.group(2).split(IP_SPLITTER);
                     //  将域名和ip组装为 host:ip的形式存入clientIp
-                    for (int n = 0; n < tmpIps.length; n++) {
-                        ipsList.add(host + ":" + tmpIps[n]);
+                    for (String tmpIp : tmpIps) {
+                        ipsList.add(host + ":" + tmpIp);
                     }
                     ttl.put(host, Integer.parseInt(rspMatcher.group(3)));
                 } catch (Exception e) {
@@ -70,7 +70,7 @@ public final class ResponseParser {
             if (ipsList.size() == 0) {
                 return Response.EMPTY;
             }
-            String ips[] = ipsList.toArray(new String[ipsList.size()]);
+            String[] ips = ipsList.toArray(new String[ipsList.size()]);
             return new Response(family, clientIp, ips, ttl);
         } else {
             //  普通查询
@@ -93,7 +93,8 @@ public final class ResponseParser {
 
     public static Response parseDoubResponse(@NonNull String[] rspList) {
         // format: ip;ip;ip;...,ttl|client ip
-        // like: www.qq.com.:121.14.77.221;121.14.77.201,120-2402:4e00:1020:1404:0:9227:71a3:83d2;2402:4e00:1020:1404:0:9227:71ab:2b74,120|113.108.77.69
+        // like: www.qq.com.:121.14.77.221;121.14.77.201,120-2402:4e00:1020:1404:0:9227:71a3:83d2;
+        // 2402:4e00:1020:1404:0:9227:71ab:2b74,120|113.108.77.69
         //  批量查询情况
         Map<String, Integer> ttl = new HashMap<>();
         if (rspList.length > 1) {
@@ -115,15 +116,16 @@ public final class ResponseParser {
                     String[] inet4Ips = rspMatcher.group(2).split(IP_SPLITTER);
                     String[] inet6Ips = rspMatcher.group(4).split(IP_SPLITTER);
                     // ttl先按ipv4, ipv6的最小值的获取
-                    ttl.put(host, Math.min(Integer.parseInt(rspMatcher.group(3)), Integer.parseInt(rspMatcher.group(5))));
+                    ttl.put(host, Math.min(Integer.parseInt(rspMatcher.group(3)),
+                            Integer.parseInt(rspMatcher.group(5))));
 
                     //  将域名和ip组装为 host:ip的形式存入clientIp
-                    for (int n = 0; n < inet4Ips.length; n++) {
-                        inet4IpsList.add(host + ":" + inet4Ips[n]);
+                    for (String inet4Ip : inet4Ips) {
+                        inet4IpsList.add(host + ":" + inet4Ip);
                     }
 
-                    for (int n = 0; n < inet6Ips.length; n++) {
-                        inet6IpsList.add(host + ":" + inet6Ips[n]);
+                    for (String inet6Ip : inet6Ips) {
+                        inet6IpsList.add(host + ":" + inet6Ip);
                     }
                 } catch (Exception e) {
                     DnsLog.w(e, "Parse external response failed");
@@ -133,8 +135,8 @@ public final class ResponseParser {
             if (inet4IpsList.size() == 0 && inet6IpsList.size() == 0) {
                 return Response.EMPTY;
             }
-            String inet4IpsTemp[] = inet4IpsList.toArray(new String[inet4IpsList.size()]);
-            String inet6IpsTemp[] = inet6IpsList.toArray(new String[inet6IpsList.size()]);
+            String[] inet4IpsTemp = inet4IpsList.toArray(new String[inet4IpsList.size()]);
+            String[] inet6IpsTemp = inet6IpsList.toArray(new String[inet6IpsList.size()]);
             return new Response(clientIp, inet4IpsTemp, inet6IpsTemp, ttl);
         } else {
             try {
