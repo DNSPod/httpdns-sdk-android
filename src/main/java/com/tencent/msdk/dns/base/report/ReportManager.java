@@ -49,10 +49,10 @@ public final class ReportManager {
         return !sBuiltInReporters.isEmpty() || !sCustomReporters.isEmpty();
     }
 
-    public static <InitParameters extends IReporter.IInitParameters>
-    void initBuiltInReporter(int channel, InitParameters initParameters) {
+    public static <InitParametersT extends IReporter.IInitParameters>
+    void initBuiltInReporter(int channel, InitParametersT initParameters) {
         @SuppressWarnings("unchecked")
-        IReporter<InitParameters> reporter = ReporterFactory.getReporter(channel);
+        IReporter<InitParametersT> reporter = ReporterFactory.getReporter(channel);
         if (null == reporter) {
             DnsLog.d("Get builtIn reporter from channel: %d failed", channel);
             return;
@@ -99,11 +99,11 @@ public final class ReportManager {
             }
         }
 
-        if(!canReport()) {
+        if (!canReport()) {
             return;
         }
 
-        DnsLog.d("HTTPDNS_SDK_VER:" + BuildConfig.VERSION_NAME  + ", Try to report %s", eventName);
+        DnsLog.d("HTTPDNS_SDK_VER:" + BuildConfig.VERSION_NAME + ", Try to report %s", eventName);
 
         for (IReporter reporter : sBuiltInReporters) {
             if (!reporter.report(env, eventName, eventInfo)) {

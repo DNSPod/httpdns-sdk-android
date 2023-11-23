@@ -33,8 +33,8 @@ public final class LookupContext<LookupExtra extends IDns.ILookupExtra> {
     }
 
 
-    public static <LookupExtra extends IDns.ILookupExtra>
-    LookupContext<LookupExtra> wrap(LookupParameters<LookupExtra> lookupParams) {
+    public static <LookupExtraT extends IDns.ILookupExtra>
+    LookupContext<LookupExtraT> wrap(LookupParameters<LookupExtraT> lookupParams) {
         // 参数检查由构造方法完成
         return new LookupContext<>(lookupParams);
     }

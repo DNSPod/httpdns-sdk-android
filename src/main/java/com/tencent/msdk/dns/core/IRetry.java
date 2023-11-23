@@ -6,6 +6,6 @@ public interface IRetry {
 
     void retryNonBlock(LookupContext lookupContext);
 
-    <LookupExtra extends IDns.ILookupExtra>
-    void retryBlock(LookupContext<LookupExtra> lookupContext);
+    <LookupExtraT extends IDns.ILookupExtra>
+    void retryBlock(LookupContext<LookupExtraT> lookupContext);
 }

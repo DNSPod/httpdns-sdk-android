@@ -36,8 +36,8 @@ public final class Retry implements IRetry {
 
     @SuppressWarnings({"SynchronizationOnLocalVariableOrMethodParameter", "unchecked"})
     @Override
-    public <LookupExtra extends IDns.ILookupExtra>
-    void retryBlock(LookupContext<LookupExtra> lookupContext) {
+    public <LookupExtraT extends IDns.ILookupExtra>
+    void retryBlock(LookupContext<LookupExtraT> lookupContext) {
         if (null == lookupContext) {
             throw new IllegalArgumentException("lookupContext".concat(Const.NULL_POINTER_TIPS));
         }

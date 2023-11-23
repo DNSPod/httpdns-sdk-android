@@ -94,14 +94,15 @@ public final class DnsManager {
         sLookupListener = lookupListener;
     }
 
-    public static <LookupExtra extends IDns.ILookupExtra> LookupResult<IStatisticsMerge> getResultFromCache(LookupParameters<LookupExtra> lookupParams) {
+    public static <LookupExtraT extends IDns.ILookupExtra>
+    LookupResult<IStatisticsMerge> getResultFromCache(LookupParameters<LookupExtraT> lookupParams) {
         DnsGroup restDnsGroup = CHANNEL_DNS_GROUP_MAP.get(lookupParams.channel);
         if (restDnsGroup == null) {
             return new LookupResult<IStatisticsMerge>(IpSet.EMPTY, new StatisticsMerge(lookupParams.appContext));
         }
-        LookupExtra lookupExtra = lookupParams.lookupExtra;
+        LookupExtraT lookupExtra = lookupParams.lookupExtra;
 
-        LookupContext<LookupExtra> lookupContext = LookupContext.wrap(lookupParams);
+        LookupContext<LookupExtraT> lookupContext = LookupContext.wrap(lookupParams);
         if (!NetworkStack.isInvalid(lookupParams.customNetStack) && lookupParams.customNetStack > 0) {
             lookupContext.currentNetworkStack(lookupParams.customNetStack);
         } else {
@@ -112,8 +113,8 @@ public final class DnsManager {
         ISorter sorter = sSorterFactory.create(currentNetworkStack);
         lookupContext.sorter(sorter);
         // snapshot
-        @SuppressWarnings("unchecked") IStatisticsMerge<LookupExtra> statMerge =
-                sStatMergeFactory.create((Class<LookupExtra>) lookupExtra.getClass(), lookupParams.appContext);
+        @SuppressWarnings("unchecked") IStatisticsMerge<LookupExtraT> statMerge =
+                sStatMergeFactory.create((Class<LookupExtraT>) lookupExtra.getClass(), lookupParams.appContext);
         lookupContext.statisticsMerge(statMerge);
 
         IDns dns;
@@ -146,7 +147,7 @@ public final class DnsManager {
     }
 
     // lookupParameters创建时会进行参数校验
-    public static <LookupExtra extends IDns.ILookupExtra> LookupResult<IStatisticsMerge> lookup(LookupParameters<LookupExtra> lookupParams) {
+    public static <LookupExtraT extends IDns.ILookupExtra> LookupResult<IStatisticsMerge> lookup(LookupParameters<LookupExtraT> lookupParams) {
         if (null == lookupParams) {
             throw new IllegalArgumentException("lookupParams".concat(Const.NULL_POINTER_TIPS));
         }
@@ -185,11 +186,11 @@ public final class DnsManager {
         RUNNING_LOOKUP_LATCH_MAP.put(lookupParams, new LookupLatchResultPair(lookupLatch, lookupResultHolder));
 
         int timeoutMills = lookupParams.timeoutMills;
-        final LookupExtra lookupExtra = lookupParams.lookupExtra;
+        final LookupExtraT lookupExtra = lookupParams.lookupExtra;
         String channel = lookupParams.channel;
         boolean fallback2Local = lookupParams.fallback2Local;
 
-        LookupContext<LookupExtra> lookupContext = LookupContext.wrap(lookupParams);
+        LookupContext<LookupExtraT> lookupContext = LookupContext.wrap(lookupParams);
 
         DnsGroup localDnsGroup = null;
         DnsGroup restDnsGroup = null;
@@ -210,8 +211,8 @@ public final class DnsManager {
         lookupContext.sorter(sorter);
         // snapshot
         IRetry retry = sRetry;
-        @SuppressWarnings("unchecked") IStatisticsMerge<LookupExtra> statMerge =
-                sStatMergeFactory.create((Class<LookupExtra>) lookupExtra.getClass(), lookupParams.appContext);
+        @SuppressWarnings("unchecked") IStatisticsMerge<LookupExtraT> statMerge =
+                sStatMergeFactory.create((Class<LookupExtraT>) lookupExtra.getClass(), lookupParams.appContext);
         lookupContext.statisticsMerge(statMerge);
 
         CountDownManager.Transaction transaction = CountDownManager.beginTransaction();
@@ -282,7 +283,7 @@ public final class DnsManager {
                             && canRetry(startTimeMills, timeoutMills, maxRetryTimes, retriedTimes)) {
                         retriedTimes++;
                         remainTimeMills = timeoutMills - (int) (SystemClock.elapsedRealtime() - startTimeMills);
-                        LookupContext<LookupExtra> newLookupContext =
+                        LookupContext<LookupExtraT> newLookupContext =
                                 lookupContext.newLookupContext(
                                         new LookupParameters.Builder<>(lookupParams)
                                                 .timeoutMills(remainTimeMills)
@@ -320,7 +321,7 @@ public final class DnsManager {
                         && canRetry(startTimeMills, timeoutMills, maxRetryTimes, retriedTimes)) {
                     DnsLog.d("sessions is not empty, sessions:%d, enter retry", sessions.size());
                     retriedTimes++;
-                    LookupContext<LookupExtra> newLookupContext = lookupContext.newLookupContext(
+                    LookupContext<LookupExtraT> newLookupContext = lookupContext.newLookupContext(
                             new LookupParameters.Builder<>(lookupParams)
                                     .curRetryTime(retriedTimes)
                                     .build());
@@ -367,8 +368,8 @@ public final class DnsManager {
         }
     }
 
-    public static <LookupExtra extends IDns.ILookupExtra>
-    LookupResult<IStatisticsMerge> lookupWrapper(LookupParameters<LookupExtra> lookupParams) {
+    public static <LookupExtraT extends IDns.ILookupExtra>
+    LookupResult<IStatisticsMerge> lookupWrapper(LookupParameters<LookupExtraT> lookupParams) {
         LookupResult<IStatisticsMerge> lookupResult = lookup(lookupParams);
         DnsLog.d("LookupResult %s", lookupResult.ipSet);
         if (null != sLookupListener) {
@@ -377,8 +378,8 @@ public final class DnsManager {
         return lookupResult;
     }
 
-    private static <LookupExtra extends IDns.ILookupExtra> void prepareTasks(DnsGroup dnsGroup,
-                                                                             LookupContext<LookupExtra> lookupContext) {
+    private static <LookupExtraT extends IDns.ILookupExtra> void prepareTasks(DnsGroup dnsGroup,
+                                                                              LookupContext<LookupExtraT> lookupContext) {
         int curNetStack = lookupContext.currentNetworkStack();
 //        int family = lookupContext.family();
         boolean ignoreCurNetStack = lookupContext.ignoreCurrentNetworkStack();
@@ -388,34 +389,35 @@ public final class DnsManager {
                 && (ignoreCurNetStack || curNetStack == NetworkStack.DUAL_STACK
                 || dnsGroup.mUnspecDns instanceof LocalDns)) {
             //noinspection unchecked
-            prepareTask((IDns<LookupExtra>) dnsGroup.mUnspecDns, lookupContext);
+            prepareTask((IDns<LookupExtraT>) dnsGroup.mUnspecDns, lookupContext);
         } else if (null != dnsGroup.mInetDns
                 // 异步解析不关注当前网络栈
                 && (ignoreCurNetStack || curNetStack == NetworkStack.IPV4_ONLY)) {
             //noinspection unchecked
-            prepareTask((IDns<LookupExtra>) dnsGroup.mInetDns, lookupContext);
+            prepareTask((IDns<LookupExtraT>) dnsGroup.mInetDns, lookupContext);
         } else if (null != dnsGroup.mInet6Dns
                 // 异步解析不关注当前网络栈
                 && (ignoreCurNetStack || curNetStack == NetworkStack.IPV6_ONLY)) {
             //noinspection unchecked
-            prepareTask((IDns<LookupExtra>) dnsGroup.mInet6Dns, lookupContext);
+            prepareTask((IDns<LookupExtraT>) dnsGroup.mInet6Dns, lookupContext);
         }
 
     }
 
-    private static <LookupExtra extends IDns.ILookupExtra> void prepareTask(final IDns<LookupExtra> dns,
-                                                                            LookupContext<LookupExtra> lookupContext) {
+    private static <LookupExtraT extends IDns.ILookupExtra> void prepareTask(final IDns<LookupExtraT> dns,
+                                                                             LookupContext<LookupExtraT> lookupContext) {
         DnsLog.d("prepareTask:" + dns);
         lookupContext.dnses().add(dns);
-        if (lookupContext.blockFirst() ||
+        if (lookupContext.blockFirst()
                 // NOTE: 临时方案, 避免LocalDns冗余创建Selector
-                Const.LOCAL_CHANNEL.equals(dns.getDescription().channel)) {
+                || Const.LOCAL_CHANNEL.equals(dns.getDescription().channel)) {
             LookupHelper.prepareBlockLookupTask(dns, lookupContext);
             return;
         }
         IDns.ISession session;
         // HTTPS情况下也采用HTTPCONNECTION做请求
-        if (!Const.HTTPS_CHANNEL.equals(lookupContext.channel()) && ((null != lookupContext.selector()) || tryOpenSelector(lookupContext)) && null != (session = dns.getSession(lookupContext))) {
+        if (!Const.HTTPS_CHANNEL.equals(lookupContext.channel()) && ((null != lookupContext.selector())
+                || tryOpenSelector(lookupContext)) && null != (session = dns.getSession(lookupContext))) {
             LookupHelper.prepareNonBlockLookupTask(session, lookupContext);
         } else {
             LookupHelper.prepareBlockLookupTask(dns, lookupContext);
@@ -434,7 +436,7 @@ public final class DnsManager {
         }
     }
 
-    private static <LookupExtra extends IDns.ILookupExtra> void tryLookup(LookupContext<LookupExtra> lookupContext) {
+    private static <LookupExtraT extends IDns.ILookupExtra> void tryLookup(LookupContext<LookupExtraT> lookupContext) {
         Iterator<IDns.ISession> sessionIterator = lookupContext.sessions().iterator();
         while (sessionIterator.hasNext()) {
             IDns.ISession session = sessionIterator.next();
@@ -486,7 +488,7 @@ public final class DnsManager {
                 > timeoutMills * (retriedTimes + 1) / (maxRetryTimes + 1);
     }
 
-    private static <LookupExtra extends IDns.ILookupExtra> void endSessions(LookupContext<LookupExtra> lookupContext) {
+    private static <LookupExtraT extends IDns.ILookupExtra> void endSessions(LookupContext<LookupExtraT> lookupContext) {
         for (IDns.ISession session : lookupContext.sessions()) {
             session.end();
             lookupContext.statisticsMerge().merge(session.getDns(), session.getStatistics());

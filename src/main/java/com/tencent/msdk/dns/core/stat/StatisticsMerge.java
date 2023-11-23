@@ -91,7 +91,7 @@ public final class StatisticsMerge implements IStatisticsMerge<LookupExtra> {
     }
 
     @Override
-    public <Statistics extends IDns.IStatistics> void merge(IDns dns, Statistics stat) {
+    public <StatisticsT extends IDns.IStatistics> void merge(IDns dns, StatisticsT stat) {
         if (null == dns) {
             throw new IllegalArgumentException("dns".concat(Const.NULL_POINTER_TIPS));
         }
@@ -180,7 +180,8 @@ public final class StatisticsMerge implements IStatisticsMerge<LookupExtra> {
             jsonObject.put("expired_time", String.valueOf(restDnsStat.expiredTime));
 
             return jsonObject.toString();
-        } catch (Exception ignore) {
+        } catch (Exception ignored) {
+            DnsLog.e("exception: %s", ignored);
         }
         return "";
     }
