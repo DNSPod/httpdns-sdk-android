@@ -23,6 +23,8 @@ public interface Const {
 
     int MAX_DEFAULT_TTL = 6000;
 
+    int MAX_CONNECT_TIME = 10 * 1000;
+
     // 字节码优化, 详见https://jakewharton.com/the-economics-of-generated-code/
 
     String NULL_POINTER_TIPS = " can not be null";

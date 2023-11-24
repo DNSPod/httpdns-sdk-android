@@ -214,7 +214,7 @@ public class MSDKDnsResolver {
      * @param openId 用户的唯一标识符, 腾讯业务建议直接使用OpenId, 腾讯云客户建议传入长度50位以内, 由字母数字下划线组合而成的字符串
      * @return 是否设置成功, true为设置成功, false为设置失败
      */
-    @SuppressWarnings("UnusedReturnValue")
+    @SuppressWarnings({"UnusedReturnValue", "checkstyle:MethodName"})
     public boolean WGSetDnsOpenId(String openId) {
         DnsLog.v("MSDKDnsResolver.WGSetDnsOpenId() called.");
 
@@ -339,16 +339,6 @@ public class MSDKDnsResolver {
         }
     }
 
-    /**
-     * 常规域名解析（批量）
-     *
-     * @param domain
-     * @return
-     */
-    private IpSet getAddrsByNameNormal(String domain) {
-        return getAddrsByName(domain, true);
-    }
-
     private IpSet getAddrsByName(String domain, boolean useHttp) {
         DnsLog.v("MSDKDnsResolver.getAddrsByName() called.");
 
@@ -361,6 +351,16 @@ public class MSDKDnsResolver {
         }
 
         return ipSet;
+    }
+
+    /**
+     * 常规域名解析（批量）
+     *
+     * @param domain 域名
+     * @return 解析结果
+     */
+    private IpSet getAddrsByNameNormal(String domain) {
+        return getAddrsByName(domain, true);
     }
 
     /**

@@ -93,8 +93,8 @@ public final class ResponseParser {
 
     public static Response parseDoubResponse(@NonNull String[] rspList) {
         // format: ip;ip;ip;...,ttl|client ip
-        // like: www.qq.com.:121.14.77.221;121.14.77.201,120-2402:4e00:1020:1404:0:9227:71a3:83d2;
-        // 2402:4e00:1020:1404:0:9227:71ab:2b74,120|113.108.77.69
+        // like: www.qq.com.:121.14.77.201,120-2402:4e00:1020:1404:0:9227:71a3:83d2;
+        // 2402:4e00:1020:1404:0:9227:71ab:2b74,120|127.0.0.1
         //  批量查询情况
         Map<String, Integer> ttl = new HashMap<>();
         if (rspList.length > 1) {

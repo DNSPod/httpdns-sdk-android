@@ -147,7 +147,8 @@ public final class DnsManager {
     }
 
     // lookupParameters创建时会进行参数校验
-    public static <LookupExtraT extends IDns.ILookupExtra> LookupResult<IStatisticsMerge> lookup(LookupParameters<LookupExtraT> lookupParams) {
+    public static <LookupExtraT extends IDns.ILookupExtra>
+    LookupResult<IStatisticsMerge> lookup(LookupParameters<LookupExtraT> lookupParams) {
         if (null == lookupParams) {
             throw new IllegalArgumentException("lookupParams".concat(Const.NULL_POINTER_TIPS));
         }
@@ -378,8 +379,8 @@ public final class DnsManager {
         return lookupResult;
     }
 
-    private static <LookupExtraT extends IDns.ILookupExtra> void prepareTasks(DnsGroup dnsGroup,
-                                                                              LookupContext<LookupExtraT> lookupContext) {
+    private static <LookupExtraT extends IDns.ILookupExtra>
+    void prepareTasks(DnsGroup dnsGroup, LookupContext<LookupExtraT> lookupContext) {
         int curNetStack = lookupContext.currentNetworkStack();
 //        int family = lookupContext.family();
         boolean ignoreCurNetStack = lookupContext.ignoreCurrentNetworkStack();
@@ -404,8 +405,8 @@ public final class DnsManager {
 
     }
 
-    private static <LookupExtraT extends IDns.ILookupExtra> void prepareTask(final IDns<LookupExtraT> dns,
-                                                                             LookupContext<LookupExtraT> lookupContext) {
+    private static <LookupExtraT extends IDns.ILookupExtra>
+    void prepareTask(final IDns<LookupExtraT> dns, LookupContext<LookupExtraT> lookupContext) {
         DnsLog.d("prepareTask:" + dns);
         lookupContext.dnses().add(dns);
         if (lookupContext.blockFirst()
@@ -488,7 +489,8 @@ public final class DnsManager {
                 > timeoutMills * (retriedTimes + 1) / (maxRetryTimes + 1);
     }
 
-    private static <LookupExtraT extends IDns.ILookupExtra> void endSessions(LookupContext<LookupExtraT> lookupContext) {
+    private static <LookupExtraT extends IDns.ILookupExtra>
+    void endSessions(LookupContext<LookupExtraT> lookupContext) {
         for (IDns.ISession session : lookupContext.sessions()) {
             session.end();
             lookupContext.statisticsMerge().merge(session.getDns(), session.getStatistics());

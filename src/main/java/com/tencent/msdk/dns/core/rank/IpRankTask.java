@@ -2,6 +2,8 @@ package com.tencent.msdk.dns.core.rank;
 
 import android.util.Pair;
 
+import com.tencent.msdk.dns.core.Const;
+
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
@@ -11,7 +13,8 @@ import java.util.Collections;
 import java.util.Comparator;
 
 public class IpRankTask implements Runnable {
-    private int MAX_CONNECT_TIME = 10 * 1000;
+
+    private int timeouts= Const.MAX_CONNECT_TIME;
     private String hostname;
     private String[] ips;
     private IpRankItem ipRankItem;
@@ -71,10 +74,10 @@ public class IpRankTask implements Runnable {
     private int ipSpeedTask(String ip, int port) {
         Socket socket = new Socket();
         long start = System.currentTimeMillis();
-        long end = start + MAX_CONNECT_TIME;
+        long end = start + timeouts;
         SocketAddress remoteAddress = new InetSocketAddress(ip, port);
         try {
-            socket.connect(remoteAddress, MAX_CONNECT_TIME);
+            socket.connect(remoteAddress, timeouts);
             end = System.currentTimeMillis();
         } catch (IOException e) {
             e.printStackTrace();
