@@ -82,7 +82,6 @@ public abstract class AbsRestDns implements IDns<LookupExtra> {
         String[] tempIps;
         // 未命中缓存的请求域名&乐观DNS场景下，缓存过期需要请求的域名
         StringBuilder requestHostname = new StringBuilder();
-        Map<String, Object> result = new HashMap<>();
         List<String> cachedIps = new ArrayList<>();
         for (String hostname : hostnameArr) {
             LookupResult lookupResult = mCacheHelper.get(hostname);
@@ -112,6 +111,7 @@ public abstract class AbsRestDns implements IDns<LookupExtra> {
             ips = cachedIps.toArray(new String[cachedIps.size()]);
         }
 
+        Map<String, Object> result = new HashMap<>();
         result.put("requestHostname", requestHostname);
         result.put("ips", ips);
         result.put("cached", cached);
