@@ -14,7 +14,7 @@ import java.util.Comparator;
 
 public class IpRankTask implements Runnable {
 
-    private int timeouts= Const.MAX_CONNECT_TIME;
+    private int timeouts = Const.MAX_CONNECT_TIME;
     private String hostname;
     private String[] ips;
     private IpRankItem ipRankItem;
