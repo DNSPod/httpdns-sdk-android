@@ -349,7 +349,7 @@ public final class DnsConfig {
          * @throws IllegalArgumentException dnsKey为空时抛出
          */
         public Builder dnsKey(String dnsKey) {
-            if (TextUtils.isEmpty(dnsKey)) {
+            if (mChannel != Const.HTTPS_CHANNEL && TextUtils.isEmpty(dnsKey)) {
                 throw new IllegalArgumentException("dnsKey".concat(Const.EMPTY_TIPS));
             }
             mDnsKey = dnsKey;
@@ -733,6 +733,15 @@ public final class DnsConfig {
          * @return DnsConfig实例
          */
         public DnsConfig build() {
+            if (TextUtils.isEmpty(mDnsId)) {
+                throw new IllegalArgumentException("dnsId".concat(Const.EMPTY_TIPS));
+            }
+            if (mChannel != Const.HTTPS_CHANNEL && TextUtils.isEmpty(mDnsKey)) {
+                throw new IllegalArgumentException("dnsKey".concat(Const.EMPTY_TIPS));
+            }
+            if (mChannel == Const.HTTPS_CHANNEL && TextUtils.isEmpty(mToken)) {
+                throw new IllegalArgumentException("token".concat(Const.EMPTY_TIPS));
+            }
             return new DnsConfig(mLogLevel, mAppId, mUserId, mInitBuiltInReporters, mDnsId, mDnsKey, mToken,
                     mTimeoutMills, mProtectedDomains, mPreLookupDomains, mEnablePersistentCache,
                     mPersistentCacheDomains, mIpRankItems, mChannel, mEnableReport, mBlockFirst, mCustomNetStack,

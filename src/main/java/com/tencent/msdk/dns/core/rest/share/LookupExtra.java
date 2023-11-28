@@ -15,9 +15,6 @@ public final class LookupExtra implements IDns.ILookupExtra {
         if (TextUtils.isEmpty(bizId)) {
             throw new IllegalArgumentException("bizId".concat(Const.EMPTY_TIPS));
         }
-        if (TextUtils.isEmpty(bizKey)) {
-            throw new IllegalArgumentException("bizKey".concat(Const.EMPTY_TIPS));
-        }
 
         this.bizId = bizId;
         this.bizKey = bizKey;
