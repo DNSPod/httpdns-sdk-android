@@ -67,7 +67,7 @@ public final class NetworkUtils {
         }
     }
 
-    private static int getMobileNetworkClassCopy(NetworkInfo info) {
+    private static int getMobileNetworkClass(NetworkInfo info) {
         if (null == info) {
             return NETWORK_CLASS_NO_NET;
         }
@@ -92,37 +92,12 @@ public final class NetworkUtils {
             case TelephonyManager.NETWORK_TYPE_HSPAP: // [api13]  15
             case 17:  // [api25] NETWORK_TYPE_TD_SCDMA
                 return NETWORK_CLASS_3_G;
+            // 圈复杂度优化，NETWORK_CLASS_4_G返回与default一致。
 //            case TelephonyManager.NETWORK_TYPE_LTE: // api11  13
 //            case 18: // TelephonyManager.NETWORK_TYPE_IWLAN [api25 18]
 //                return NETWORK_CLASS_4_G;
             default:
                 return NETWORK_CLASS_4_G;
-        }
-    }
-
-    private static int getMobileNetworkClass(NetworkInfo info) {
-        if (null == info) {
-            return NETWORK_CLASS_NO_NET;
-        } else {
-            // This methode was deprecated in API level 29. Use TelephonyManager.getDataNetworkType() instead.
-            int subType = info.getSubtype();
-            if (subType == TelephonyManager.NETWORK_TYPE_UNKNOWN) {
-                return NETWORK_CLASS_UNKNOWN;
-            } else if (subType == TelephonyManager.NETWORK_TYPE_GPRS || subType == TelephonyManager.NETWORK_TYPE_EDGE
-                    || subType == TelephonyManager.NETWORK_TYPE_CDMA || subType == TelephonyManager.NETWORK_TYPE_1xRTT
-                    || subType == TelephonyManager.NETWORK_TYPE_IDEN || subType == 16) {
-                return NETWORK_CLASS_2_G;
-            } else if (subType == TelephonyManager.NETWORK_TYPE_UMTS || subType == TelephonyManager.NETWORK_TYPE_EVDO_0
-                    || subType == TelephonyManager.NETWORK_TYPE_EVDO_A || subType == TelephonyManager.NETWORK_TYPE_HSDPA
-                    || subType == TelephonyManager.NETWORK_TYPE_HSUPA || subType == TelephonyManager.NETWORK_TYPE_HSPA
-                    || subType == TelephonyManager.NETWORK_TYPE_EVDO_B || subType == TelephonyManager.NETWORK_TYPE_EHRPD
-                    || subType == TelephonyManager.NETWORK_TYPE_HSPAP || subType == 17) {
-                return NETWORK_CLASS_3_G;
-            } else if (subType == TelephonyManager.NETWORK_TYPE_LTE || subType == 18) {
-                return NETWORK_CLASS_4_G;
-            } else {
-                return NETWORK_CLASS_4_G;
-            }
         }
     }
 }
