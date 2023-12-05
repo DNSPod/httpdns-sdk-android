@@ -67,7 +67,7 @@ public final class NetworkUtils {
         }
     }
 
-    private static int getMobileNetworkClass(NetworkInfo info) {
+    private static int getMobileNetworkClassCopy(NetworkInfo info) {
         if (null == info) {
             return NETWORK_CLASS_NO_NET;
         }
@@ -98,5 +98,32 @@ public final class NetworkUtils {
             default:
                 return NETWORK_CLASS_4_G;
         }
+    }
+
+    private static int getMobileNetworkClass(NetworkInfo info) {
+        if (null == info) {
+            return NETWORK_CLASS_NO_NET;
+        }
+        // This methode was deprecated in API level 29. Use TelephonyManager.getDataNetworkType() instead.
+        int subType = info.getSubtype();
+        if (subType == TelephonyManager.NETWORK_TYPE_UNKNOWN) {
+            return NETWORK_CLASS_UNKNOWN;
+        }
+        if (subType == TelephonyManager.NETWORK_TYPE_GPRS || subType == TelephonyManager.NETWORK_TYPE_EDGE
+                || subType == TelephonyManager.NETWORK_TYPE_CDMA || subType == TelephonyManager.NETWORK_TYPE_1xRTT
+                || subType == TelephonyManager.NETWORK_TYPE_IDEN || subType == 16) {
+            return NETWORK_CLASS_2_G;
+        }
+        if (subType == TelephonyManager.NETWORK_TYPE_UMTS || subType == TelephonyManager.NETWORK_TYPE_EVDO_0
+                || subType == TelephonyManager.NETWORK_TYPE_EVDO_A || subType == TelephonyManager.NETWORK_TYPE_HSDPA
+                || subType == TelephonyManager.NETWORK_TYPE_HSUPA || subType == TelephonyManager.NETWORK_TYPE_HSPA
+                || subType == TelephonyManager.NETWORK_TYPE_EVDO_B || subType == TelephonyManager.NETWORK_TYPE_EHRPD
+                || subType == TelephonyManager.NETWORK_TYPE_HSPAP || subType == 17) {
+            return NETWORK_CLASS_3_G;
+        }
+        if (subType == TelephonyManager.NETWORK_TYPE_LTE || subType == 18) {
+            return NETWORK_CLASS_4_G;
+        }
+        return NETWORK_CLASS_4_G;
     }
 }
