@@ -2,6 +2,8 @@ package com.tencent.msdk.dns.core;
 
 import android.os.SystemClock;
 
+import androidx.annotation.NonNull;
+
 import com.tencent.msdk.dns.base.compat.CollectionCompat;
 import com.tencent.msdk.dns.base.executor.DnsExecutors;
 import com.tencent.msdk.dns.base.log.DnsLog;
@@ -158,28 +160,9 @@ public final class DnsManager {
         DnsLog.v("DnsManager.lookup(%s) called", lookupParams);
 
         long startTimeMills = SystemClock.elapsedRealtime();
-
         LookupLatchResultPair lookupLatchResultPair = RUNNING_LOOKUP_LATCH_MAP.get(lookupParams);
         if (null != lookupLatchResultPair) {
-            DnsLog.d("The same lookup task(for %s) is running, just wait for it", lookupParams);
-            CountDownLatch lookupLatch = lookupLatchResultPair.mLookupLatch;
-            try {
-                if (lookupLatch.await((long) (AWAIT_FOR_RUNNING_LOOKUP_FACTOR * lookupParams.timeoutMills),
-                        TimeUnit.MILLISECONDS)) {
-                    // NOTE: await之后mLookupResult不为null
-                    return lookupLatchResultPair.mLookupResultHolder.mLookupResult;
-                }
-                DnsLog.d("Await for running lookup for %s timeout", lookupParams);
-                return new LookupResult<IStatisticsMerge>(IpSet.EMPTY, new StatisticsMerge(lookupParams.appContext));
-            } catch (Exception e) {
-                DnsLog.w(e, "Await for running lookup for %s failed", lookupParams);
-                int fixedTimeoutMills =
-                        (int) (lookupParams.timeoutMills - (SystemClock.elapsedRealtime() - startTimeMills));
-                if (0 < fixedTimeoutMills) {
-                    return lookup(new LookupParameters.Builder<>(lookupParams).timeoutMills(fixedTimeoutMills).build());
-                }
-                return new LookupResult<IStatisticsMerge>(IpSet.EMPTY, new StatisticsMerge(lookupParams.appContext));
-            }
+            return getResultFromLatch(lookupParams, lookupLatchResultPair, startTimeMills);
         }
 //        初始化CountDownLatch同步计数器
         CountDownLatch lookupLatch = new CountDownLatch(1);
@@ -366,6 +349,30 @@ public final class DnsManager {
                     DnsLog.e("exception: %s", ignored);
                 }
             }
+        }
+    }
+
+    private static LookupResult<IStatisticsMerge> getResultFromLatch(LookupParameters lookupParams,
+                                                                     @NonNull LookupLatchResultPair lookupLatchResultPair,
+                                                                     long startTimeMills) {
+        DnsLog.d("The same lookup task(for %s) is running, just wait for it", lookupParams);
+        CountDownLatch lookupLatch = lookupLatchResultPair.mLookupLatch;
+        try {
+            if (lookupLatch.await((long) (AWAIT_FOR_RUNNING_LOOKUP_FACTOR * lookupParams.timeoutMills),
+                    TimeUnit.MILLISECONDS)) {
+                // NOTE: await之后mLookupResult不为null
+                return lookupLatchResultPair.mLookupResultHolder.mLookupResult;
+            }
+            DnsLog.d("Await for running lookup for %s timeout", lookupParams);
+            return new LookupResult<IStatisticsMerge>(IpSet.EMPTY, new StatisticsMerge(lookupParams.appContext));
+        } catch (Exception e) {
+            DnsLog.w(e, "Await for running lookup for %s failed", lookupParams);
+            int fixedTimeoutMills =
+                    (int) (lookupParams.timeoutMills - (SystemClock.elapsedRealtime() - startTimeMills));
+            if (0 < fixedTimeoutMills) {
+                return lookup(new LookupParameters.Builder<>(lookupParams).timeoutMills(fixedTimeoutMills).build());
+            }
+            return new LookupResult<IStatisticsMerge>(IpSet.EMPTY, new StatisticsMerge(lookupParams.appContext));
         }
     }
 
