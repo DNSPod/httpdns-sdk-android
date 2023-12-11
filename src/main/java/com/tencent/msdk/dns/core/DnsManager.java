@@ -156,7 +156,6 @@ public final class DnsManager {
         }
 
         // NOTE: 考虑同步检查正在运行的解析任务的代码块
-
         DnsLog.v("DnsManager.lookup(%s) called", lookupParams);
 
         long startTimeMills = SystemClock.elapsedRealtime();
@@ -164,7 +163,7 @@ public final class DnsManager {
         if (null != lookupLatchResultPair) {
             return getResultFromLatch(lookupParams, lookupLatchResultPair, startTimeMills);
         }
-//        初始化CountDownLatch同步计数器
+        // 初始化CountDownLatch同步计数器
         CountDownLatch lookupLatch = new CountDownLatch(1);
         LookupResultHolder lookupResultHolder = new LookupResultHolder();
         RUNNING_LOOKUP_LATCH_MAP.put(lookupParams, new LookupLatchResultPair(lookupLatch, lookupResultHolder));
@@ -172,7 +171,6 @@ public final class DnsManager {
         final LookupExtraT lookupExtra = lookupParams.lookupExtra;
         String channel = lookupParams.channel;
         boolean fallback2Local = lookupParams.fallback2Local;
-
         LookupContext<LookupExtraT> lookupContext = LookupContext.wrap(lookupParams);
 
         DnsGroup localDnsGroup = null;
@@ -193,7 +191,6 @@ public final class DnsManager {
         ISorter sorter = sSorterFactory.create(lookupContext.currentNetworkStack());
         lookupContext.sorter(sorter);
         // snapshot
-        IRetry retry = sRetry;
         @SuppressWarnings("unchecked") IStatisticsMerge<LookupExtraT> statMerge =
                 sStatMergeFactory.create((Class<LookupExtraT>) lookupExtra.getClass(), lookupParams.appContext);
         lookupContext.statisticsMerge(statMerge);
@@ -202,9 +199,9 @@ public final class DnsManager {
         lookupContext.transaction(transaction);
         Set<IDns> dnses = Collections.synchronizedSet(CollectionCompat.<IDns>createSet());
         lookupContext.dnses(dnses);
-//        // NOTE: sessions仅会被当前线程访问
-//        List<IDns.ISession> sessions = new ArrayList<>();
-//        lookupContext.sessions(sessions);
+        // NOTE: sessions仅会被当前线程访问
+        List<IDns.ISession> sessions = new ArrayList<>();
+        lookupContext.sessions(sessions);
         try {
             // 暂时不忽略LocalDns解析结果(RestDns解析失败时，超时时间内会等待LocalDns解析结果)
             if (null != restDnsGroup) {
@@ -244,9 +241,8 @@ public final class DnsManager {
             CountDownLatch countDownLatch = transaction.commit();
             lookupContext.countDownLatch(countDownLatch);
 
-            return getResultForSelector(countDownLatch, lookupContext, lookupParams, lookupResultHolder,
+            return getResultForSelector(countDownLatch, lookupContext, lookupParams, lookupResultHolder, sessions,
                     startTimeMills);
-
         } finally {
             // 结束超时的session, 统计收尾
             endSessions(lookupContext);
@@ -306,8 +302,6 @@ public final class DnsManager {
         int remainTimeMills = timeoutMills - (int) (SystemClock.elapsedRealtime() - startTimeMills);
         int waitTimeMills = 0 < maxRetryTimes ? remainTimeMills / (maxRetryTimes + 1) : remainTimeMills;
         int retriedTimes = 0;
-        ISorter sorter = lookupContext.sorter();
-        StatisticsMerge statMerge = (StatisticsMerge) lookupContext.statisticsMerge();
 
         DnsLog.d("selector is null");
         // 仅阻塞解析
@@ -334,6 +328,8 @@ public final class DnsManager {
                 retry.retryBlock(newLookupContext);
             }
         }
+        ISorter sorter = lookupContext.sorter();
+        StatisticsMerge statMerge = (StatisticsMerge) lookupContext.statisticsMerge();
         IpSet ipSet = sorter.sort();
         statMerge.statResult(ipSet);
         LookupResult<IStatisticsMerge> lookupResult = new LookupResult<IStatisticsMerge>(ipSet, statMerge);
@@ -346,24 +342,19 @@ public final class DnsManager {
                                                         LookupContext lookupContext,
                                                         LookupParameters lookupParams,
                                                         LookupResultHolder lookupResultHolder,
+                                                        List<IDns.ISession> sessions,
                                                         long startTimeMills) {
         Selector selector = lookupContext.selector();
         if (selector == null) {
             getResultForNullSelector(countDownLatch, lookupContext, lookupParams, lookupResultHolder,
                     startTimeMills);
         }
-        // NOTE: sessions仅会被当前线程访问
-        List<IDns.ISession> sessions = new ArrayList<>();
-        lookupContext.sessions(sessions);
-
         IRetry retry = sRetry;
         int maxRetryTimes = retry.maxRetryTimes();
         int timeoutMills = lookupParams.timeoutMills;
         int remainTimeMills = timeoutMills - (int) (SystemClock.elapsedRealtime() - startTimeMills);
         int waitTimeMills = 0 < maxRetryTimes ? remainTimeMills / (maxRetryTimes + 1) : remainTimeMills;
         int retriedTimes = 0;
-        ISorter sorter = lookupContext.sorter();
-        StatisticsMerge statMerge = (StatisticsMerge) lookupContext.statisticsMerge();
 
         // 非阻塞解析
         // TODO: sessions加上对于解析结果可以忽略的支持(主要是支持LocalDns)
@@ -405,6 +396,8 @@ public final class DnsManager {
         } catch (Exception ignored) {
             DnsLog.e("exception: %s", ignored);
         }
+        ISorter sorter = lookupContext.sorter();
+        StatisticsMerge statMerge = (StatisticsMerge) lookupContext.statisticsMerge();
         IpSet ipSet = sorter.sort();
         statMerge.statResult(ipSet);
         LookupResult<IStatisticsMerge> lookupResult = new LookupResult<IStatisticsMerge>(ipSet, statMerge);
