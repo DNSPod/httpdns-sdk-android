@@ -169,7 +169,6 @@ public final class DnsManager {
         LookupResultHolder lookupResultHolder = new LookupResultHolder();
         RUNNING_LOOKUP_LATCH_MAP.put(lookupParams, new LookupLatchResultPair(lookupLatch, lookupResultHolder));
 
-        int timeoutMills = lookupParams.timeoutMills;
         final LookupExtraT lookupExtra = lookupParams.lookupExtra;
         String channel = lookupParams.channel;
         boolean fallback2Local = lookupParams.fallback2Local;
@@ -203,9 +202,9 @@ public final class DnsManager {
         lookupContext.transaction(transaction);
         Set<IDns> dnses = Collections.synchronizedSet(CollectionCompat.<IDns>createSet());
         lookupContext.dnses(dnses);
-        // NOTE: sessions仅会被当前线程访问
-        List<IDns.ISession> sessions = new ArrayList<>();
-        lookupContext.sessions(sessions);
+//        // NOTE: sessions仅会被当前线程访问
+//        List<IDns.ISession> sessions = new ArrayList<>();
+//        lookupContext.sessions(sessions);
         try {
             // 暂时不忽略LocalDns解析结果(RestDns解析失败时，超时时间内会等待LocalDns解析结果)
             if (null != restDnsGroup) {
@@ -242,93 +241,12 @@ public final class DnsManager {
                 prepareTasks(localDnsGroup, lookupContext);
             }
 
-            int maxRetryTimes = retry.maxRetryTimes();
-            int remainTimeMills = timeoutMills - (int) (SystemClock.elapsedRealtime() - startTimeMills);
-            int waitTimeMills = 0 < maxRetryTimes ? remainTimeMills / (maxRetryTimes + 1) : remainTimeMills;
-            int retriedTimes = 0;
-
             CountDownLatch countDownLatch = transaction.commit();
             lookupContext.countDownLatch(countDownLatch);
-            Selector selector = lookupContext.selector();
-            if (null == selector) {
-                DnsLog.d("selector is null");
-                // 仅阻塞解析
-                // NOTE: 非localDNS解析进行countDownLatch,HDNS不被localDNS阻塞
-                while (countDownLatch.getCount() > 0
-                        && SystemClock.elapsedRealtime() - startTimeMills < timeoutMills) {
-                    try {
-                        countDownLatch.await(waitTimeMills, TimeUnit.MILLISECONDS);
 
-                    } catch (Exception e) {
-                        DnsLog.d(e, "sessions not empty, but exception");
-                    }
-                    if (countDownLatch.getCount() > 0
-                            // 需要重试
-                            && canRetry(startTimeMills, timeoutMills, maxRetryTimes, retriedTimes)) {
-                        retriedTimes++;
-                        remainTimeMills = timeoutMills - (int) (SystemClock.elapsedRealtime() - startTimeMills);
-                        LookupContext<LookupExtraT> newLookupContext =
-                                lookupContext.newLookupContext(
-                                        new LookupParameters.Builder<>(lookupParams)
-                                                .timeoutMills(remainTimeMills)
-                                                .curRetryTime(retriedTimes)
-                                                .build());
-                        retry.retryBlock(newLookupContext);
-                    }
-                }
-                IpSet ipSet = sorter.sort();
-                statMerge.statResult(ipSet);
-                LookupResult<IStatisticsMerge> lookupResult = new LookupResult<IStatisticsMerge>(ipSet, statMerge);
-                lookupResultHolder.mLookupResult = lookupResult;
-                return lookupResult;
-            }
+            return getResultForSelector(countDownLatch, lookupContext, lookupParams, lookupResultHolder,
+                    startTimeMills);
 
-            // 非阻塞解析
-            // TODO: sessions加上对于解析结果可以忽略的支持(主要是支持LocalDns)
-            while (!sessions.isEmpty() && SystemClock.elapsedRealtime() - startTimeMills < timeoutMills) {
-                // sleep以降低系统调用频率
-                try {
-                    Thread.sleep(SYSTEM_CALL_INTERVAL_MILLS);
-                } catch (Exception ignored) {
-                    DnsLog.e("exception: %s", ignored);
-                }
-                try {
-                    DnsLog.d("selector %s wait for sessions:%d, mills:%d", selector, sessions.size(), waitTimeMills);
-                    selector.select(waitTimeMills);
-                } catch (Exception e) {
-                    DnsLog.d(e, "sessions not empty, but exception");
-                }
-                // Socket进行请求
-                tryLookup(lookupContext);
-                if (!sessions.isEmpty()
-                        // 需要重试
-                        && canRetry(startTimeMills, timeoutMills, maxRetryTimes, retriedTimes)) {
-                    DnsLog.d("sessions is not empty, sessions:%d, enter retry", sessions.size());
-                    retriedTimes++;
-                    LookupContext<LookupExtraT> newLookupContext = lookupContext.newLookupContext(
-                            new LookupParameters.Builder<>(lookupParams)
-                                    .curRetryTime(retriedTimes)
-                                    .build());
-                    retry.retryNonBlock(newLookupContext);
-                }
-            }
-            // 阻塞解析
-            remainTimeMills = timeoutMills - (int) (SystemClock.elapsedRealtime() - startTimeMills);
-            try {
-                if (sessions.size() > 0) {
-                    DnsLog.d("selector wait for last timeout if sessions is not empty, sessions:%d, mills:%d",
-                            sessions.size(), waitTimeMills);
-                }
-                countDownLatch.await(remainTimeMills, TimeUnit.MILLISECONDS);
-            } catch (Exception ignored) {
-                DnsLog.e("exception: %s", ignored);
-            }
-            IpSet ipSet = sorter.sort();
-            statMerge.statResult(ipSet);
-            LookupResult<IStatisticsMerge> lookupResult = new LookupResult<IStatisticsMerge>(ipSet, statMerge);
-            lookupResultHolder.mLookupResult = lookupResult;
-
-            return lookupResult;
         } finally {
             // 结束超时的session, 统计收尾
             endSessions(lookupContext);
@@ -352,9 +270,9 @@ public final class DnsManager {
         }
     }
 
-    private static LookupResult<IStatisticsMerge> getResultFromLatch(LookupParameters lookupParams,
-                                                                     @NonNull LookupLatchResultPair lookupLatchResultPair,
-                                                                     long startTimeMills) {
+    private static LookupResult<IStatisticsMerge>
+    getResultFromLatch(LookupParameters lookupParams, @NonNull LookupLatchResultPair lookupLatchResultPair,
+                       long startTimeMills) {
         DnsLog.d("The same lookup task(for %s) is running, just wait for it", lookupParams);
         CountDownLatch lookupLatch = lookupLatchResultPair.mLookupLatch;
         try {
@@ -374,6 +292,125 @@ public final class DnsManager {
             }
             return new LookupResult<IStatisticsMerge>(IpSet.EMPTY, new StatisticsMerge(lookupParams.appContext));
         }
+    }
+
+    private static <LookupExtraT extends IDns.ILookupExtra>
+    LookupResult<IStatisticsMerge> getResultForNullSelector(CountDownLatch countDownLatch,
+                                                            LookupContext lookupContext,
+                                                            LookupParameters lookupParams,
+                                                            LookupResultHolder lookupResultHolder,
+                                                            long startTimeMills) {
+        IRetry retry = sRetry;
+        int maxRetryTimes = retry.maxRetryTimes();
+        int timeoutMills = lookupParams.timeoutMills;
+        int remainTimeMills = timeoutMills - (int) (SystemClock.elapsedRealtime() - startTimeMills);
+        int waitTimeMills = 0 < maxRetryTimes ? remainTimeMills / (maxRetryTimes + 1) : remainTimeMills;
+        int retriedTimes = 0;
+        ISorter sorter = lookupContext.sorter();
+        StatisticsMerge statMerge = (StatisticsMerge) lookupContext.statisticsMerge();
+
+        DnsLog.d("selector is null");
+        // 仅阻塞解析
+        // NOTE: 非localDNS解析进行countDownLatch,HDNS不被localDNS阻塞
+        while (countDownLatch.getCount() > 0
+                && SystemClock.elapsedRealtime() - startTimeMills < timeoutMills) {
+            try {
+                countDownLatch.await(waitTimeMills, TimeUnit.MILLISECONDS);
+
+            } catch (Exception e) {
+                DnsLog.d(e, "sessions not empty, but exception");
+            }
+            if (countDownLatch.getCount() > 0
+                    // 需要重试
+                    && canRetry(startTimeMills, timeoutMills, maxRetryTimes, retriedTimes)) {
+                retriedTimes++;
+                remainTimeMills = timeoutMills - (int) (SystemClock.elapsedRealtime() - startTimeMills);
+                LookupContext<LookupExtraT> newLookupContext =
+                        lookupContext.newLookupContext(
+                                new LookupParameters.Builder<>(lookupParams)
+                                        .timeoutMills(remainTimeMills)
+                                        .curRetryTime(retriedTimes)
+                                        .build());
+                retry.retryBlock(newLookupContext);
+            }
+        }
+        IpSet ipSet = sorter.sort();
+        statMerge.statResult(ipSet);
+        LookupResult<IStatisticsMerge> lookupResult = new LookupResult<IStatisticsMerge>(ipSet, statMerge);
+        lookupResultHolder.mLookupResult = lookupResult;
+        return lookupResult;
+    }
+
+    private static <LookupExtraT extends IDns.ILookupExtra>
+    LookupResult<IStatisticsMerge> getResultForSelector(CountDownLatch countDownLatch,
+                                                        LookupContext lookupContext,
+                                                        LookupParameters lookupParams,
+                                                        LookupResultHolder lookupResultHolder,
+                                                        long startTimeMills) {
+        Selector selector = lookupContext.selector();
+        if (selector == null) {
+            getResultForNullSelector(countDownLatch, lookupContext, lookupParams, lookupResultHolder,
+                    startTimeMills);
+        }
+        // NOTE: sessions仅会被当前线程访问
+        List<IDns.ISession> sessions = new ArrayList<>();
+        lookupContext.sessions(sessions);
+
+        IRetry retry = sRetry;
+        int maxRetryTimes = retry.maxRetryTimes();
+        int timeoutMills = lookupParams.timeoutMills;
+        int remainTimeMills = timeoutMills - (int) (SystemClock.elapsedRealtime() - startTimeMills);
+        int waitTimeMills = 0 < maxRetryTimes ? remainTimeMills / (maxRetryTimes + 1) : remainTimeMills;
+        int retriedTimes = 0;
+        ISorter sorter = lookupContext.sorter();
+        StatisticsMerge statMerge = (StatisticsMerge) lookupContext.statisticsMerge();
+
+        // 非阻塞解析
+        // TODO: sessions加上对于解析结果可以忽略的支持(主要是支持LocalDns)
+        while (!sessions.isEmpty() && SystemClock.elapsedRealtime() - startTimeMills < timeoutMills) {
+            // sleep以降低系统调用频率
+            try {
+                Thread.sleep(SYSTEM_CALL_INTERVAL_MILLS);
+            } catch (Exception ignored) {
+                DnsLog.e("exception: %s", ignored);
+            }
+            try {
+                DnsLog.d("selector %s wait for sessions:%d, mills:%d", selector, sessions.size(), waitTimeMills);
+                selector.select(waitTimeMills);
+            } catch (Exception e) {
+                DnsLog.d(e, "sessions not empty, but exception");
+            }
+            // Socket进行请求
+            tryLookup(lookupContext);
+            if (!sessions.isEmpty()
+                    // 需要重试
+                    && canRetry(startTimeMills, timeoutMills, maxRetryTimes, retriedTimes)) {
+                DnsLog.d("sessions is not empty, sessions:%d, enter retry", sessions.size());
+                retriedTimes++;
+                LookupContext<LookupExtraT> newLookupContext = lookupContext.newLookupContext(
+                        new LookupParameters.Builder<>(lookupParams)
+                                .curRetryTime(retriedTimes)
+                                .build());
+                retry.retryNonBlock(newLookupContext);
+            }
+        }
+        // 阻塞解析
+        remainTimeMills = timeoutMills - (int) (SystemClock.elapsedRealtime() - startTimeMills);
+        try {
+            if (sessions.size() > 0) {
+                DnsLog.d("selector wait for last timeout if sessions is not empty, sessions:%d, mills:%d",
+                        sessions.size(), waitTimeMills);
+            }
+            countDownLatch.await(remainTimeMills, TimeUnit.MILLISECONDS);
+        } catch (Exception ignored) {
+            DnsLog.e("exception: %s", ignored);
+        }
+        IpSet ipSet = sorter.sort();
+        statMerge.statResult(ipSet);
+        LookupResult<IStatisticsMerge> lookupResult = new LookupResult<IStatisticsMerge>(ipSet, statMerge);
+        lookupResultHolder.mLookupResult = lookupResult;
+
+        return lookupResult;
     }
 
     public static <LookupExtraT extends IDns.ILookupExtra>
