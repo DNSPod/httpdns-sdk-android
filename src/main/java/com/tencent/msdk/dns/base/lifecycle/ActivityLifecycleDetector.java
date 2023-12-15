@@ -2,24 +2,13 @@ package com.tencent.msdk.dns.base.lifecycle;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
-//import android.app.ActivityThread;
 import android.app.Application;
-import android.app.Instrumentation;
-import android.content.ComponentName;
 import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
-import android.content.pm.ActivityInfo;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.IBinder;
-import android.os.PersistableBundle;
-import android.view.KeyEvent;
-import android.view.MotionEvent;
 
 import com.tencent.msdk.dns.base.log.DnsLog;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -78,7 +67,8 @@ public final class ActivityLifecycleDetector {
 //
 //                    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
 //                    @Override
-//                    public void callActivityOnCreate(Activity activity, Bundle icicle, PersistableBundle persistentState) {
+//                    public void callActivityOnCreate(Activity activity, Bundle icicle, PersistableBundle
+//                    persistentState) {
 //                        DnsLog.d("%s.onCreate", activity);
 //
 //                        for (ActivityLifecycleCallbacksWrapper lifecycleCallbacks : sActivityLifecycleCallbacks) {
@@ -145,7 +135,8 @@ public final class ActivityLifecycleDetector {
 //
 //                    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
 //                    @Override
-//                    public void callActivityOnSaveInstanceState(Activity activity, Bundle outState, PersistableBundle outPersistentState) {
+//                    public void callActivityOnSaveInstanceState(Activity activity, Bundle outState,
+//                    PersistableBundle outPersistentState) {
 //                        DnsLog.d("%s.onSaveInstanceState", activity);
 //
 //                        for (ActivityLifecycleCallbacksWrapper lifecycleCallbacks : sActivityLifecycleCallbacks) {
@@ -288,7 +279,8 @@ public final class ActivityLifecycleDetector {
 //                    // startActivitySync: API28引入
 ////                    @androidx.annotation.NonNull
 ////                    @Override
-////                    public Activity startActivitySync(@androidx.annotation.NonNull Intent intent, @androidx.annotation.Nullable Bundle options) {
+////                    public Activity startActivitySync(@androidx.annotation.NonNull Intent intent, @androidx
+// .annotation.Nullable Bundle options) {
 ////                        return realInstrumentation.startActivitySync(intent, options);
 ////                    }
 //
@@ -368,7 +360,8 @@ public final class ActivityLifecycleDetector {
 //                    }
 //
 //                    @Override
-//                    public Application newApplication(ClassLoader cl, String className, Context context) throws ClassNotFoundException, IllegalAccessException, InstantiationException {
+//                    public Application newApplication(ClassLoader cl, String className, Context context) throws
+//                    ClassNotFoundException, IllegalAccessException, InstantiationException {
 //                        return realInstrumentation.newApplication(cl, className, context);
 //                    }
 //
@@ -378,12 +371,16 @@ public final class ActivityLifecycleDetector {
 //                    }
 //
 //                    @Override
-//                    public Activity newActivity(Class<?> clazz, Context context, IBinder token, Application application, Intent intent, ActivityInfo info, CharSequence title, Activity parent, String id, Object lastNonConfigurationInstance) throws IllegalAccessException, InstantiationException {
-//                        return realInstrumentation.newActivity(clazz, context, token, application, intent, info, title, parent, id, lastNonConfigurationInstance);
+//                    public Activity newActivity(Class<?> clazz, Context context, IBinder token, Application
+//                    application, Intent intent, ActivityInfo info, CharSequence title, Activity parent, String id,
+//                    Object lastNonConfigurationInstance) throws IllegalAccessException, InstantiationException {
+//                        return realInstrumentation.newActivity(clazz, context, token, application, intent, info,
+//                        title, parent, id, lastNonConfigurationInstance);
 //                    }
 //
 //                    @Override
-//                    public Activity newActivity(ClassLoader cl, String className, Intent intent) throws ClassNotFoundException, IllegalAccessException, InstantiationException {
+//                    public Activity newActivity(ClassLoader cl, String className, Intent intent) throws
+//                    ClassNotFoundException, IllegalAccessException, InstantiationException {
 //                        return realInstrumentation.newActivity(cl, className, intent);
 //                    }
 //
@@ -394,8 +391,10 @@ public final class ActivityLifecycleDetector {
 //
 //                    // callActivityOnRestoreInstanceState: API21引入
 ////                    @Override
-////                    public void callActivityOnRestoreInstanceState(Activity activity, Bundle savedInstanceState, PersistableBundle persistentState) {
-////                        realInstrumentation.callActivityOnRestoreInstanceState(activity, savedInstanceState, persistentState);
+////                    public void callActivityOnRestoreInstanceState(Activity activity, Bundle savedInstanceState,
+// PersistableBundle persistentState) {
+////                        realInstrumentation.callActivityOnRestoreInstanceState(activity, savedInstanceState,
+// persistentState);
 ////                    }
 //
 //                    @Override
@@ -405,7 +404,8 @@ public final class ActivityLifecycleDetector {
 //
 //                    // callActivityOnPostCreate: API21引入
 ////                    @Override
-////                    public void callActivityOnPostCreate(Activity activity, Bundle icicle, PersistableBundle persistentState) {
+////                    public void callActivityOnPostCreate(Activity activity, Bundle icicle, PersistableBundle
+// persistentState) {
 ////                        realInstrumentation.callActivityOnPostCreate(activity, icicle, persistentState);
 ////                    }
 //

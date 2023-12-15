@@ -20,7 +20,8 @@ public final class Cache implements ICache {
 
     private final Map<String, LookupResult> mHostnameIpsMap = new ConcurrentHashMap<>();
 
-    private final LookupCacheDao lookupCacheDao = LookupCacheDatabase.getInstance(DnsService.getAppContext()).lookupCacheDao();
+    private final LookupCacheDao lookupCacheDao =
+            LookupCacheDatabase.getInstance(DnsService.getAppContext()).lookupCacheDao();
 
     private boolean getCachedIpEnable() {
         return DnsService.getDnsConfig().cachedIpEnable;
@@ -58,8 +59,8 @@ public final class Cache implements ICache {
             CacheHolder.instance.clear();
         } else {
             String[] hostnameArr = hostname.split(",");
-            if(hostnameArr.length > 1) {
-                for(String tempHostname: hostnameArr) {
+            if (hostnameArr.length > 1) {
+                for (String tempHostname : hostnameArr) {
                     CacheHolder.instance.delete(tempHostname);
                 }
             } else {

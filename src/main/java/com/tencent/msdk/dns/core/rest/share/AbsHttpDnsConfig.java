@@ -1,5 +1,7 @@
 package com.tencent.msdk.dns.core.rest.share;
 
+import com.tencent.msdk.dns.base.log.DnsLog;
+
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
@@ -18,6 +20,7 @@ public abstract class AbsHttpDnsConfig {
             try {
                 mBizTargetSockAddr = new InetSocketAddress(InetAddress.getByName(dnsIp), getBizTargetPort());
             } catch (Exception ignored) {
+                DnsLog.e("exception: %s", ignored);
             }
 //        }
         return mBizTargetSockAddr;

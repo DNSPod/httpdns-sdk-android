@@ -33,7 +33,7 @@ public class CacheStatisticsReport {
         }
 
         // 命中缓存的数据，统计上报
-        for(String hostname: hostnameArr) {
+        for (String hostname : hostnameArr) {
             if (!statisticsMap.containsKey(hostname)) {
                 if (statMerge.lookupSuccess()) {
                     // Object[costTimeMillsTotal, emptyCount, resultCount]
@@ -59,7 +59,7 @@ public class CacheStatisticsReport {
     public static String[] compare(String[] strArr1, String[] strArr2) {
         List<String> list = new ArrayList<>();
         List<String> list2 = Arrays.asList(strArr2);
-        for(String str: strArr1) {
+        for (String str : strArr1) {
             if (!list2.contains(str)) {
                 list.add(str);
             }

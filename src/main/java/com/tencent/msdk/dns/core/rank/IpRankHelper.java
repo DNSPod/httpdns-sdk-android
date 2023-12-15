@@ -1,4 +1,4 @@
-package com.tencent.msdk.dns.core.ipRank;
+package com.tencent.msdk.dns.core.rank;
 
 import com.tencent.msdk.dns.DnsService;
 import com.tencent.msdk.dns.base.executor.DnsExecutors;
@@ -46,7 +46,8 @@ public class IpRankHelper {
 
         if (ipRankItem != null) {
             // 发起IP测速线程任务
-            DnsExecutors.WORK.execute(new IpRankTask(hostname, ipv4Lists.toArray(new String[ipv4Lists.size()]), ipRankItem, new IpRankCallback() {
+            DnsExecutors.WORK.execute(new IpRankTask(hostname, ipv4Lists.toArray(new String[ipv4Lists.size()]),
+                    ipRankItem, new IpRankCallback() {
                 @Override
                 public void onResult(String hostname, String[] sortedIps) {
                     if (ipRankCallback != null) {

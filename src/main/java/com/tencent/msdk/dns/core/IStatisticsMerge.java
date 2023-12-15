@@ -9,9 +9,9 @@ public interface IStatisticsMerge<LookupExtra extends IDns.ILookupExtra> extends
         IFactory DEFAULT = new IFactory() {
 
             @Override
-            public <LookupExtra extends IDns.ILookupExtra>
-            IStatisticsMerge<LookupExtra> create(Class<LookupExtra> klass, Context context) {
-                return new IStatisticsMerge<LookupExtra>() {
+            public <LookupExtraT extends IDns.ILookupExtra>
+            IStatisticsMerge<LookupExtraT> create(Class<LookupExtraT> klass, Context context) {
+                return new IStatisticsMerge<LookupExtraT>() {
 
                     @Override
                     public void merge(IDns dns, IDns.IStatistics stat) {
@@ -40,24 +40,25 @@ public interface IStatisticsMerge<LookupExtra extends IDns.ILookupExtra> extends
                         return false;
                     }
 
-                   @Override
-                   public boolean lookupPartCached() {
-                       return false;
-                   }
+                    @Override
+                    public boolean lookupPartCached() {
+                        return false;
+                    }
 
                     @Override
                     public String toJsonResult() {
-                        return "{\"v4_ips\":\"\",\"v4_ttl\":\"\",\"v4_client_ip\":\"\",\"v6_ips\":\"\",\"v6_ttl\":\"\",\"v6_client_ip\":\"\"}";
+                        return "{\"v4_ips\":\"\",\"v4_ttl\":\"\",\"v4_client_ip\":\"\",\"v6_ips\":\"\","
+                                + "\"v6_ttl\":\"\",\"v6_client_ip\":\"\"}";
                     }
                 };
             }
         };
 
-        <LookupExtra extends IDns.ILookupExtra>
-        IStatisticsMerge<LookupExtra> create(Class<LookupExtra> klass, Context context);
+        <LookupExtraT extends IDns.ILookupExtra>
+        IStatisticsMerge<LookupExtraT> create(Class<LookupExtraT> klass, Context context);
     }
 
-    <Statistics extends IDns.IStatistics> void merge(IDns dns, Statistics stat);
+    <StatisticsT extends IDns.IStatistics> void merge(IDns dns, StatisticsT stat);
 
     void statContext(LookupContext<LookupExtra> lookupContext);
 

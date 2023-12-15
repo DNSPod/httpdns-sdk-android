@@ -57,7 +57,8 @@ public final class DnsService {
     /**
      * 初始化SDK
      *
-     * @param context <a href="https://developer.android.google.cn/reference/android/content/Context">Context</a>实例, SDK内部持有ApplicationContext用于监听网络切换等操作
+     * @param context <a href="https://developer.android.google.cn/reference/android/content/Context">Context</a>
+     *                实例, SDK内部持有ApplicationContext用于监听网络切换等操作
      * @param config  {@link DnsConfig}实例, 用于对SDK进行相关配置
      * @throws IllegalArgumentException context为null时抛出
      */
@@ -170,7 +171,7 @@ public final class DnsService {
     /**
      * 设置是否上报，是否启用域名服务（获取底层配置）
      *
-     * @param mEnableReport 启用日志上报
+     * @param mEnableReport       启用日志上报
      * @param mEnableDomainServer 启用域名服务
      */
     public static void setDnsConfigFromServer(boolean mEnableReport, boolean mEnableDomainServer) {
@@ -181,20 +182,27 @@ public final class DnsService {
         sConfig.enableDomainServer = mEnableDomainServer;
     }
 
+    /**
+     * 获取DNS详情（命中缓存数据）
+     *
+     * @param hostname 域名，支持多个域名，用,拼接
+     * @return 解析数据
+     */
     public static String getDnsDetail(String hostname) {
         String dnsIp = BackupResolver.getInstance().getDnsIp();
-        final LookupResult<IStatisticsMerge> lookupResult = DnsManager.getResultFromCache(new LookupParameters.Builder<LookupExtra>()
-                .context(sAppContext)
-                .hostname(hostname)
-                .timeoutMills(sConfig.timeoutMills)
-                .dnsIp(dnsIp)
-                .lookupExtra(sConfig.lookupExtra)
-                .channel(sConfig.channel)
-                .fallback2Local(true)
-                .blockFirst(sConfig.blockFirst)
-                .enableAsyncLookup(false)
-                .customNetStack(sConfig.customNetStack)
-                .build());
+        final LookupResult<IStatisticsMerge> lookupResult =
+                DnsManager.getResultFromCache(new LookupParameters.Builder<LookupExtra>()
+                        .context(sAppContext)
+                        .hostname(hostname)
+                        .timeoutMills(sConfig.timeoutMills)
+                        .dnsIp(dnsIp)
+                        .lookupExtra(sConfig.lookupExtra)
+                        .channel(sConfig.channel)
+                        .fallback2Local(true)
+                        .blockFirst(sConfig.blockFirst)
+                        .enableAsyncLookup(false)
+                        .customNetStack(sConfig.customNetStack)
+                        .build());
 
         // 收集命中缓存的数据
         DnsExecutors.WORK.execute(new Runnable() {
@@ -275,7 +283,8 @@ public final class DnsService {
         String dnsIp = BackupResolver.getInstance().getDnsIp();
 
         // NOTE: trim操作太重，下层默认不再处理
-        DnsLog.v("DnsService.getAddrsByName(%s, %s, %b, %b) called", hostname, channel, fallback2Local, enableAsyncLookup);
+        DnsLog.v("DnsService.getAddrsByName(%s, %s, %b, %b) called", hostname, channel, fallback2Local,
+                enableAsyncLookup);
         if (sConfig.needProtect(hostname)) {
             LookupResult lookupResult = DnsManager
                     .lookupWrapper(new LookupParameters.Builder<LookupExtra>()
@@ -316,7 +325,8 @@ public final class DnsService {
      * @param domain 域名
      * @return 解析结果
      * 单独接口查询情况返回：IpSet{v4Ips=[xx.xx.xx.xx], v6Ips=[xxx], ips=null}
-     * 多域名批量查询返回：IpSet{v4Ips=[youtube.com:31.13.73.1, qq.com:123.151.137.18, qq.com:183.3.226.35, qq.com:61.129.7.47], v6Ips=[youtube.com.:2001::42d:9141], ips=null}
+     * 多域名批量查询返回：IpSet{v4Ips=[youtube.com:31.13.73.1, qq.com:123.151.137.18, qq.com:183.3.226.35, qq.com:61.129.7
+     * .47], v6Ips=[youtube.com.:2001::42d:9141], ips=null}
      */
     public static IpSet getAddrsByNamesEnableExpired(final String domain) {
         if (!sInited) {
@@ -336,10 +346,9 @@ public final class DnsService {
         } else {
             try {
                 JSONObject temp = new JSONObject(result);
-                long expiredTime = Long.parseLong(temp.get("expired_time").toString());
-                final String requestDomain = temp.get("request_name").toString();
-                long current = System.currentTimeMillis();
-                if (expiredTime < current) {
+                final String requestDomain = (String) temp.get("request_name");
+                // requestDomain为过期域名统计
+                if (!requestDomain.isEmpty()) {
                     // 缓存过期，发起异步请求
                     DnsExecutors.WORK.execute(new Runnable() {
                         @Override
@@ -376,16 +385,14 @@ public final class DnsService {
 
         DnsManager.setLookupListener(new ILookupListener() {
             @Override
-            public void onLookedUp(LookupParameters lookupParameters,
-                                   LookupResult<IStatisticsMerge> lookupResult) {
+            public void onLookedUp(LookupParameters lookupParameters, LookupResult<IStatisticsMerge> lookupResult) {
                 String hostname = lookupParameters.hostname;
                 if (!(lookupResult.stat instanceof StatisticsMerge)) {
                     DnsLog.d("Looked up for %s may be by LocalDns", hostname);
                     return;
                 }
                 StatisticsMerge stat = (StatisticsMerge) lookupResult.stat;
-                LookupResult<StatisticsMerge> expectedLookupResult =
-                        new LookupResult<>(lookupResult.ipSet, stat);
+                LookupResult<StatisticsMerge> expectedLookupResult = new LookupResult<>(lookupResult.ipSet, stat);
                 if (lookupParameters.ignoreCurNetStack) {
                     if (DnsDescription.Family.UN_SPECIFIC == lookupParameters.family) {
                         lookedUpListener.onPreLookedUp(hostname, expectedLookupResult);
@@ -429,8 +436,7 @@ public final class DnsService {
         }
 
         final int numOfPreLookupDomain = sConfig.preLookupDomains.size();
-        final String[] preLookupDomainsList =
-                sConfig.preLookupDomains.toArray(new String[numOfPreLookupDomain]);
+        final String[] preLookupDomainsList = sConfig.preLookupDomains.toArray(new String[numOfPreLookupDomain]);
         final String preLookupDomains = CommonUtils.toStringList(preLookupDomainsList, ",");
 
         // 预解析调整为批量解析

@@ -92,9 +92,10 @@ public final class NetworkUtils {
             case TelephonyManager.NETWORK_TYPE_HSPAP: // [api13]  15
             case 17:  // [api25] NETWORK_TYPE_TD_SCDMA
                 return NETWORK_CLASS_3_G;
-            case TelephonyManager.NETWORK_TYPE_LTE: // api11  13
-            case 18: // TelephonyManager.NETWORK_TYPE_IWLAN [api25 18]
-                return NETWORK_CLASS_4_G;
+            // 圈复杂度优化，NETWORK_CLASS_4_G返回与default一致。
+//            case TelephonyManager.NETWORK_TYPE_LTE: // api11  13
+//            case 18: // TelephonyManager.NETWORK_TYPE_IWLAN [api25 18]
+//                return NETWORK_CLASS_4_G;
             default:
                 return NETWORK_CLASS_4_G;
         }

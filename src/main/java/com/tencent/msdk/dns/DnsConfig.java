@@ -9,7 +9,7 @@ import com.tencent.msdk.dns.base.log.ILogNode;
 import com.tencent.msdk.dns.base.report.IReporter;
 import com.tencent.msdk.dns.base.utils.CommonUtils;
 import com.tencent.msdk.dns.core.Const;
-import com.tencent.msdk.dns.core.ipRank.IpRankItem;
+import com.tencent.msdk.dns.core.rank.IpRankItem;
 import com.tencent.msdk.dns.core.rest.share.LookupExtra;
 
 import java.util.ArrayList;
@@ -62,16 +62,13 @@ public final class DnsConfig {
 
     public String routeIp;
 
-    private DnsConfig(int logLevel,
-                      String appId, String userId, boolean initBuiltInReporters,
-                      String dnsId, String dnsKey, String token,
-                      int timeoutMills,
-                      Set<WildcardDomain> protectedDomains,
-                      Set<String> preLookupDomains, boolean enablePersistentCache, Set<String> persistentCacheDomains,
-                      Set<IpRankItem> ipRankItems, String channel, boolean enableReport, boolean blockFirst,
+    private DnsConfig(int logLevel, String appId, String userId, boolean initBuiltInReporters, String dnsId,
+                      String dnsKey, String token, int timeoutMills, Set<WildcardDomain> protectedDomains,
+                      Set<String> preLookupDomains, boolean enablePersistentCache, Set<String> persistentCacheDomains
+            , Set<IpRankItem> ipRankItems, String channel, boolean enableReport, boolean blockFirst,
                       int customNetStack, DnsExecutors.ExecutorSupplier executorSupplier,
-                      ILookedUpListener lookedUpListener, List<ILogNode> logNodes,
-                      List<IReporter> reporters, boolean useExpiredIpEnable, boolean cachedIpEnable, String routeIp) {
+                      ILookedUpListener lookedUpListener, List<ILogNode> logNodes, List<IReporter> reporters,
+                      boolean useExpiredIpEnable, boolean cachedIpEnable, String routeIp) {
         this.logLevel = logLevel;
         this.appId = appId;
         this.userId = userId;
@@ -114,30 +111,30 @@ public final class DnsConfig {
 
     @Override
     public String toString() {
-        return "DnsConfig{" +
-                "logLevel=" + logLevel +
-                ", appId='" + appId + '\'' +
-                ", userId='" + userId + '\'' +
-                ", lookupExtra=" + lookupExtra +
-                ", timeoutMills=" + timeoutMills +
-                ", protectedDomains=" + CommonUtils.toString(protectedDomains) +
-                ", preLookupDomains=" + CommonUtils.toString(preLookupDomains) +
-                ", enablePersistentCache=" + enablePersistentCache +
-                ", persistentCacheDomains=" + CommonUtils.toString(persistentCacheDomains) +
-                ", IpRankItems=" + CommonUtils.toString(ipRankItems) +
-                ", channel='" + channel + '\'' +
-                ", enableReport='" + enableReport + '\'' +
-                ", blockFirst=" + blockFirst +
-                ", customNetStack=" + customNetStack +
-                ", executorSupplier=" + executorSupplier +
-                ", lookedUpListener=" + lookedUpListener +
-                ", logNodes=" + CommonUtils.toString(logNodes) +
-                ", reporters=" + CommonUtils.toString(reporters) +
-                ", useExpiredIpEnable=" + useExpiredIpEnable +
-                ", cachedIpEnable=" + cachedIpEnable +
-                ", enableDomainServer=" + enableDomainServer +
-                ", routeIp=" + routeIp +
-                '}';
+        return "DnsConfig{"
+                + "logLevel=" + logLevel
+                + ", appId='" + appId + '\''
+                + ", userId='" + userId + '\''
+                + ", lookupExtra=" + lookupExtra
+                + ", timeoutMills=" + timeoutMills
+                + ", protectedDomains=" + CommonUtils.toString(protectedDomains)
+                + ", preLookupDomains=" + CommonUtils.toString(preLookupDomains)
+                + ", enablePersistentCache=" + enablePersistentCache
+                + ", persistentCacheDomains=" + CommonUtils.toString(persistentCacheDomains)
+                + ", IpRankItems=" + CommonUtils.toString(ipRankItems)
+                + ", channel='" + channel + '\''
+                + ", enableReport='" + enableReport + '\''
+                + ", blockFirst=" + blockFirst
+                + ", customNetStack=" + customNetStack
+                + ", executorSupplier=" + executorSupplier
+                + ", lookedUpListener=" + lookedUpListener
+                + ", logNodes=" + CommonUtils.toString(logNodes)
+                + ", reporters=" + CommonUtils.toString(reporters)
+                + ", useExpiredIpEnable=" + useExpiredIpEnable
+                + ", cachedIpEnable=" + cachedIpEnable
+                + ", enableDomainServer=" + enableDomainServer
+                + ", routeIp=" + routeIp
+                + '}';
     }
 
     /* @VisibleForTesting */
@@ -169,10 +166,10 @@ public final class DnsConfig {
 
         @Override
         public String toString() {
-            return "WildcardDomain{" +
-                    "mIsWildcard=" + mIsWildcard +
-                    ", mNakedDomain='" + mNakedDomain + '\'' +
-                    '}';
+            return "WildcardDomain{"
+                    + "mIsWildcard=" + mIsWildcard
+                    + ", mNakedDomain='" + mNakedDomain + '\''
+                    + '}';
         }
     }
 
@@ -232,14 +229,18 @@ public final class DnsConfig {
          * SDK默认仅将日志通过logcat输出, tag统一使用HTTPDNS
          * 不设置时, 默认输出<a href="https://developer.android.google.cn/reference/android/util/Log.html#WARN">WARN</a>及以上等级的日志
          *
-         * @param logLevel 最低日志等级, 使用<a href="https://developer.android.google.cn/reference/android/util/Log">Log</a>类定义的常量, 可选值为
+         * @param logLevel 最低日志等级, 使用<a href="https://developer.android.google.cn/reference/android/util/Log">Log</a>
+         *                 类定义的常量, 可选值为
          *                 <a href="https://developer.android.google.cn/reference/android/util/Log.html#VERBOSE">VERBOSE</a>,
-         *                 <a href="https://developer.android.google.cn/reference/android/util/Log.html#DEBUG">DEBUG</a>,
+         *                 <a href="https://developer.android.google.cn/reference/android/util/Log.html#DEBUG">DEBUG</a>
+         *                 ,
          *                 <a href="https://developer.android.google.cn/reference/android/util/Log.html#INFO">INFO</a>,
          *                 <a href="https://developer.android.google.cn/reference/android/util/Log.html#WARN">WARN</a>,
-         *                 <a href="https://developer.android.google.cn/reference/android/util/Log.html#ERROR">ERROR</a>,
+         *                 <a href="https://developer.android.google.cn/reference/android/util/Log.html#ERROR">ERROR</a>
+         *                 ,
          *                 <a href="https://developer.android.google.cn/reference/android/util/Log.html#ASSERT">ASSERT</a>,
-         *                 其中<a href="https://developer.android.google.cn/reference/android/util/Log.html#ASSERT">ASSERT</a>即不输出任何日志
+         *                 其中
+         *                 <a href="https://developer.android.google.cn/reference/android/util/Log.html#ASSERT">ASSERT</a>即不输出任何日志
          * @return 当前Builder实例, 方便链式调用
          */
         public Builder logLevel(int logLevel) {
@@ -280,7 +281,7 @@ public final class DnsConfig {
         /**
          * 启停缓存自动刷新功能, 默认开启
          *
-         * @param enablePersistentCache, 启停缓存自动刷新功能
+         * @param enablePersistentCache 启停缓存自动刷新功能
          * @return 当前Builder实例, 方便链式调用
          */
         public Builder enablePersistentCache(boolean enablePersistentCache) {
@@ -342,12 +343,13 @@ public final class DnsConfig {
         /**
          * 设置DnsKey
          *
-         * @param dnsKey dnsKey, 即HTTPDNS服务的授权Id对应的加密密钥, 从<a href="https://console.cloud.tencent.com/HttpDNS">腾讯云官网</a>申请获得
+         * @param dnsKey dnsKey, 即HTTPDNS服务的授权Id对应的加密密钥, 从<a href="https://console.cloud.tencent.com/HttpDNS">腾讯云官网</a>
+         *               申请获得
          * @return 当前Builder实例, 方便链式调用
          * @throws IllegalArgumentException dnsKey为空时抛出
          */
         public Builder dnsKey(String dnsKey) {
-            if (TextUtils.isEmpty(dnsKey)) {
+            if (mChannel != Const.HTTPS_CHANNEL && TextUtils.isEmpty(dnsKey)) {
                 throw new IllegalArgumentException("dnsKey".concat(Const.EMPTY_TIPS));
             }
             mDnsKey = dnsKey;
@@ -391,8 +393,7 @@ public final class DnsConfig {
          */
         public Builder maxNumOfPreLookupDomains(int maxNumOfPreLookupDomains) {
             if (0 >= maxNumOfPreLookupDomains) {
-                throw new IllegalArgumentException(
-                        "maxNumOfPreLookupDomains".concat(Const.LESS_THAN_0_TIPS));
+                throw new IllegalArgumentException("maxNumOfPreLookupDomains".concat(Const.LESS_THAN_0_TIPS));
             }
             mMaxNumOfPreLookupDomains = maxNumOfPreLookupDomains;
             return this;
@@ -558,7 +559,8 @@ public final class DnsConfig {
 
         public Builder channel(String channel) {
             if (channel.equals(Const.HTTPS_CHANNEL) && BuildConfig.FLAVOR.equals("intl")) {
-                throw new IllegalArgumentException("httpdns-sdk-intl version still doesn't support " + Const.HTTPS_CHANNEL);
+                throw new IllegalArgumentException("httpdns-sdk-intl version still doesn't support "
+                        + Const.HTTPS_CHANNEL);
             }
             mChannel = channel;
             return this;
@@ -576,7 +578,8 @@ public final class DnsConfig {
 
         public Builder https() {
             if (BuildConfig.FLAVOR.equals("intl")) {
-                throw new IllegalArgumentException("httpdns-sdk-intl version still doesn't support " + Const.HTTPS_CHANNEL);
+                throw new IllegalArgumentException("httpdns-sdk-intl version still doesn't support "
+                        + Const.HTTPS_CHANNEL);
             }
             mChannel = Const.HTTPS_CHANNEL;
             return this;
@@ -618,16 +621,17 @@ public final class DnsConfig {
 
         /**
          * 设置{@link DnsExecutors.ExecutorSupplier}, 用于为SDK定制线程池
-         * 不设置时, 默认使用<a href="https://developer.android.com/reference/android/os/AsyncTask.html#THREAD_POOL_EXECUTOR">THREAD_POOL_EXECUTOR</a>作为SDK内部使用的线程池
+         * 不设置时, 默认使用
+         * <a href="https://developer.android.com/reference/android/os/AsyncTask.html#THREAD_POOL_EXECUTOR">THREAD_POOL_EXECUTOR</a>作为SDK内部使用的线程池
          *
-         * @param executorSupplier {@link DnsExecutors.ExecutorSupplier}接口实现类实例, SDK通过{@link DnsExecutors.ExecutorSupplier#get()}获取SDK内部使用的线程池
+         * @param executorSupplier {@link DnsExecutors.ExecutorSupplier}接口实现类实例,
+         *                         SDK通过{@link DnsExecutors.ExecutorSupplier#get()}获取SDK内部使用的线程池
          * @return 当前Builder实例, 方便链式调用
          * @throws IllegalArgumentException executorSupplier为null时抛出
          */
         public Builder executorSupplier(DnsExecutors.ExecutorSupplier executorSupplier) {
             if (null == executorSupplier) {
-                throw new IllegalArgumentException(
-                        "executorSupplier".concat(Const.NULL_POINTER_TIPS));
+                throw new IllegalArgumentException("executorSupplier".concat(Const.NULL_POINTER_TIPS));
             }
             mExecutorSupplier = executorSupplier;
             return this;
@@ -642,8 +646,7 @@ public final class DnsConfig {
          */
         public Builder lookedUpListener(ILookedUpListener lookedUpListener) {
             if (null == lookedUpListener) {
-                throw new IllegalArgumentException(
-                        "lookedUpListener".concat(Const.NULL_POINTER_TIPS));
+                throw new IllegalArgumentException("lookedUpListener".concat(Const.NULL_POINTER_TIPS));
             }
             mLookedUpListener = lookedUpListener;
             return this;
@@ -690,8 +693,10 @@ public final class DnsConfig {
          * 允许使用过期缓存
          *
          * @param useExpiredIpEnable 默认false，解析时先取未过期的缓存结果，不满足则等待解析请求完成后返回解析结果
-         *                           设置为true时，会直接返回缓存的解析结果，没有缓存则返回0;0，用户可使用localdns（InetAddress）进行兜底。且在无缓存结果或缓存已过期时，会异步发起解析请求更新缓存。
-         *                           因异步API（getAddrByNameAsync，getAddrsByNameAsync）逻辑在回调中始终返回未过期的解析结果，设置为true时，异步API不可使用。建议使用同步API （getAddrByName，getAddrsByName）
+         *                           设置为true时，会直接返回缓存的解析结果，没有缓存则返回0;
+         *                           0，用户可使用localdns（InetAddress）进行兜底。且在无缓存结果或缓存已过期时，会异步发起解析请求更新缓存。
+         *                           因异步API（getAddrByNameAsync，getAddrsByNameAsync）逻辑在回调中始终返回未过期的解析结果，设置为true时，异步API
+         *                           不可使用。建议使用同步API （getAddrByName，getAddrsByName）
          * @return 当前Builder实例, 方便链式调用
          */
         public Builder setUseExpiredIpEnable(boolean useExpiredIpEnable) {
@@ -728,14 +733,20 @@ public final class DnsConfig {
          * @return DnsConfig实例
          */
         public DnsConfig build() {
-            return new DnsConfig(mLogLevel,
-                    mAppId, mUserId, mInitBuiltInReporters, mDnsId, mDnsKey, mToken,
-                    mTimeoutMills,
-                    mProtectedDomains, mPreLookupDomains, mEnablePersistentCache, mPersistentCacheDomains,
-                    mIpRankItems, mChannel, mEnableReport, mBlockFirst,
-                    mCustomNetStack, mExecutorSupplier,
-                    mLookedUpListener, mLogNodes,
-                    mReporters, mUseExpiredIpEnable, mCachedIpEnable, mRouteIp);
+            if (TextUtils.isEmpty(mDnsId)) {
+                throw new IllegalArgumentException("dnsId".concat(Const.EMPTY_TIPS));
+            }
+            if (mChannel != Const.HTTPS_CHANNEL && TextUtils.isEmpty(mDnsKey)) {
+                throw new IllegalArgumentException("dnsKey".concat(Const.EMPTY_TIPS));
+            }
+            if (mChannel == Const.HTTPS_CHANNEL && TextUtils.isEmpty(mToken)) {
+                throw new IllegalArgumentException("token".concat(Const.EMPTY_TIPS));
+            }
+            return new DnsConfig(mLogLevel, mAppId, mUserId, mInitBuiltInReporters, mDnsId, mDnsKey, mToken,
+                    mTimeoutMills, mProtectedDomains, mPreLookupDomains, mEnablePersistentCache,
+                    mPersistentCacheDomains, mIpRankItems, mChannel, mEnableReport, mBlockFirst, mCustomNetStack,
+                    mExecutorSupplier, mLookedUpListener, mLogNodes, mReporters, mUseExpiredIpEnable, mCachedIpEnable
+                    , mRouteIp);
         }
     }
 }

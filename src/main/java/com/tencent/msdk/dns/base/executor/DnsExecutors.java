@@ -75,6 +75,7 @@ public final class DnsExecutors {
                 Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
             }
         } catch (Exception ignored) {
+            DnsLog.e("exception: %s", ignored);
         }
         return oriPriority;
     }
@@ -89,6 +90,7 @@ public final class DnsExecutors {
                 Process.setThreadPriority(origPriority);
             }
         } catch (Exception ignored) {
+            DnsLog.e("exception: %s", ignored);
         }
     }
 

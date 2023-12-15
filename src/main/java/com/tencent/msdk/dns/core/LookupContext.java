@@ -33,8 +33,8 @@ public final class LookupContext<LookupExtra extends IDns.ILookupExtra> {
     }
 
 
-    public static <LookupExtra extends IDns.ILookupExtra>
-    LookupContext<LookupExtra> wrap(LookupParameters<LookupExtra> lookupParams) {
+    public static <LookupExtraT extends IDns.ILookupExtra>
+    LookupContext<LookupExtraT> wrap(LookupParameters<LookupExtraT> lookupParams) {
         // 参数检查由构造方法完成
         return new LookupContext<>(lookupParams);
     }
@@ -242,16 +242,16 @@ public final class LookupContext<LookupExtra extends IDns.ILookupExtra> {
 
     @Override
     public String toString() {
-        return "LookupContext{" +
-                "mLookupParams=" + mLookupParams +
-                ", mCurNetStack=" + mCurNetStack +
-                ", mSorter=" + mSorter +
-                ", mStatMerge=" + mStatMerge +
-                ", mTransaction=" + mTransaction +
-                ", mCountDownLatch=" + mCountDownLatch +
-                ", mSelector=" + mSelector +
-                ", mDnses=" + mDnses +
-                ", mSessions=" + mSessions +
-                '}';
+        return "LookupContext{"
+                + "mLookupParams=" + mLookupParams
+                + ", mCurNetStack=" + mCurNetStack
+                + ", mSorter=" + mSorter
+                + ", mStatMerge=" + mStatMerge
+                + ", mTransaction=" + mTransaction
+                + ", mCountDownLatch=" + mCountDownLatch
+                + ", mSelector=" + mSelector
+                + ", mDnses=" + mDnses
+                + ", mSessions=" + mSessions
+                + '}';
     }
 }

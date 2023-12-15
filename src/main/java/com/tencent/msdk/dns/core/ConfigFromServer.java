@@ -17,6 +17,12 @@ public final class ConfigFromServer {
     private static boolean enableDomainServer;
     private static boolean enableReport;
 
+    /**
+     * 域名接入服务初始化
+     *
+     * @param lookupExtra 加密数据
+     * @param channel     http,https
+     */
     public static void init(LookupExtra lookupExtra, String channel) {
         String urlStr;
         if (channel.equals(Const.HTTPS_CHANNEL)) {
