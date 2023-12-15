@@ -23,6 +23,7 @@ public final class CommonUtils {
             try {
                 closeable.close();
             } catch (IOException ignored) {
+                DnsLog.e("exception: %s", ignored);
             }
         }
     }
@@ -104,7 +105,9 @@ public final class CommonUtils {
 
     public static String[] templateIps(String[] ips, LookupParameters<LookupExtra> lookupParameters) {
         String requestHostname = lookupParameters.requestHostname;
-        if (ips.length > 0 && !lookupParameters.requestHostname.equals(lookupParameters.hostname) && requestHostname.split(",").length == 1) {
+        if (ips.length > 0
+                && !lookupParameters.requestHostname.equals(lookupParameters.hostname)
+                && requestHostname.split(",").length == 1) {
             // 批量解析中单个域名下发请求的格式处理
             List<String> list = new ArrayList<>();
             for (String ip : ips) {

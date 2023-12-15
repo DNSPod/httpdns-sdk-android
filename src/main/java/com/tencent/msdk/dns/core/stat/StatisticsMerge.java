@@ -91,7 +91,7 @@ public final class StatisticsMerge implements IStatisticsMerge<LookupExtra> {
     }
 
     @Override
-    public <Statistics extends IDns.IStatistics> void merge(IDns dns, Statistics stat) {
+    public <StatisticsT extends IDns.IStatistics> void merge(IDns dns, StatisticsT stat) {
         if (null == dns) {
             throw new IllegalArgumentException("dns".concat(Const.NULL_POINTER_TIPS));
         }
@@ -174,31 +174,32 @@ public final class StatisticsMerge implements IStatisticsMerge<LookupExtra> {
         try {
             jsonObject.put("v4_ips", ipSet == null ? "" : CommonUtils.toStringList(ipSet.v4Ips, ","));
             jsonObject.put("v6_ips", ipSet == null ? "" : CommonUtils.toStringList(ipSet.v6Ips, ","));
-            jsonObject.put("request_name", requestHostname);
+            jsonObject.put("request_name", requestHostname  == null ? "" : requestHostname);
             jsonObject.put("ttl", String.valueOf(restDnsStat.ttl));
             jsonObject.put("client_ip", String.valueOf(restDnsStat.clientIp));
             jsonObject.put("expired_time", String.valueOf(restDnsStat.expiredTime));
 
             return jsonObject.toString();
-        } catch (Exception ignore) {
+        } catch (Exception ignored) {
+            DnsLog.e("exception: %s", ignored);
         }
         return "";
     }
 
     @Override
     public String toString() {
-        return super.toString() + "{" +
-                "netType='" + netType + '\'' +
-                ", hostname='" + hostname + '\'' +
-                ", requestHostname='" + requestHostname + '\'' +
-                ", channel='" + channel + '\'' +
-                ", curNetStack=" + curNetStack +
-                ", localDnsStat=" + localDnsStat +
-                ", restDnsStat=" + restDnsStat +
-                ", ipSet=" + ipSet +
-                ", lookupSuccess=" + lookupSuccess +
-                ", lookupGetEmptyResponse=" + lookupFailed +
-                ", hasBeenMerge=" + hasBeenMerge +
-                '}';
+        return super.toString()
+                + "{netType='" + netType + '\''
+                + ", hostname='" + hostname + '\''
+                + ", requestHostname='" + requestHostname + '\''
+                + ", channel='" + channel + '\''
+                + ", curNetStack=" + curNetStack
+                + ", localDnsStat=" + localDnsStat
+                + ", restDnsStat=" + restDnsStat
+                + ", ipSet=" + ipSet
+                + ", lookupSuccess=" + lookupSuccess
+                + ", lookupGetEmptyResponse=" + lookupFailed
+                + ", hasBeenMerge=" + hasBeenMerge
+                + '}';
     }
 }

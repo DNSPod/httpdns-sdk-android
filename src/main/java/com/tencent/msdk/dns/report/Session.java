@@ -11,8 +11,9 @@ public class Session {
         final String sampleAlphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
         final Random random = new Random();
         char[] buf = new char[12];
-        for (int i = 0; i < 12; i++)
+        for (int i = 0; i < 12; i++) {
             buf[i] = sampleAlphabet.charAt(random.nextInt(sampleAlphabet.length()));
+        }
         sessionId = new String(buf);
         DnsLog.d("hello sessionId: " + sessionId);
     }

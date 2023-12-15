@@ -67,20 +67,20 @@ public final class LookupParameters<LookupExtra extends IDns.ILookupExtra> {
             return false;
         }
         LookupParameters<?> that = (LookupParameters<?>) o;
-        return timeoutMills == that.timeoutMills &&
-                fallback2Local == that.fallback2Local &&
-                blockFirst == that.blockFirst &&
-                family == that.family &&
-                ignoreCurNetStack == that.ignoreCurNetStack &&
-                customNetStack == that.customNetStack &&
-                enableAsyncLookup == that.enableAsyncLookup &&
-                curRetryTime == that.curRetryTime &&
-                netChangeLookup == that.netChangeLookup &&
-                CommonUtils.equals(appContext, that.appContext) &&
-                CommonUtils.equals(hostname, that.hostname) &&
-                CommonUtils.equals(dnsIp, that.dnsIp) &&
-                CommonUtils.equals(lookupExtra, that.lookupExtra) &&
-                CommonUtils.equals(channel, that.channel);
+        return timeoutMills == that.timeoutMills
+                && fallback2Local == that.fallback2Local
+                && blockFirst == that.blockFirst
+                && family == that.family
+                && ignoreCurNetStack == that.ignoreCurNetStack
+                && customNetStack == that.customNetStack
+                && enableAsyncLookup == that.enableAsyncLookup
+                && curRetryTime == that.curRetryTime
+                && netChangeLookup == that.netChangeLookup
+                && CommonUtils.equals(appContext, that.appContext)
+                && CommonUtils.equals(hostname, that.hostname)
+                && CommonUtils.equals(dnsIp, that.dnsIp)
+                && CommonUtils.equals(lookupExtra, that.lookupExtra)
+                && CommonUtils.equals(channel, that.channel);
     }
 
     public void setRequestHostname(String hostname) {
@@ -96,22 +96,22 @@ public final class LookupParameters<LookupExtra extends IDns.ILookupExtra> {
 
     @Override
     public String toString() {
-        return "LookupParameters{" +
-                "appContext=" + appContext +
-                ", hostname='" + hostname + '\'' +
-                ", timeoutMills=" + timeoutMills +
-                ", dnsIp=" + dnsIp +
-                ", lookupExtra=" + lookupExtra +
-                ", channel='" + channel + '\'' +
-                ", fallback2Local=" + fallback2Local +
-                ", blockFirst=" + blockFirst +
-                ", family=" + family +
-                ", ignoreCurNetStack=" + ignoreCurNetStack +
-                ", customNetStack=" + customNetStack +
-                ", enableAsyncLookup=" + enableAsyncLookup +
-                ", curRetryTime=" + curRetryTime +
-                ", netChangeLookup=" + netChangeLookup +
-                '}';
+        return "LookupParameters{"
+                + "appContext=" + appContext
+                + ", hostname='" + hostname + '\''
+                + ", timeoutMills=" + timeoutMills
+                + ", dnsIp=" + dnsIp
+                + ", lookupExtra=" + lookupExtra
+                + ", channel='" + channel + '\''
+                + ", fallback2Local=" + fallback2Local
+                + ", blockFirst=" + blockFirst
+                + ", family=" + family
+                + ", ignoreCurNetStack=" + ignoreCurNetStack
+                + ", customNetStack=" + customNetStack
+                + ", enableAsyncLookup=" + enableAsyncLookup
+                + ", curRetryTime=" + curRetryTime
+                + ", netChangeLookup=" + netChangeLookup
+                + '}';
     }
 
     public static final class Builder<LookupExtra extends IDns.ILookupExtra> {

@@ -8,20 +8,24 @@ import com.tencent.msdk.dns.core.Const;
 import com.tencent.msdk.dns.core.DnsDescription;
 
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 public final class Response {
 
+    static HashMap<String, Integer> DEFAULT_TTL = new HashMap<>();
+
     public static final Response EMPTY =
-            new Response(Const.INVALID_IP, Const.EMPTY_IPS, Const.DEFAULT_TIME_INTERVAL);
+            new Response(Const.INVALID_IP, Const.EMPTY_IPS, DEFAULT_TTL);
 
     public static final Response NEED_CONTINUE =
-            new Response(Const.INVALID_IP, Const.EMPTY_IPS, Const.DEFAULT_TIME_INTERVAL);
+            new Response(Const.INVALID_IP, Const.EMPTY_IPS, DEFAULT_TTL);
 
     public final String clientIp;
     public final String[] ips;
-    public final int ttl;
+    public final Map<String, Integer> ttl;
 
-    Response(int family, String clientIp, String[] ips, int ttl) {
+    Response(int family, String clientIp, String[] ips, Map<String, Integer> ttl) {
         // NOTE: 区分inet和inet6, 不允许unspecific
         family = DnsDescription.Family.INET6 == family ? family : DnsDescription.Family.INET;
         if (TextUtils.isEmpty(clientIp)) {
@@ -36,7 +40,7 @@ public final class Response {
 //        if (CommonUtils.isEmpty(ips)) {
 //            throw new IllegalArgumentException("ips".concat(Const.EMPTY_TIPS));
 //        }
-        if (isTtlInvalid(ttl)) {
+        if (ttl.isEmpty()) {
             throw new IllegalArgumentException("ttl".concat(Const.INVALID_TIPS));
         }
 
@@ -45,7 +49,7 @@ public final class Response {
         this.ttl = ttl;
     }
 
-    Response(String clientIp, String[] inet4Ips, String[] inet6Ips, int ttl) {
+    Response(String clientIp, String[] inet4Ips, String[] inet6Ips, Map<String, Integer> ttl) {
         // NOTE: 允许unspecific
         if (TextUtils.isEmpty(clientIp)) {
             throw new IllegalArgumentException("clientIp".concat(Const.EMPTY_TIPS));
@@ -58,7 +62,7 @@ public final class Response {
         inet4Ips = fixIps(DnsDescription.Family.INET, inet4Ips);
         inet6Ips = fixIps(DnsDescription.Family.INET6, inet6Ips);
 
-        if (isTtlInvalid(ttl)) {
+        if (ttl.isEmpty()) {
             throw new IllegalArgumentException("ttl".concat(Const.INVALID_TIPS));
         }
         int inet4IpsLength = inet4Ips.length;
@@ -73,7 +77,7 @@ public final class Response {
     }
 
     // NOTE: 仅用于创建空实现, 空实现实际上为无效值, 无法通过常规构造器创建
-    private Response(String clientIp, String[] ips, int ttl) {
+    private Response(String clientIp, String[] ips, Map<String, Integer> ttl) {
         this.clientIp = clientIp;
         this.ips = ips;
         this.ttl = ttl;

@@ -20,27 +20,28 @@ public final class RequestBuilder {
         return buildRequest(encryptedHostname, bizId, INET_REQUEST_FORMAT, false);
     }
 
-    public static String buildInet6Request(String encryptedHostname, String bizId) {
-        return buildRequest(encryptedHostname, bizId, INET6_REQUEST_FORMAT, false);
-    }
-
-    public static String buildDoubRequest(String encryptedHostname, String bizId) {
-        return buildRequest(encryptedHostname, bizId, DOUB_REQUEST_FORMAT, false);
-    }
-
     public static String buildInetRequest(String encryptedHostname, String bizId, boolean isServerHostname) {
         return buildRequest(encryptedHostname, bizId, INET_REQUEST_FORMAT, isServerHostname);
+    }
+
+    public static String buildInet6Request(String encryptedHostname, String bizId) {
+        return buildRequest(encryptedHostname, bizId, INET6_REQUEST_FORMAT, false);
     }
 
     public static String buildInet6Request(String encryptedHostname, String bizId, boolean isServerHostname) {
         return buildRequest(encryptedHostname, bizId, INET6_REQUEST_FORMAT, isServerHostname);
     }
 
+    public static String buildDoubRequest(String encryptedHostname, String bizId) {
+        return buildRequest(encryptedHostname, bizId, DOUB_REQUEST_FORMAT, false);
+    }
+
     public static String buildDoubRequest(String encryptedHostname, String bizId, boolean isServerHostname) {
         return buildRequest(encryptedHostname, bizId, DOUB_REQUEST_FORMAT, isServerHostname);
     }
 
-    private static String buildRequest(String encryptedHostname, String bizId, String format, boolean isServerHostname) {
+    private static String buildRequest(String encryptedHostname, String bizId, String format,
+                                       boolean isServerHostname) {
         if (TextUtils.isEmpty(bizId)) {
             throw new IllegalArgumentException("bizId".concat(Const.EMPTY_TIPS));
         }

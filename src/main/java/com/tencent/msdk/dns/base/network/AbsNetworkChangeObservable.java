@@ -1,8 +1,10 @@
 package com.tencent.msdk.dns.base.network;
 
 import android.content.Context;
+
 import com.tencent.msdk.dns.base.log.DnsLog;
 import com.tencent.msdk.dns.base.utils.NetworkUtils;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -51,9 +53,9 @@ abstract class AbsNetworkChangeObservable implements INetworkChangeObservable {
             return true;
         }
         int curNetType = NetworkUtils.getNetworkState(context);
-        if(mCurNetworkType == -1) {
+        if (mCurNetworkType == -1) {
             mCurNetworkType = curNetType;
-        } else if(mCurNetworkType != curNetType) {
+        } else if (mCurNetworkType != curNetType) {
             mCurNetworkType = curNetType;
             // NetType不相同才notify
             return true;

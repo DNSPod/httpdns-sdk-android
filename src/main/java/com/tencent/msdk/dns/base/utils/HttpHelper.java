@@ -30,10 +30,10 @@ public final class HttpHelper {
             URL url = new URL(urlStr);
             String host = url.getHost();
             String file = url.getFile();
-            return GET_METHOD + ' ' + file + ' ' + HTTP_VERSION + CRLF +
-                    "Connection: keep-alive" + CRLF +
-                    HOST_HEADER + ": " + host + CRLF +
-                    CRLF;
+            return GET_METHOD + ' ' + file + ' ' + HTTP_VERSION + CRLF
+                    + "Connection: keep-alive" + CRLF
+                    + HOST_HEADER + ": " + host + CRLF
+                    + CRLF;
         } catch (MalformedURLException e) {
             return "";
         }
@@ -59,13 +59,17 @@ public final class HttpHelper {
         return result;
     }
 
+    /**
+     * 处理请求数据，header处理
+     *
+     * @param sb      请求数据字符串流
+     * @param headers 管理header的map
+     */
     public static void splitLineAddHeader(String sb, Map<String, String> headers) {
         final int length = sb.length();
         int nameStart;
         int nameEnd;
         int colonEnd;
-        int valueStart;
-        int valueEnd;
 
         nameStart = findNonWhitespace(sb, 0);
         for (nameEnd = nameStart; nameEnd < length; nameEnd++) {
@@ -82,8 +86,8 @@ public final class HttpHelper {
             }
         }
 
-        valueStart = findNonWhitespace(sb, colonEnd);
-        valueEnd = findEndOfString(sb, valueStart);
+        int valueStart = findNonWhitespace(sb, colonEnd);
+        int valueEnd = findEndOfString(sb, valueStart);
 
         String key = sb.substring(nameStart, nameEnd);
         if (valueStart > valueEnd) { // ignore
@@ -100,6 +104,12 @@ public final class HttpHelper {
         }
     }
 
+    /**
+     * 检验请求结果获取是否完结
+     *
+     * @param rawRsp 请求返回内容
+     * @return 布尔值
+     */
     public static boolean checkHttpRspFinished(String rawRsp) {
         if (TextUtils.isEmpty(rawRsp)) {
             return false;
@@ -125,7 +135,8 @@ public final class HttpHelper {
                 if (body.length() == cl) {
                     return true;
                 }
-            } catch (Exception ignore) {
+            } catch (Exception ignored) {
+                 DnsLog.e("exception: %s", ignored);
             }
         }
         return false;

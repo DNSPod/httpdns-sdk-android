@@ -1,17 +1,18 @@
 package com.tencent.msdk.dns.core;
 
 import com.tencent.msdk.dns.base.log.DnsLog;
+
 import java.util.Set;
 
 public final class LookupHelper {
 
-    public static <LookupExtra extends IDns.ILookupExtra>
-    void prepareNonBlockLookupTask(IDns.ISession session, LookupContext<LookupExtra> lookupContext) {
+    public static <LookupExtraT extends IDns.ILookupExtra>
+    void prepareNonBlockLookupTask(IDns.ISession session, LookupContext<LookupExtraT> lookupContext) {
         prepareNonBlockLookupTask(session, lookupContext, false);
     }
 
-    public static <LookupExtra extends IDns.ILookupExtra>
-    void prepareNonBlockLookupTask(IDns.ISession session, LookupContext<LookupExtra> lookupContext, boolean forRetry) {
+    public static <LookupExtraT extends IDns.ILookupExtra>
+    void prepareNonBlockLookupTask(IDns.ISession session, LookupContext<LookupExtraT> lookupContext, boolean forRetry) {
         if (null == session) {
             throw new IllegalArgumentException("session".concat(Const.NULL_POINTER_TIPS));
         }
@@ -39,9 +40,9 @@ public final class LookupHelper {
         }
     }
 
-    public static <LookupExtra extends IDns.ILookupExtra>
-    void prepareBlockLookupTask(final IDns<LookupExtra> dns,
-                                final LookupContext<LookupExtra> lookupContext) {
+    public static <LookupExtraT extends IDns.ILookupExtra>
+    void prepareBlockLookupTask(final IDns<LookupExtraT> dns,
+                                final LookupContext<LookupExtraT> lookupContext) {
         if (null == dns) {
             throw new IllegalArgumentException("dns".concat(Const.NULL_POINTER_TIPS));
         }

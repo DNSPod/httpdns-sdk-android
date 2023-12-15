@@ -1,8 +1,8 @@
 package com.tencent.msdk.dns.core;
 
-import androidx.annotation.NonNull;
-
 import android.text.TextUtils;
+
+import androidx.annotation.NonNull;
 
 public final class DnsDescription {
 

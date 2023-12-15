@@ -14,9 +14,9 @@ public final class NetworkStack {
     }
 
     public static boolean isInvalid(int networkStack) {
-        return NONE != networkStack &&
-                IPV4_ONLY != networkStack &&
-                IPV6_ONLY != networkStack &&
-                DUAL_STACK != networkStack;
+        return NONE != networkStack
+                && IPV4_ONLY != networkStack
+                && IPV6_ONLY != networkStack
+                && DUAL_STACK != networkStack;
     }
 }

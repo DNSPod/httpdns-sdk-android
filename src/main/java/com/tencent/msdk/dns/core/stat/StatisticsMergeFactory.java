@@ -10,8 +10,8 @@ import com.tencent.msdk.dns.core.rest.share.LookupExtra;
 public final class StatisticsMergeFactory implements IStatisticsMerge.IFactory {
 
     @Override
-    public <LookupExtraImpl extends IDns.ILookupExtra>
-    IStatisticsMerge<LookupExtraImpl> create(Class<LookupExtraImpl> klass, Context context) {
+    public <LookupExtraImplT extends IDns.ILookupExtra>
+    IStatisticsMerge<LookupExtraImplT> create(Class<LookupExtraImplT> klass, Context context) {
         if (null == klass) {
             throw new IllegalArgumentException("klass".concat(Const.NULL_POINTER_TIPS));
         }
@@ -21,7 +21,7 @@ public final class StatisticsMergeFactory implements IStatisticsMerge.IFactory {
 
         if (LookupExtra.class.equals(klass)) {
             //noinspection unchecked
-            return (IStatisticsMerge<LookupExtraImpl>) new StatisticsMerge(context);
+            return (IStatisticsMerge<LookupExtraImplT>) new StatisticsMerge(context);
         }
         return IStatisticsMerge.IFactory.DEFAULT.create(klass, context);
     }
