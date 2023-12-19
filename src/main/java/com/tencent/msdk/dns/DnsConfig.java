@@ -64,8 +64,8 @@ public final class DnsConfig {
 
     private DnsConfig(int logLevel, String appId, String userId, boolean initBuiltInReporters, String dnsId,
                       String dnsKey, String token, int timeoutMills, Set<WildcardDomain> protectedDomains,
-                      Set<String> preLookupDomains, boolean enablePersistentCache, Set<String> persistentCacheDomains
-            , Set<IpRankItem> ipRankItems, String channel, boolean enableReport, boolean blockFirst,
+                      Set<String> preLookupDomains, boolean enablePersistentCache, Set<String> persistentCacheDomains,
+                      Set<IpRankItem> ipRankItems, String channel, boolean enableReport, boolean blockFirst,
                       int customNetStack, DnsExecutors.ExecutorSupplier executorSupplier,
                       ILookedUpListener lookedUpListener, List<ILogNode> logNodes, List<IReporter> reporters,
                       boolean useExpiredIpEnable, boolean cachedIpEnable, String routeIp) {
@@ -745,8 +745,8 @@ public final class DnsConfig {
             return new DnsConfig(mLogLevel, mAppId, mUserId, mInitBuiltInReporters, mDnsId, mDnsKey, mToken,
                     mTimeoutMills, mProtectedDomains, mPreLookupDomains, mEnablePersistentCache,
                     mPersistentCacheDomains, mIpRankItems, mChannel, mEnableReport, mBlockFirst, mCustomNetStack,
-                    mExecutorSupplier, mLookedUpListener, mLogNodes, mReporters, mUseExpiredIpEnable, mCachedIpEnable
-                    , mRouteIp);
+                    mExecutorSupplier, mLookedUpListener, mLogNodes, mReporters, mUseExpiredIpEnable, mCachedIpEnable,
+                    mRouteIp);
         }
     }
 }
