@@ -257,15 +257,15 @@ public final class ReportHelper {
                 // 为空的缓存统计项上报，解析结果不上报
                 MAIN.execute(AttaHelper.report(carrierCode, "", sDnsConfig.lookupExtra.bizId, sDnsConfig.appId,
                         sDnsConfig.channel, ReportConst.LOOKUP_FROM_CACHED_EVENT_NAME, System.currentTimeMillis(),
-                        dnsIp, spendAvg, 0, item.getKey(), "", sDnsConfig.timeoutMills, null, 3, 0, true, errCount, null
-                        , null));
+                        dnsIp, spendAvg, 0, item.getKey(), "", sDnsConfig.timeoutMills, null, 3, 0, true, errCount,
+                        null, null));
             }
             if (curCount > 0) {
                 // 有值的缓存统计项上报，解析结果不上报
                 MAIN.execute(AttaHelper.report(carrierCode, "", sDnsConfig.lookupExtra.bizId, sDnsConfig.appId,
                         sDnsConfig.channel, ReportConst.LOOKUP_FROM_CACHED_EVENT_NAME, System.currentTimeMillis(),
-                        dnsIp, spendAvg, 0, item.getKey(), "", sDnsConfig.timeoutMills, null, 0, 0, true, curCount, null
-                        , null));
+                        dnsIp, spendAvg, 0, item.getKey(), "", sDnsConfig.timeoutMills, null, 0, 0, true, curCount,
+                        null, null));
             }
         }
     }
