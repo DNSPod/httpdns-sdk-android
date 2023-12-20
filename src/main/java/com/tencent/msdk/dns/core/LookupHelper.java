@@ -1,8 +1,11 @@
 package com.tencent.msdk.dns.core;
 
+import static com.tencent.msdk.dns.base.utils.CommonUtils.isEmpty;
+
 import com.tencent.msdk.dns.base.log.DnsLog;
 
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
 
 public final class LookupHelper {
 
@@ -61,9 +64,18 @@ public final class LookupHelper {
                 LookupResult lookupResult = dns.lookup(lookupContext.asLookupParameters());
                 if (lookupResult.stat.lookupSuccess() || lookupResult.stat.lookupFailed()) {
                     dnses.remove(dns);
-                    if (lookupResult.stat.lookupSuccess()) {
-                        lookupContext.sorter().put(dns, lookupResult.ipSet.ips);
+                    CountDownLatch countDownLatch = lookupContext.countDownLatch();
+                    String[] ips = lookupResult.ipSet.ips;
+                    if (lookupResult.stat.lookupSuccess() && !isEmpty(ips)) {
+                        lookupContext.sorter().put(dns, ips);
+                        if (!Const.LOCAL_CHANNEL.equals(dns.getDescription().channel)) {
+                            countDownLatch.countDown();
+                        }
                     }
+                    if (dnses.isEmpty() && countDownLatch.getCount() > 0) {
+                        countDownLatch.countDown();
+                    }
+
                     // 不论是否成功都将stat进行合并，让正确的errorCode可以传出
                     lookupContext.statisticsMerge()
                             .merge(dns, lookupResult.stat);

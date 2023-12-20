@@ -94,9 +94,9 @@ public final class CountDownManager {
             } catch (Exception ignored) {
                 DnsLog.e("exception: %s", ignored);
             }
-            if (!mRealTask.mIgnorable) {
-                mCountDownLatch.countDown();
-            }
+//            if (!mRealTask.mIgnorable) {
+//                mCountDownLatch.countDown();
+//            }
         }
     }
 }
