@@ -1,5 +1,7 @@
 package com.tencent.msdk.dns.core;
 
+import static com.tencent.msdk.dns.base.utils.CommonUtils.isEmpty;
+
 import android.os.SystemClock;
 
 import androidx.annotation.NonNull;
@@ -346,7 +348,7 @@ public final class DnsManager {
                                                         long startTimeMills) {
         Selector selector = lookupContext.selector();
         if (selector == null) {
-             return getResultForNullSelector(countDownLatch, lookupContext, lookupParams, lookupResultHolder,
+            return getResultForNullSelector(countDownLatch, lookupContext, lookupParams, lookupResultHolder,
                     startTimeMills);
         }
         IRetry retry = sRetry;
@@ -488,8 +490,13 @@ public final class DnsManager {
                     IDns dns = session.getDns();
                     sessionIterator.remove();
                     lookupContext.dnses().remove(dns);
-                    if (session.getStatistics().lookupSuccess()) {
+                    if (session.getStatistics().lookupSuccess() && !isEmpty(ips)) {
                         lookupContext.sorter().put(dns, ips);
+                        lookupContext.countDownLatch().countDown();
+                    }
+                    // localdns快，httpdns慢且解析失败时需要清除计时器
+                    if (lookupContext.dnses().isEmpty() && lookupContext.sessions().isEmpty() && lookupContext.countDownLatch().getCount() > 0) {
+                        lookupContext.countDownLatch().countDown();
                     }
                     lookupContext.statisticsMerge().merge(dns, session.getStatistics());
                     continue;

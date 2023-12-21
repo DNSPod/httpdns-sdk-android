@@ -32,8 +32,14 @@ public final class LookupHelper {
                     lookupContext.sessions().remove(session);
                 }
                 lookupContext.dnses().remove(dns);
-                if (session.getStatistics().lookupSuccess()) {
+                if (session.getStatistics().lookupSuccess() && !isEmpty(ips)) {
                     lookupContext.sorter().put(dns, ips);
+                    // httpdns只要成功就清除定时器
+                    lookupContext.countDownLatch().countDown();
+                }
+                // localdns快，httpdns慢且解析失败时需要清除计时器
+                if (lookupContext.dnses().isEmpty() && lookupContext.sessions().isEmpty() && lookupContext.countDownLatch().getCount() > 0) {
+                    lookupContext.countDownLatch().countDown();
                 }
                 lookupContext.statisticsMerge()
                         .merge(dns, session.getStatistics());
@@ -68,11 +74,13 @@ public final class LookupHelper {
                     String[] ips = lookupResult.ipSet.ips;
                     if (lookupResult.stat.lookupSuccess() && !isEmpty(ips)) {
                         lookupContext.sorter().put(dns, ips);
+                        // httpdns只要成功就清除定时器
                         if (!Const.LOCAL_CHANNEL.equals(dns.getDescription().channel)) {
                             countDownLatch.countDown();
                         }
                     }
-                    if (dnses.isEmpty() && countDownLatch.getCount() > 0) {
+                    // httpdns已经结束且未解析成功时，localdns也已结束，此时清空计时器
+                    if ((dnses.isEmpty() && lookupContext.sessions().isEmpty()) && countDownLatch.getCount() > 0) {
                         countDownLatch.countDown();
                     }
 
@@ -84,8 +92,8 @@ public final class LookupHelper {
             }
         };
 
-        // 只有非localDNS进入countDownLatch阻塞任务
-        if (!Const.LOCAL_CHANNEL.equals(dns.getDescription().channel)) {
+        // 只有localDNS进入countDownLatch阻塞任务
+        if (Const.LOCAL_CHANNEL.equals(dns.getDescription().channel)) {
             lookupContext.transaction().addTask(blockLookupTask);
         } else {
             lookupContext.transaction().addTask(blockLookupTask, true);
