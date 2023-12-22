@@ -4,6 +4,7 @@ import static com.tencent.msdk.dns.base.utils.CommonUtils.isEmpty;
 
 import com.tencent.msdk.dns.base.log.DnsLog;
 
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 
@@ -26,23 +27,14 @@ public final class LookupHelper {
         if (session.getToken().isReadable()) {
             DnsLog.d("prepareNonBlockLookupTask start receive");
             String[] ips = session.receiveResponse();
-            if (session.getStatistics().lookupSuccess() || session.getStatistics().lookupFailed()) {
+            IDns.IStatistics statistics = session.getStatistics();
+            if (statistics.lookupSuccess() || statistics.lookupFailed()) {
                 IDns dns = session.getDns();
                 if (!forRetry) {
                     lookupContext.sessions().remove(session);
                 }
                 lookupContext.dnses().remove(dns);
-                if (session.getStatistics().lookupSuccess() && !isEmpty(ips)) {
-                    lookupContext.sorter().put(dns, ips);
-                    // httpdns只要成功就清除定时器
-                    lookupContext.countDownLatch().countDown();
-                }
-                // localdns快，httpdns慢且解析失败时需要清除计时器
-                if (lookupContext.dnses().isEmpty() && lookupContext.sessions().isEmpty() && lookupContext.countDownLatch().getCount() > 0) {
-                    lookupContext.countDownLatch().countDown();
-                }
-                lookupContext.statisticsMerge()
-                        .merge(dns, session.getStatistics());
+                lookupFinished(lookupContext, dns, statistics, ips);
             }
         } else if (!forRetry) {
             lookupContext.sessions().add(session);
@@ -70,23 +62,7 @@ public final class LookupHelper {
                 LookupResult lookupResult = dns.lookup(lookupContext.asLookupParameters());
                 if (lookupResult.stat.lookupSuccess() || lookupResult.stat.lookupFailed()) {
                     dnses.remove(dns);
-                    CountDownLatch countDownLatch = lookupContext.countDownLatch();
-                    String[] ips = lookupResult.ipSet.ips;
-                    if (lookupResult.stat.lookupSuccess() && !isEmpty(ips)) {
-                        lookupContext.sorter().put(dns, ips);
-                        // httpdns只要成功就清除定时器
-                        if (!Const.LOCAL_CHANNEL.equals(dns.getDescription().channel)) {
-                            countDownLatch.countDown();
-                        }
-                    }
-                    // httpdns已经结束且未解析成功时，localdns也已结束，此时清空计时器
-                    if ((dnses.isEmpty() && lookupContext.sessions().isEmpty()) && countDownLatch.getCount() > 0) {
-                        countDownLatch.countDown();
-                    }
-
-                    // 不论是否成功都将stat进行合并，让正确的errorCode可以传出
-                    lookupContext.statisticsMerge()
-                            .merge(dns, lookupResult.stat);
+                    lookupFinished(lookupContext, dns, lookupResult.stat, lookupResult.ipSet.ips);
                 }
 
             }
@@ -98,5 +74,30 @@ public final class LookupHelper {
         } else {
             lookupContext.transaction().addTask(blockLookupTask, true);
         }
+    }
+
+    public static <LookupExtraT extends IDns.ILookupExtra>
+    void lookupFinished(LookupContext<LookupExtraT> lookupContext, IDns<LookupExtraT> dns,
+                        IDns.IStatistics stat, String[] ips) {
+        Set<IDns> dnses = lookupContext.dnses();
+        List<IDns.ISession> sessions = lookupContext.sessions();
+        CountDownLatch countDownLatch = lookupContext.countDownLatch();
+        if (stat.lookupSuccess() && !isEmpty(ips)) {
+            lookupContext.sorter().put(dns, ips);
+            // httpdns只要成功就清除定时器,此时localdns不阻塞
+            if (!Const.LOCAL_CHANNEL.equals(dns.getDescription().channel)) {
+                countDownLatch.countDown();
+            }
+        }
+        // httpdns & localdns解析均已完成，httpdns未解析成功时，清空countDownLatch。localdns兜底
+        if ((dnses.isEmpty() && sessions.isEmpty()) && countDownLatch.getCount() > 0) {
+            countDownLatch.countDown();
+        }
+
+        // 不论是否成功都将stat进行合并，让正确的errorCode可以传出
+        lookupContext.statisticsMerge()
+                .merge(dns, stat);
+
+
     }
 }

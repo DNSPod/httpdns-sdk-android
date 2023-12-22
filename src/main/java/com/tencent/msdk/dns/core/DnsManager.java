@@ -1,7 +1,5 @@
 package com.tencent.msdk.dns.core;
 
-import static com.tencent.msdk.dns.base.utils.CommonUtils.isEmpty;
-
 import android.os.SystemClock;
 
 import androidx.annotation.NonNull;
@@ -486,19 +484,12 @@ public final class DnsManager {
             if (token.isReadable()) {
                 DnsLog.d("%s event readable", session.getDns().getDescription());
                 String[] ips = session.receiveResponse();
-                if (session.getStatistics().lookupSuccess() || session.getStatistics().lookupFailed()) {
+                IDns.IStatistics statistics = session.getStatistics();
+                if (statistics.lookupSuccess() || statistics.lookupFailed()) {
                     IDns dns = session.getDns();
                     sessionIterator.remove();
                     lookupContext.dnses().remove(dns);
-                    if (session.getStatistics().lookupSuccess() && !isEmpty(ips)) {
-                        lookupContext.sorter().put(dns, ips);
-                        lookupContext.countDownLatch().countDown();
-                    }
-                    // localdns快，httpdns慢且解析失败时需要清除计时器
-                    if (lookupContext.dnses().isEmpty() && lookupContext.sessions().isEmpty() && lookupContext.countDownLatch().getCount() > 0) {
-                        lookupContext.countDownLatch().countDown();
-                    }
-                    lookupContext.statisticsMerge().merge(dns, session.getStatistics());
+                    LookupHelper.lookupFinished(lookupContext, dns, statistics, ips);
                     continue;
                 }
             } else if (token.isWritable()) {
