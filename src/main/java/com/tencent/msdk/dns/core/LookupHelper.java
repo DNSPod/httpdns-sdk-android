@@ -76,6 +76,14 @@ public final class LookupHelper {
         }
     }
 
+    /**
+     * 解析结束处理：解析结果处理，流程是否阻塞。
+     *
+     * @param lookupContext lookupContext
+     * @param dns           当前dns服务
+     * @param stat          统计数据
+     * @param ips           解析结果
+     */
     public static <LookupExtraT extends IDns.ILookupExtra>
     void lookupFinished(LookupContext<LookupExtraT> lookupContext, IDns<LookupExtraT> dns,
                         IDns.IStatistics stat, String[] ips) {
