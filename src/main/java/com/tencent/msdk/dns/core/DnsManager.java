@@ -346,7 +346,7 @@ public final class DnsManager {
                                                         long startTimeMills) {
         Selector selector = lookupContext.selector();
         if (selector == null) {
-             return getResultForNullSelector(countDownLatch, lookupContext, lookupParams, lookupResultHolder,
+            return getResultForNullSelector(countDownLatch, lookupContext, lookupParams, lookupResultHolder,
                     startTimeMills);
         }
         IRetry retry = sRetry;
