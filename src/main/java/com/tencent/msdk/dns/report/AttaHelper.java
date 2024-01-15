@@ -21,7 +21,7 @@ public class AttaHelper {
     private static final String ATTA_TOKEN = BuildConfig.ATTA_TOKEN;
     private static final String SDKVERSION = BuildConfig.VERSION_NAME;
     private static final String DEVICEMODEL = getSystemModel();
-    private static final String SYSTEMNANE = "Andriod";
+    private static final String SYSTEMNANE = "Android";
     private static final String SYSTEMVERSION = getSystemVersion();
     private static final String SESSIONID = Session.getSessionId();
 
