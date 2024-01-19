@@ -346,7 +346,7 @@ public final class DnsManager {
                                                         long startTimeMills) {
         Selector selector = lookupContext.selector();
         if (selector == null) {
-             return getResultForNullSelector(countDownLatch, lookupContext, lookupParams, lookupResultHolder,
+            return getResultForNullSelector(countDownLatch, lookupContext, lookupParams, lookupResultHolder,
                     startTimeMills);
         }
         IRetry retry = sRetry;
@@ -484,14 +484,12 @@ public final class DnsManager {
             if (token.isReadable()) {
                 DnsLog.d("%s event readable", session.getDns().getDescription());
                 String[] ips = session.receiveResponse();
-                if (session.getStatistics().lookupSuccess() || session.getStatistics().lookupFailed()) {
+                IDns.IStatistics statistics = session.getStatistics();
+                if (statistics.lookupSuccess() || statistics.lookupFailed()) {
                     IDns dns = session.getDns();
                     sessionIterator.remove();
                     lookupContext.dnses().remove(dns);
-                    if (session.getStatistics().lookupSuccess()) {
-                        lookupContext.sorter().put(dns, ips);
-                    }
-                    lookupContext.statisticsMerge().merge(dns, session.getStatistics());
+                    LookupHelper.lookupFinished(lookupContext, dns, statistics, ips);
                     continue;
                 }
             } else if (token.isWritable()) {
