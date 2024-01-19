@@ -1,5 +1,6 @@
 package com.tencent.msdk.dns.core.rest.share;
 
+import android.os.SystemClock;
 import android.text.TextUtils;
 
 import com.tencent.msdk.dns.BackupResolver;
@@ -68,7 +69,7 @@ public final class CacheHelper {
             AbsRestDns.Statistics cachedStat = (AbsRestDns.Statistics) lookupResult.stat;
             final boolean useExpiredIpEnable = DnsService.getDnsConfig().useExpiredIpEnable;
             // 乐观DNS或者未过期
-            if (useExpiredIpEnable || cachedStat.expiredTime > System.currentTimeMillis()) {
+            if (useExpiredIpEnable || cachedStat.expiredTime > SystemClock.elapsedRealtime()) {
                 return lookupResult;
             }
             DnsLog.d("Cache of %s(%d) expired", hostname, mDns.getDescription().family);
