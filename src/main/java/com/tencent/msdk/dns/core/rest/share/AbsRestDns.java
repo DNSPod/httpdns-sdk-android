@@ -1,5 +1,6 @@
 package com.tencent.msdk.dns.core.rest.share;
 
+import android.os.SystemClock;
 import android.text.TextUtils;
 
 import com.tencent.msdk.dns.DnsService;
@@ -96,7 +97,7 @@ public abstract class AbsRestDns implements IDns<LookupExtra> {
                 Statistics cachedStat = (Statistics) lookupResult.stat;
 
                 if (DnsService.getDnsConfig().useExpiredIpEnable
-                        && cachedStat.expiredTime < System.currentTimeMillis()) {
+                        && cachedStat.expiredTime < SystemClock.elapsedRealtime()) {
                     requestHostname.append(hostname).append(',');
                 }
             } else {
@@ -465,7 +466,7 @@ public abstract class AbsRestDns implements IDns<LookupExtra> {
                     min = Math.min(value, min);
                 }
             }
-            return System.currentTimeMillis() + min * 1000L;
+            return SystemClock.elapsedRealtime() + min * 1000L;
         }
 
         @Override

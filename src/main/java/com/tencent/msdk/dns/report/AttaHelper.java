@@ -21,7 +21,7 @@ public class AttaHelper {
     private static final String ATTA_TOKEN = BuildConfig.ATTA_TOKEN;
     private static final String SDKVERSION = BuildConfig.VERSION_NAME;
     private static final String DEVICEMODEL = getSystemModel();
-    private static final String SYSTEMNANE = "Andriod";
+    private static final String SYSTEMNANE = "Android";
     private static final String SYSTEMVERSION = getSystemVersion();
     private static final String SESSIONID = Session.getSessionId();
 
@@ -70,8 +70,9 @@ public class AttaHelper {
                             + "&req_dn=" + reqDn
                             + "&req_type=" + reqType
                             + "&req_timeout=" + reqTimeout
+                            + "&req_query="
                             // todo: ttl需处理，先上报0
-                            + "&req_ttl= 0"
+                            + "&req_ttl=0"
                             + "&errorCode=" + errorCode
                             + "&statusCode=" + statusCode
                             + "&sessionId=" + SESSIONID
@@ -79,6 +80,7 @@ public class AttaHelper {
                             + "&count=" + count
                             + "&ldns=" + ldns
                             + "&hdns=" + hdns
+                            + "&_dc=" + Math.random()
                     );
                     DnsLog.d("开始Atta上报：" + url);
                     connection = (HttpURLConnection) url.openConnection();
