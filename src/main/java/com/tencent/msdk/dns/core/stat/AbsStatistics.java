@@ -1,5 +1,7 @@
 package com.tencent.msdk.dns.core.stat;
 
+import android.os.SystemClock;
+
 import com.tencent.msdk.dns.core.Const;
 import com.tencent.msdk.dns.core.IDns;
 
@@ -27,11 +29,11 @@ public abstract class AbsStatistics implements IDns.IStatistics {
     public long startLookupTimeMills = 0L;
 
     public void startLookup() {
-        startLookupTimeMills = System.currentTimeMillis();
+        startLookupTimeMills = SystemClock.elapsedRealtime();
     }
 
     public void endLookup() {
-        costTimeMills = (int) (System.currentTimeMillis() - startLookupTimeMills);
+        costTimeMills = (int) (SystemClock.elapsedRealtime() - startLookupTimeMills);
     }
 
     public boolean lookupPartCached() {

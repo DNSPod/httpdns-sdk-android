@@ -1,5 +1,7 @@
 package com.tencent.msdk.dns.core.cache.database;
 
+import android.os.SystemClock;
+
 import androidx.annotation.NonNull;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
@@ -28,7 +30,7 @@ public class LookupCache {
     public boolean isExpired() {
         AbsRestDns.Statistics stat = (AbsRestDns.Statistics) lookupResult.stat;
         if (stat != null) {
-            return System.currentTimeMillis() > stat.expiredTime;
+            return SystemClock.elapsedRealtime() > stat.expiredTime;
         }
         return true;
     }

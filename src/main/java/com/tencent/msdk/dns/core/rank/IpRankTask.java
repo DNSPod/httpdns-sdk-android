@@ -1,5 +1,6 @@
 package com.tencent.msdk.dns.core.rank;
 
+import android.os.SystemClock;
 import android.util.Pair;
 
 import com.tencent.msdk.dns.core.Const;
@@ -73,12 +74,12 @@ public class IpRankTask implements Runnable {
      */
     private int ipSpeedTask(String ip, int port) {
         Socket socket = new Socket();
-        long start = System.currentTimeMillis();
+        long start = SystemClock.elapsedRealtime();
         long end = start + timeouts;
         SocketAddress remoteAddress = new InetSocketAddress(ip, port);
         try {
             socket.connect(remoteAddress, timeouts);
-            end = System.currentTimeMillis();
+            end = SystemClock.elapsedRealtime();
         } catch (IOException e) {
             e.printStackTrace();
         }
