@@ -63,50 +63,53 @@ public final class DnsService {
      * @throws IllegalArgumentException context为null时抛出
      */
     public static void init(Context context, /* @Nullable */DnsConfig config) {
-        // NOTE: 参数检查不封装为通用方法, 是为了避免不必要的concat执行
-        if (null == context) {
-            throw new IllegalArgumentException("context".concat(Const.NULL_POINTER_TIPS));
-        }
-        if (null == config) {
-            config = new DnsConfig.Builder().build();
-        }
-        // NOTE: 在开始打日志之前设置日志开关
-        DnsLog.setLogLevel(config.logLevel);
-        addLogNodes(config.logNodes);
-        DnsLog.v("DnsService.init(%s, %s) called, ver:%s", context, config, BuildConfig.VERSION_NAME);
-        Context appContext = context.getApplicationContext();
-        sAppContext = appContext;
-        sConfig = config;
-        // 底层配置获取
-        DnsExecutors.WORK.execute(new Runnable() {
-            @Override
-            public void run() {
-                ConfigFromServer.init(sConfig.lookupExtra, sConfig.channel);
+       try {
+            // NOTE: 参数检查不封装为通用方法, 是为了避免不必要的concat执行
+            if (null == context) {
+                throw new IllegalArgumentException("context".concat(Const.NULL_POINTER_TIPS));
             }
-        });
-        // 初始化容灾服务
-        BackupResolver.getInstance().init(sConfig);
-        // 初始化SpendHelper配置为正常上报做准备
-        SpendReportResolver.getInstance().init();
-        NetworkChangeManager.install(appContext);
-        ActivityLifecycleDetector.install(appContext);
-        // Room 本地数据读取
-        DnsExecutors.WORK.execute(new Runnable() {
-            @Override
-            public void run() {
-                Cache.getInstance().readFromDb();
+            if (null == config) {
+                config = new DnsConfig.Builder().build();
             }
-        });
-        ReportHelper.init(config);
-        DnsExecutors.sExecutorSupplier = sConfig.executorSupplier;
-        setLookedUpListener(config.lookedUpListener);
+            // NOTE: 在开始打日志之前设置日志开关
+            DnsLog.setLogLevel(config.logLevel);
+            addLogNodes(config.logNodes);
+            DnsLog.v("DnsService.init(%s, %s) called, ver:%s", context, config, BuildConfig.VERSION_NAME);
+            Context appContext = context.getApplicationContext();
+            sAppContext = appContext;
+            sConfig = config;
+            // 底层配置获取
+            DnsExecutors.WORK.execute(new Runnable() {
+                @Override
+                public void run() {
+                    ConfigFromServer.init(sConfig.lookupExtra, sConfig.channel);
+                }
+            });
+            // 初始化容灾服务
+            BackupResolver.getInstance().init(sConfig);
+            // 初始化SpendHelper配置为正常上报做准备
+            SpendReportResolver.getInstance().init();
+            NetworkChangeManager.install(appContext);
+            ActivityLifecycleDetector.install(appContext);
+            // Room 本地数据读取
+            DnsExecutors.WORK.execute(new Runnable() {
+                @Override
+                public void run() {
+                    Cache.getInstance().readFromDb();
+                }
+            });
+            ReportHelper.init(config);
+            DnsExecutors.sExecutorSupplier = sConfig.executorSupplier;
+            setLookedUpListener(config.lookedUpListener);
 
-        // NOTE: addReporters需保证在ReportManager init之后调用
-        addReporters(config.reporters);
+            // NOTE: addReporters需保证在ReportManager init之后调用
+            addReporters(config.reporters);
 
-        sInited = true;
-
-        preLookupAndStartAsyncLookup();
+            sInited = true;
+            preLookupAndStartAsyncLookup();
+       } catch (Exception e) {
+           DnsLog.w("DnsService.init failed: %s", e);
+       }
     }
 
     /**

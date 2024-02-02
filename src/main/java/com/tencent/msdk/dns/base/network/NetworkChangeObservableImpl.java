@@ -6,6 +6,8 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.ConnectivityManager;
 
+import com.tencent.msdk.dns.base.log.DnsLog;
+
 final class NetworkChangeObservableImpl extends AbsNetworkChangeObservable {
 
     NetworkChangeObservableImpl(Context context) {
@@ -14,13 +16,17 @@ final class NetworkChangeObservableImpl extends AbsNetworkChangeObservable {
         if (null == context) {
             return;
         }
-        final Context appContext = context.getApplicationContext();
-        appContext.registerReceiver(new BroadcastReceiver() {
+        try {
+            final Context appContext = context.getApplicationContext();
+            appContext.registerReceiver(new BroadcastReceiver() {
 
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                mayChangeNetwork(appContext);
-            }
-        }, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
+                @Override
+                public void onReceive(Context context, Intent intent) {
+                    mayChangeNetwork(appContext);
+                }
+            }, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
+        } catch (Exception e){
+            DnsLog.w("network register failed " + e);
+        }
     }
 }
