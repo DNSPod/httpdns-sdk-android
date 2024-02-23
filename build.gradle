@@ -99,8 +99,8 @@ dependencies {
     androidTestImplementation('com.android.support.test.espresso:espresso-core:3.0.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
-    implementation 'androidx.room:room-runtime:2.2.0'
-    annotationProcessor 'androidx.room:room-compiler:2.2.0'
+//    implementation 'androidx.room:room-runtime:2.2.0'
+//    annotationProcessor 'androidx.room:room-compiler:2.2.0'
 
     doclava 'com.google.doclava:doclava:1.0.6'
 }

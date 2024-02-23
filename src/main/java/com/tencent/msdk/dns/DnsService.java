@@ -23,7 +23,6 @@ import com.tencent.msdk.dns.core.IpSet;
 import com.tencent.msdk.dns.core.LookupParameters;
 import com.tencent.msdk.dns.core.LookupResult;
 import com.tencent.msdk.dns.core.cache.Cache;
-import com.tencent.msdk.dns.core.cache.database.LookupCacheDatabase;
 import com.tencent.msdk.dns.core.rest.share.LookupExtra;
 import com.tencent.msdk.dns.core.stat.StatisticsMerge;
 import com.tencent.msdk.dns.report.CacheStatisticsReport;
@@ -166,9 +165,6 @@ public final class DnsService {
             throw new IllegalStateException("DnsService".concat(Const.NOT_INIT_TIPS));
         }
         sConfig.cachedIpEnable = mCachedIpEnable;
-        if (mCachedIpEnable) {
-            LookupCacheDatabase.creat(sAppContext);
-        }
     }
 
     /**

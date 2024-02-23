@@ -7,9 +7,8 @@ import com.tencent.msdk.dns.base.log.DnsLog;
 import com.tencent.msdk.dns.core.Const;
 import com.tencent.msdk.dns.core.ICache;
 import com.tencent.msdk.dns.core.LookupResult;
+import com.tencent.msdk.dns.core.cache.database.CacheDbHelper;
 import com.tencent.msdk.dns.core.cache.database.LookupCache;
-import com.tencent.msdk.dns.core.cache.database.LookupCacheDao;
-import com.tencent.msdk.dns.core.cache.database.LookupCacheDatabase;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,8 +19,7 @@ public final class Cache implements ICache {
 
     private final Map<String, LookupResult> mHostnameIpsMap = new ConcurrentHashMap<>();
 
-    private final LookupCacheDao lookupCacheDao =
-            LookupCacheDatabase.getInstance(DnsService.getAppContext()).lookupCacheDao();
+    private final CacheDbHelper cacheDbHelper = new CacheDbHelper(DnsService.getContext());
 
     private boolean getCachedIpEnable() {
         return DnsService.getDnsConfig().cachedIpEnable;
@@ -40,7 +38,7 @@ public final class Cache implements ICache {
 
     public void readFromDb() {
         if (getCachedIpEnable()) {
-            List<LookupCache> allCache = lookupCacheDao.getAll();
+            List<LookupCache> allCache = cacheDbHelper.getAll();
             ArrayList<LookupCache> expired = new ArrayList<>();
             for (LookupCache lookupCache : allCache) {
                 mHostnameIpsMap.put(lookupCache.hostname, lookupCache.lookupResult);
@@ -50,7 +48,7 @@ public final class Cache implements ICache {
                 }
             }
             // 内存读取后，清空本地已过期的缓存
-            lookupCacheDao.deleteLookupCaches(expired);
+            cacheDbHelper.deleteLookupCaches(expired);
         }
     }
 
@@ -90,7 +88,7 @@ public final class Cache implements ICache {
         DnsLog.d("Cache %s for %s", lookupResult, hostname);
         mHostnameIpsMap.put(hostname, lookupResult);
         if (getCachedIpEnable()) {
-            lookupCacheDao.insertLookupCache(new LookupCache(hostname, lookupResult));
+            cacheDbHelper.insertLookupCache(new LookupCache(hostname, lookupResult));
         }
     }
 
@@ -103,7 +101,7 @@ public final class Cache implements ICache {
         mHostnameIpsMap.remove(hostname);
 
         if (getCachedIpEnable()) {
-            lookupCacheDao.delete(hostname);
+            cacheDbHelper.delete(hostname);
         }
 
     }
@@ -113,7 +111,7 @@ public final class Cache implements ICache {
         mHostnameIpsMap.clear();
 
         if (getCachedIpEnable()) {
-            lookupCacheDao.clear();
+            cacheDbHelper.clear();
         }
     }
 }
