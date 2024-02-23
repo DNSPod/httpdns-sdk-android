@@ -17,9 +17,6 @@ public class LookupCache {
         this.lookupResult = mLookupResult;
     }
 
-    public LookupCache() {
-    }
-
     public boolean isExpired() {
         AbsRestDns.Statistics stat = (AbsRestDns.Statistics) lookupResult.stat;
         if (stat != null) {

@@ -1,26 +1,26 @@
-package com.tencent.msdk.dns.core.cache;
+package com.tencent.msdk.dns.core.cache.database;
 
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.text.TextUtils;
 
 import com.tencent.msdk.dns.base.log.DnsLog;
-import com.tencent.msdk.dns.core.cache.database.LookupCache;
-import com.tencent.msdk.dns.core.cache.database.LookupResultConverter;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class CacheDbHelper extends SQLiteOpenHelper {
     public static final int DATABASE_VERSION = 1;
 
-    public static final String DATABASE_NAME = "LookupCache.db";
+    public static final String DATABASE_NAME = "LookupResult.db";
+
+    private static final Object mLock = new Object();
 
     private SQLiteDatabase mDb;
-
-    private final Object mLock = new Object();
 
     static class DB {
         static final String TABLE_NAME = "lookupDB";
@@ -42,19 +42,18 @@ public class CacheDbHelper extends SQLiteOpenHelper {
 
     private SQLiteDatabase getDb() {
         if (mDb == null) {
-            try{
+            try {
                 mDb = getWritableDatabase();
-            } catch (Exception e){
+            } catch (Exception e) {
 
             }
         }
         return mDb;
     }
 
-    public List<LookupCache> readFromDb() {
+    public List<LookupCache> getAll() {
         synchronized (mLock) {
             ArrayList<LookupCache> lists = new ArrayList<>();
-
             SQLiteDatabase db = null;
             Cursor cursor = null;
 
@@ -64,7 +63,6 @@ public class CacheDbHelper extends SQLiteOpenHelper {
                 if (cursor != null && cursor.getCount() > 0) {
                     cursor.moveToFirst();
                     do {
-                        DnsLog.d("testt----" + cursor.getString(cursor.getColumnIndex(DB.HOST))+ "result ---" + LookupResultConverter.toLookupResult(cursor.getBlob(cursor.getColumnIndex(DB.RESULT))));
                         lists.add(new LookupCache(
                                 cursor.getString(cursor.getColumnIndex(DB.HOST)),
                                 LookupResultConverter.toLookupResult(cursor.getBlob(cursor.getColumnIndex(DB.RESULT)))
@@ -85,7 +83,7 @@ public class CacheDbHelper extends SQLiteOpenHelper {
         }
     }
 
-    public void insertLookupCache(LookupCache lookupCache) {
+    public void insert(LookupCache lookupCache) {
         synchronized (mLock) {
             SQLiteDatabase db = null;
             try {
@@ -94,7 +92,7 @@ public class CacheDbHelper extends SQLiteOpenHelper {
                 ContentValues cv = new ContentValues();
                 cv.put(DB.HOST, lookupCache.hostname);
                 cv.put(DB.RESULT, LookupResultConverter.fromLookupResult(lookupCache.lookupResult));
-                db.insert(DB.TABLE_NAME, null, cv);
+                db.insertWithOnConflict(DB.TABLE_NAME, null, cv, SQLiteDatabase.CONFLICT_REPLACE);
                 db.setTransactionSuccessful();
             } catch (Exception e) {
                 DnsLog.e("insert lookupCache fail " + e);
@@ -109,27 +107,29 @@ public class CacheDbHelper extends SQLiteOpenHelper {
         }
     }
 
-    public void deleteLookupCaches(ArrayList<LookupCache> lookupCaches) {
-        for(LookupCache lookupCache: lookupCaches) {
-            delete(lookupCache.hostname);
-        }
+    public void delete(String hostname) {
+        delete(new String[]{hostname});
     }
 
-    public void delete(String hostname) {
-        synchronized (mLock) {
-            SQLiteDatabase db = null;
-            try {
-                db = getDb();
-                db.beginTransaction();
-                db.delete(DB.TABLE_NAME, DB.HOST + "= ? ", new String[] {hostname});
-                db.setTransactionSuccessful();
-            } catch (Exception e) {
-                DnsLog.e("delete by hostname fail" + e);
-            } finally {
-                if (db != null) {
-                    try {
-                        db.endTransaction();
-                    } catch (Exception ignored) {
+    public void delete(String[] hosts) {
+        if (hosts.length > 0) {
+            synchronized (mLock) {
+                SQLiteDatabase db = null;
+                try {
+                    db = getDb();
+                    db.beginTransaction();
+                    db.delete(DB.TABLE_NAME, DB.HOST + " IN (" + TextUtils.join(",", Collections.nCopies(hosts.length,
+                                    "?")) + ")",
+                            hosts);
+                    db.setTransactionSuccessful();
+                } catch (Exception e) {
+                    DnsLog.e("delete by hostname fail" + e);
+                } finally {
+                    if (db != null) {
+                        try {
+                            db.endTransaction();
+                        } catch (Exception ignored) {
+                        }
                     }
                 }
             }
@@ -161,7 +161,7 @@ public class CacheDbHelper extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase db) {
         try {
             db.execSQL(DB.SQL_CREATE_ENTRIES);
-        }catch (Exception e) {
+        } catch (Exception e) {
             DnsLog.e("create db fail " + e);
         }
     }

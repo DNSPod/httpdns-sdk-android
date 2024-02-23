@@ -39,16 +39,17 @@ public final class Cache implements ICache {
     public void readFromDb() {
         if (getCachedIpEnable()) {
             List<LookupCache> allCache = cacheDbHelper.getAll();
-            ArrayList<LookupCache> expired = new ArrayList<>();
+            ArrayList<String> expiredList = new ArrayList<>();
             for (LookupCache lookupCache : allCache) {
                 mHostnameIpsMap.put(lookupCache.hostname, lookupCache.lookupResult);
 
                 if (lookupCache.isExpired()) {
-                    expired.add(lookupCache);
+                    expiredList.add(lookupCache.hostname);
                 }
             }
+            String [] expiredHosts = expiredList.toArray(new String[expiredList.size()]);
             // 内存读取后，清空本地已过期的缓存
-            cacheDbHelper.deleteLookupCaches(expired);
+            cacheDbHelper.delete(expiredHosts);
         }
     }
 
@@ -88,7 +89,7 @@ public final class Cache implements ICache {
         DnsLog.d("Cache %s for %s", lookupResult, hostname);
         mHostnameIpsMap.put(hostname, lookupResult);
         if (getCachedIpEnable()) {
-            cacheDbHelper.insertLookupCache(new LookupCache(hostname, lookupResult));
+            cacheDbHelper.insert(new LookupCache(hostname, lookupResult));
         }
     }
 
