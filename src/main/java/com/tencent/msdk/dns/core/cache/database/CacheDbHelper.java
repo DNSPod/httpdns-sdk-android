@@ -153,7 +153,8 @@ public class CacheDbHelper extends SQLiteOpenHelper {
                 if (db != null) {
                     try {
                         db.endTransaction();
-                    } catch (Exception ignored) {
+                    } catch (Exception e) {
+                        DnsLog.e("db end transaction error " + e);
                     }
                 }
             }
