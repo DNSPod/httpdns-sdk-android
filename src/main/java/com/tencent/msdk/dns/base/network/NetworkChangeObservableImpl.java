@@ -25,7 +25,7 @@ final class NetworkChangeObservableImpl extends AbsNetworkChangeObservable {
                     mayChangeNetwork(appContext);
                 }
             }, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
-        } catch (Exception e){
+        } catch (Exception e) {
             DnsLog.w("network register failed " + e);
         }
     }

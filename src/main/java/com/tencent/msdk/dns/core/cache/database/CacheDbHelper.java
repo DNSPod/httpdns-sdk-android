@@ -45,7 +45,7 @@ public class CacheDbHelper extends SQLiteOpenHelper {
             try {
                 mDb = getWritableDatabase();
             } catch (Exception e) {
-
+                DnsLog.e("get db error " + e);
             }
         }
         return mDb;
@@ -54,7 +54,7 @@ public class CacheDbHelper extends SQLiteOpenHelper {
     public List<LookupCache> getAll() {
         synchronized (mLock) {
             ArrayList<LookupCache> lists = new ArrayList<>();
-            SQLiteDatabase db = null;
+            SQLiteDatabase db;
             Cursor cursor = null;
 
             try {
@@ -76,7 +76,8 @@ public class CacheDbHelper extends SQLiteOpenHelper {
                     if (cursor != null) {
                         cursor.close();
                     }
-                } catch (Exception ignored) {
+                } catch (Exception e) {
+                    DnsLog.e("cursor close error " + e);
                 }
             }
             return lists;
@@ -100,7 +101,8 @@ public class CacheDbHelper extends SQLiteOpenHelper {
                 if (db != null) {
                     try {
                         db.endTransaction();
-                    } catch (Exception ignored) {
+                    } catch (Exception e) {
+                        DnsLog.e("db end transaction error  " + e);
                     }
                 }
             }
@@ -128,7 +130,8 @@ public class CacheDbHelper extends SQLiteOpenHelper {
                     if (db != null) {
                         try {
                             db.endTransaction();
-                        } catch (Exception ignored) {
+                        } catch (Exception e) {
+                            DnsLog.e("db end transaction error " + e);
                         }
                     }
                 }

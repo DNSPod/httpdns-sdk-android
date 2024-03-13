@@ -6,7 +6,7 @@ import com.tencent.msdk.dns.base.log.DnsLog;
 
 public final class NetworkChangeManager {
 
-    private volatile static INetworkChangeObservable sNetworkChangeObservable;
+    private static volatile INetworkChangeObservable sNetworkChangeObservable;
 
     public static void install(Context context) {
         if (null == context) {
