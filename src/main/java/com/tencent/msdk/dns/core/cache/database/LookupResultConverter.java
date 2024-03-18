@@ -1,7 +1,5 @@
 package com.tencent.msdk.dns.core.cache.database;
 
-import androidx.room.TypeConverter;
-
 import com.tencent.msdk.dns.core.LookupResult;
 import com.tencent.msdk.dns.core.rest.share.AbsRestDns;
 
@@ -12,8 +10,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
 public class LookupResultConverter {
-    @TypeConverter
-    public byte[] fromLookupResult(LookupResult lookupResult) {
+    public static byte[] fromLookupResult(LookupResult lookupResult) {
         ByteArrayOutputStream baos = null;
         ObjectOutputStream oos = null;
         try {
@@ -39,8 +36,7 @@ public class LookupResultConverter {
         return baos.toByteArray();
     }
 
-    @TypeConverter
-    public LookupResult toLookupResult(byte[] lookupResultByteArr) {
+    public static LookupResult toLookupResult(byte[] lookupResultByteArr) {
         ByteArrayInputStream bais = null;
         ObjectInputStream ois = null;
         try {

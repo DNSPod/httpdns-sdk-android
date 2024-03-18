@@ -1,7 +1,5 @@
 package com.tencent.msdk.dns.report;
 
-import com.tencent.msdk.dns.base.log.DnsLog;
-
 import java.util.Random;
 
 public class Session {
@@ -15,7 +13,6 @@ public class Session {
             buf[i] = sampleAlphabet.charAt(random.nextInt(sampleAlphabet.length()));
         }
         sessionId = new String(buf);
-        DnsLog.d("hello sessionId: " + sessionId);
     }
 
     public static String getSessionId() {
