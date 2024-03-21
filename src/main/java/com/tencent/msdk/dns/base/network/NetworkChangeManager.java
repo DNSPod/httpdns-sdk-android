@@ -6,16 +6,19 @@ import com.tencent.msdk.dns.base.log.DnsLog;
 
 public final class NetworkChangeManager {
 
-    private static INetworkChangeObservable sNetworkChangeObservable = null;
+    private static volatile INetworkChangeObservable sNetworkChangeObservable;
 
     public static void install(Context context) {
         if (null == context) {
             DnsLog.w("Install network change manager failed: context can not be null");
             return;
         }
-        synchronized (NetworkChangeManager.class) {
-            if (null == sNetworkChangeObservable) {
-                sNetworkChangeObservable = new NetworkChangeObservableFactory().create(context);
+        if (null == sNetworkChangeObservable) {
+            synchronized (NetworkChangeManager.class) {
+                if (null == sNetworkChangeObservable) {
+                    sNetworkChangeObservable = new NetworkChangeObservableFactory().create(context);
+
+                }
             }
         }
     }
