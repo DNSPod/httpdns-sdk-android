@@ -50,7 +50,7 @@ public class AttaHelper {
             public void run() {
                 HttpURLConnection connection = null;
                 try {
-                    URL url = new URL(ATTA_URL
+                    String path = ATTA_URL
                             + "?attaid=" + ATTA_ID
                             + "&token=" + ATTA_TOKEN
                             + "&carrier=" + carrier
@@ -80,8 +80,9 @@ public class AttaHelper {
                             + "&count=" + count
                             + "&ldns=" + ldns
                             + "&hdns=" + hdns
-                            + "&_dc=" + Math.random()
-                    );
+                            + "&_dc=" + Math.random();
+                    path = path.replace(" ","_");
+                    URL url = new URL(path);
                     DnsLog.d("开始Atta上报：" + url);
                     connection = (HttpURLConnection) url.openConnection();
                     //设置请求方法
@@ -91,6 +92,8 @@ public class AttaHelper {
                     //设置读取超时时间（毫秒）
                     connection.setReadTimeout(2000);
                     connection.connect();
+                    int respCode = connection.getResponseCode();
+                    DnsLog.d("Atta respCode：" + respCode);
                 } catch (IOException e) {
                     e.printStackTrace();
                 } finally {
