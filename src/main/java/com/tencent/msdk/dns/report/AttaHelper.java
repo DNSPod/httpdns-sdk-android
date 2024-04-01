@@ -81,7 +81,7 @@ public class AttaHelper {
                             + "&ldns=" + ldns
                             + "&hdns=" + hdns
                             + "&_dc=" + Math.random();
-                    path = path.replace(" ","_");
+                    path = path.replace(" ", "_");
                     URL url = new URL(path);
                     DnsLog.d("开始Atta上报：" + url);
                     connection = (HttpURLConnection) url.openConnection();
