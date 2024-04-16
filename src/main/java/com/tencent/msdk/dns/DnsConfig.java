@@ -62,13 +62,16 @@ public final class DnsConfig {
 
     public String routeIp;
 
+    public boolean experimentalBuglyEnable;
+
     private DnsConfig(int logLevel, String appId, String userId, boolean initBuiltInReporters, String dnsId,
                       String dnsKey, String token, int timeoutMills, Set<WildcardDomain> protectedDomains,
                       Set<String> preLookupDomains, boolean enablePersistentCache, Set<String> persistentCacheDomains,
                       Set<IpRankItem> ipRankItems, String channel, boolean enableReport, boolean blockFirst,
                       int customNetStack, DnsExecutors.ExecutorSupplier executorSupplier,
                       ILookedUpListener lookedUpListener, List<ILogNode> logNodes, List<IReporter> reporters,
-                      boolean useExpiredIpEnable, boolean cachedIpEnable, String routeIp) {
+                      boolean useExpiredIpEnable, boolean cachedIpEnable, String routeIp,
+                      Boolean experimentalBuglyEnable) {
         this.logLevel = logLevel;
         this.appId = appId;
         this.userId = userId;
@@ -91,6 +94,7 @@ public final class DnsConfig {
         this.useExpiredIpEnable = useExpiredIpEnable;
         this.cachedIpEnable = cachedIpEnable;
         this.routeIp = routeIp;
+        this.experimentalBuglyEnable = experimentalBuglyEnable;
     }
 
     boolean needProtect(/* @Nullable */String hostname) {
@@ -134,6 +138,7 @@ public final class DnsConfig {
                 + ", cachedIpEnable=" + cachedIpEnable
                 + ", enableDomainServer=" + enableDomainServer
                 + ", routeIp=" + routeIp
+                + ", experimentalBuglyEnable=" + experimentalBuglyEnable
                 + '}';
     }
 
@@ -223,6 +228,7 @@ public final class DnsConfig {
         private boolean mUseExpiredIpEnable = false;
         private boolean mCachedIpEnable = false;
         private String mRouteIp = "";
+        private boolean mExperimentalBuglyEnable = false;
 
         /**
          * 设置最低日志等级, 低于设置等级的日志不会输出
@@ -728,6 +734,17 @@ public final class DnsConfig {
         }
 
         /**
+         * 实验性参数，仅提供给内部特定团队使用，请勿随意启用。
+         *
+         * @param buglyEnable
+         * @return
+         */
+        public Builder setExperimentalBuglyEnable(Boolean buglyEnable) {
+            mExperimentalBuglyEnable = buglyEnable;
+            return this;
+        }
+
+        /**
          * 构建DnsConfig实例
          *
          * @return DnsConfig实例
@@ -746,7 +763,7 @@ public final class DnsConfig {
                     mTimeoutMills, mProtectedDomains, mPreLookupDomains, mEnablePersistentCache,
                     mPersistentCacheDomains, mIpRankItems, mChannel, mEnableReport, mBlockFirst, mCustomNetStack,
                     mExecutorSupplier, mLookedUpListener, mLogNodes, mReporters, mUseExpiredIpEnable, mCachedIpEnable,
-                    mRouteIp);
+                    mRouteIp, mExperimentalBuglyEnable);
         }
     }
 }
