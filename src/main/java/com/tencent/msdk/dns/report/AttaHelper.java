@@ -4,6 +4,7 @@ import android.content.Context;
 import android.telephony.TelephonyManager;
 
 import com.tencent.msdk.dns.BuildConfig;
+import com.tencent.msdk.dns.DnsService;
 import com.tencent.msdk.dns.base.log.DnsLog;
 
 import java.io.IOException;
@@ -25,8 +26,7 @@ public class AttaHelper {
     private static final String SYSTEMVERSION = getSystemVersion();
     private static final String SESSIONID = Session.getSessionId();
 
-    public static Runnable report(final String carrier,
-                                  final String networkType,
+    public static Runnable report(final String networkType,
                                   final String dnsId,
                                   final String appId,
                                   final String encryptType,
@@ -50,6 +50,8 @@ public class AttaHelper {
             public void run() {
                 HttpURLConnection connection = null;
                 try {
+                    //  获取手机卡运营商code
+                    String carrier = getSimOperator(DnsService.getAppContext());
                     String path = ATTA_URL
                             + "?attaid=" + ATTA_ID
                             + "&token=" + ATTA_TOKEN
