@@ -14,7 +14,8 @@ public class SharedBugly {
     public static void init(Context context) {
         try {
             if (DnsService.getDnsConfig().experimentalBuglyEnable) {
-                SharedPreferences sharedPreferences = context.getSharedPreferences("BuglySdkInfos", Context.MODE_PRIVATE);
+                SharedPreferences sharedPreferences = context.getSharedPreferences("BuglySdkInfos",
+                        Context.MODE_PRIVATE);
                 SharedPreferences.Editor editor = sharedPreferences.edit();
                 editor.putString(appId, appVersion); //必填信息
                 editor.commit();
