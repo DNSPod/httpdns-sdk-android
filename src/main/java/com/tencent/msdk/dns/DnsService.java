@@ -3,6 +3,7 @@ package com.tencent.msdk.dns;
 import android.content.Context;
 import android.text.TextUtils;
 
+import com.tencent.msdk.dns.base.bugly.SharedBugly;
 import com.tencent.msdk.dns.base.executor.DnsExecutors;
 import com.tencent.msdk.dns.base.lifecycle.ActivityLifecycleDetector;
 import com.tencent.msdk.dns.base.log.DnsLog;
@@ -62,7 +63,7 @@ public final class DnsService {
      * @throws IllegalArgumentException context为null时抛出
      */
     public static void init(Context context, /* @Nullable */DnsConfig config) {
-       try {
+        try {
             // NOTE: 参数检查不封装为通用方法, 是为了避免不必要的concat执行
             if (null == context) {
                 throw new IllegalArgumentException("context".concat(Const.NULL_POINTER_TIPS));
@@ -77,6 +78,8 @@ public final class DnsService {
             Context appContext = context.getApplicationContext();
             sAppContext = appContext;
             sConfig = config;
+            // 集成共享式bugly
+            SharedBugly.init(appContext);
             // 底层配置获取
             DnsExecutors.WORK.execute(new Runnable() {
                 @Override
@@ -106,9 +109,9 @@ public final class DnsService {
 
             sInited = true;
             preLookupAndStartAsyncLookup();
-       } catch (Exception e) {
-           DnsLog.w("DnsService.init failed: %s", e);
-       }
+        } catch (Exception e) {
+            DnsLog.w("DnsService.init failed: %s", e);
+        }
     }
 
     /**

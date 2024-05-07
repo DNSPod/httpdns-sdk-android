@@ -4,6 +4,7 @@ import android.content.Context;
 import android.telephony.TelephonyManager;
 
 import com.tencent.msdk.dns.BuildConfig;
+import com.tencent.msdk.dns.DnsService;
 import com.tencent.msdk.dns.base.log.DnsLog;
 
 import java.io.IOException;
@@ -25,8 +26,7 @@ public class AttaHelper {
     private static final String SYSTEMVERSION = getSystemVersion();
     private static final String SESSIONID = Session.getSessionId();
 
-    public static Runnable report(final String carrier,
-                                  final String networkType,
+    public static Runnable report(final String networkType,
                                   final String dnsId,
                                   final String appId,
                                   final String encryptType,
@@ -50,7 +50,9 @@ public class AttaHelper {
             public void run() {
                 HttpURLConnection connection = null;
                 try {
-                    URL url = new URL(ATTA_URL
+                    //  获取手机卡运营商code
+                    String carrier = getSimOperator(DnsService.getAppContext());
+                    String path = ATTA_URL
                             + "?attaid=" + ATTA_ID
                             + "&token=" + ATTA_TOKEN
                             + "&carrier=" + carrier
@@ -80,8 +82,9 @@ public class AttaHelper {
                             + "&count=" + count
                             + "&ldns=" + ldns
                             + "&hdns=" + hdns
-                            + "&_dc=" + Math.random()
-                    );
+                            + "&_dc=" + Math.random();
+                    path = path.replace(" ", "_");
+                    URL url = new URL(path);
                     DnsLog.d("开始Atta上报：" + url);
                     connection = (HttpURLConnection) url.openConnection();
                     //设置请求方法
@@ -91,6 +94,8 @@ public class AttaHelper {
                     //设置读取超时时间（毫秒）
                     connection.setReadTimeout(2000);
                     connection.connect();
+                    int respCode = connection.getResponseCode();
+                    DnsLog.d("Atta respCode：" + respCode);
                 } catch (IOException e) {
                     e.printStackTrace();
                 } finally {
