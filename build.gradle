@@ -32,12 +32,14 @@ android {
         debug {
             minifyEnabled false
             buildConfigField("String", "VERSION_NAME", "\"${project.subVersionName}a\"")
+            buildConfigField("String", "BUGLY_ID", BUGLY_ID)
         }
 
         release {
             minifyEnabled true
             buildConfigField("String", "VERSION_NAME", "\"${project.subVersionName}a\"")
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            buildConfigField("String", "BUGLY_ID", BUGLY_ID)
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
 

@@ -7,7 +7,6 @@ import android.app.Activity;
 import com.tencent.msdk.dns.BackupResolver;
 import com.tencent.msdk.dns.BuildConfig;
 import com.tencent.msdk.dns.DnsConfig;
-import com.tencent.msdk.dns.DnsService;
 import com.tencent.msdk.dns.base.compat.CollectionCompat;
 import com.tencent.msdk.dns.base.lifecycle.ActivityLifecycleCallbacksWrapper;
 import com.tencent.msdk.dns.base.lifecycle.ActivityLifecycleDetector;
@@ -187,8 +186,6 @@ public final class ReportHelper {
         StatisticsMerge statMerge = (StatisticsMerge) lookupResult.stat;
 
         BackupResolver backupInfo = BackupResolver.getInstance();
-        //  获取手机卡运营商code
-        String carrierCode = AttaHelper.getSimOperator(DnsService.getAppContext());
         //  获取当前dnsip
         String dnsIp = backupInfo.getDnsIp();
         String reqType = AttaHelper.getReqType(statMerge.curNetStack);
@@ -198,7 +195,7 @@ public final class ReportHelper {
             if (statMerge.restDnsStat.errorCode == 0) {
                 //  请求成功后将ErrorCount置为0
                 backupInfo.setErrorCount(0);
-                MAIN.execute(AttaHelper.report(carrierCode, statMerge.netType, sDnsConfig.lookupExtra.bizId,
+                MAIN.execute(AttaHelper.report(statMerge.netType, sDnsConfig.lookupExtra.bizId,
                         sDnsConfig.appId, sDnsConfig.channel, eventName, System.currentTimeMillis(), dnsIp,
                         statMerge.restDnsStat.costTimeMills, statMerge.localDnsStat.costTimeMills,
                         statMerge.requestHostname, reqType, sDnsConfig.timeoutMills, statMerge.restDnsStat.ttl,
@@ -212,7 +209,7 @@ public final class ReportHelper {
                         || (Const.HTTPS_CHANNEL.equals(sDnsConfig.channel) && (statMerge.restDnsStat.errorCode == 1))) {
                     // 解析失败，仅当达到最大失败次数满足切换IP时候上报
                     if (backupInfo.getCanReport(backupInfo.getErrorCount() + 1)) {
-                        MAIN.execute(AttaHelper.report(carrierCode, statMerge.netType, sDnsConfig.lookupExtra.bizId,
+                        MAIN.execute(AttaHelper.report(statMerge.netType, sDnsConfig.lookupExtra.bizId,
                                 sDnsConfig.appId, sDnsConfig.channel, eventName, System.currentTimeMillis(), dnsIp,
                                 statMerge.restDnsStat.costTimeMills, statMerge.localDnsStat.costTimeMills,
                                 statMerge.requestHostname, reqType, sDnsConfig.timeoutMills,
@@ -225,7 +222,7 @@ public final class ReportHelper {
                     backupInfo.incrementErrorCount();
                     DnsLog.d("dnsip连接失败, 当前失败次数：" + backupInfo.getErrorCount());
                 } else {
-                    MAIN.execute(AttaHelper.report(carrierCode, statMerge.netType, sDnsConfig.lookupExtra.bizId,
+                    MAIN.execute(AttaHelper.report(statMerge.netType, sDnsConfig.lookupExtra.bizId,
                             sDnsConfig.appId, sDnsConfig.channel, eventName, System.currentTimeMillis(), dnsIp,
                             statMerge.restDnsStat.costTimeMills, statMerge.localDnsStat.costTimeMills,
                             statMerge.requestHostname, reqType, sDnsConfig.timeoutMills, statMerge.restDnsStat.ttl,
@@ -249,20 +246,18 @@ public final class ReportHelper {
             int errCount = (int) temp[1];
             int curCount = (int) temp[2];
             int spendAvg = (int) temp[0] / (errCount + curCount);
-            //  获取手机卡运营商code
-            String carrierCode = AttaHelper.getSimOperator(DnsService.getAppContext());
             //  获取当前dnsip
             String dnsIp = BackupResolver.getInstance().getDnsIp();
             if (errCount > 0) {
                 // 为空的缓存统计项上报，解析结果不上报
-                MAIN.execute(AttaHelper.report(carrierCode, "", sDnsConfig.lookupExtra.bizId, sDnsConfig.appId,
+                MAIN.execute(AttaHelper.report("", sDnsConfig.lookupExtra.bizId, sDnsConfig.appId,
                         sDnsConfig.channel, ReportConst.LOOKUP_FROM_CACHED_EVENT_NAME, System.currentTimeMillis(),
                         dnsIp, spendAvg, 0, item.getKey(), "", sDnsConfig.timeoutMills, null, 3, 0, true, errCount,
                         null, null));
             }
             if (curCount > 0) {
                 // 有值的缓存统计项上报，解析结果不上报
-                MAIN.execute(AttaHelper.report(carrierCode, "", sDnsConfig.lookupExtra.bizId, sDnsConfig.appId,
+                MAIN.execute(AttaHelper.report("", sDnsConfig.lookupExtra.bizId, sDnsConfig.appId,
                         sDnsConfig.channel, ReportConst.LOOKUP_FROM_CACHED_EVENT_NAME, System.currentTimeMillis(),
                         dnsIp, spendAvg, 0, item.getKey(), "", sDnsConfig.timeoutMills, null, 0, 0, true, curCount,
                         null, null));
