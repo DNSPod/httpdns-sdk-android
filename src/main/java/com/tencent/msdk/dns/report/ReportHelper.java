@@ -257,7 +257,7 @@ public final class ReportHelper {
             }
             if (curCount > 0) {
                 // 有值的缓存统计项上报，解析结果不上报
-                MAIN.execute(AttaHelper.report( "", sDnsConfig.lookupExtra.bizId, sDnsConfig.appId,
+                MAIN.execute(AttaHelper.report("", sDnsConfig.lookupExtra.bizId, sDnsConfig.appId,
                         sDnsConfig.channel, ReportConst.LOOKUP_FROM_CACHED_EVENT_NAME, System.currentTimeMillis(),
                         dnsIp, spendAvg, 0, item.getKey(), "", sDnsConfig.timeoutMills, null, 0, 0, true, curCount,
                         null, null));
