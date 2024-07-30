@@ -37,6 +37,9 @@ public final class CacheHelper {
 
     private static final float ASYNC_LOOKUP_FACTOR = 0.75f;
 
+    // 缓存自动刷新最小时间设置
+    private static final int MIN_LOOKUP_TIME = 60;
+
     private final List<Runnable> mPendingTasks = new Vector<>();
     // NOTE: 先后发起两个域名解析请求, 如果后一个无法命中前一个的缓存, 则两个请求的结果都会写入缓存
     // 后一次写入应该负责清理前一次缓存写入对应的pending任务
@@ -200,12 +203,17 @@ public final class CacheHelper {
             pendingTasks.asyncLookupTask = asyncLookupTask;
             mPendingTasks.add(asyncLookupTask);
             DnsExecutors.MAIN.schedule(
-                    asyncLookupTask, (long) (ASYNC_LOOKUP_FACTOR * ttl * 1000));
+                    asyncLookupTask, getRefreshTime(ttl));
         }
 
         if (!mHostnamePendingTasksMap.containsKey(hostname)) {
             mHostnamePendingTasksMap.put(hostname, pendingTasks);
         }
+    }
+
+    private long getRefreshTime(int ttl) {
+        float time = ASYNC_LOOKUP_FACTOR * ttl > MIN_LOOKUP_TIME ? ASYNC_LOOKUP_FACTOR * ttl : MIN_LOOKUP_TIME;
+        return (long) (time * 1000);
     }
 
     public void clearErrorRspCache(String hostname) {
