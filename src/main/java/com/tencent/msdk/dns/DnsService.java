@@ -75,7 +75,7 @@ public final class DnsService {
             DnsLog.setLogLevel(config.logLevel);
             addLogNodes(config.logNodes);
             DnsLog.v("DnsService.init(%s, %s) called, ver:%s", context, config, BuildConfig.VERSION_NAME);
-            Context appContext = context.getApplicationContext();
+            final Context appContext = context.getApplicationContext();
             sAppContext = appContext;
             sConfig = config;
             // 集成共享式bugly
