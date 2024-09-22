@@ -82,6 +82,10 @@ public class BackupResolver {
         getServerIpsTask.run();
     }
 
+    /**
+     * 从SDK配置中获取当前解密方式的解析IP列表
+     * @return 解析IP列表
+     */
     private List<String> getBackUpIps() {
         if (Const.HTTPS_CHANNEL.equals(mConfig.channel) && BuildConfig.HTTPS_DNS_SERVER.length > 0) {
             return new ArrayList<>(Arrays.asList(BuildConfig.HTTPS_DNS_SERVER));
@@ -118,7 +122,7 @@ public class BackupResolver {
      * 1. 主备IP切换：在精确性、速度上折中处理，主IP解析的同时，会发起LocalDNS解析，若主IP首次解析不成功，立即返回
      * 上次解析结果，如果没有上次解析结果，则返回LocalDNS解析结果，如果主IP 3次解析不成功，则切换到备份IP进行解析。
      * 2. 备份IP切换 域名兜底：所有备份IP都经超过3次不通，切换到域名兜底解析。
-     * 3. 去掉恢复逻辑
+     * 3. 去掉恢复逻辑。新增当轮询切回主IP时，立即获取动态IP列表
      * 4. 通过参数控制 切换策略的次数判断（默认3次）
      */
     public String getDnsIp() {
@@ -127,7 +131,7 @@ public class BackupResolver {
             // 当前的失败次数达到了切换阈值时进行ipIndex的首尾循环，这里重新切回主IP。且重新获取动态解析服务IP。
             if (mIpIndex >= dnsIps.size() - 1) {
                 mIpIndex = 0;
-                // 请求成功后，按过期时间更新调度
+                // 调度列表完成切回主IP时，立即调度动态IP列表
                 scheduleRetryRequest(0);
             } else {
                 mIpIndex++;
@@ -193,7 +197,7 @@ public class BackupResolver {
                 filterIpList.add(item);
             }
         }
-        BackupResolver.getInstance().setDnsIps(ipList);
+        BackupResolver.getInstance().setDnsIps(filterIpList);
         SharedPreferences sharedPreferences = DnsService.getContext().getSharedPreferences(PREFS_NAME,
                 Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
@@ -203,7 +207,10 @@ public class BackupResolver {
         editor.apply(); // 或者使用 commit()
     }
 
-    // 读取动态服务IP
+    /**
+     * 从缓存中获取动态服务IP列表
+     * @return 未过期的动态服务IP列表
+     */
     private List<String> getDNSIpsFromPreference() {
         SharedPreferences sharedPreferences = DnsService.getContext().getSharedPreferences(PREFS_NAME,
                 Context.MODE_PRIVATE);
@@ -212,14 +219,16 @@ public class BackupResolver {
         String ips = sharedPreferences.getString(SAVE_KEY, "");
         List<String> ipsList = new ArrayList<>();
 
-        if (ips.isEmpty() || currentTime > expirationTime) {
-            // 数据已过期，删除数据
-            SharedPreferences.Editor editor = sharedPreferences.edit();
-            editor.remove(SAVE_KEY);
-            editor.remove(SAVE_KEY + TIMESTAMP_SUFFIX);
-            editor.apply();
-        } else {
-            ipsList = Arrays.asList(ips.split(";"));
+        if (!ips.isEmpty()) {
+            if (currentTime > expirationTime) {
+                // 数据已过期，删除数据
+                SharedPreferences.Editor editor = sharedPreferences.edit();
+                editor.remove(SAVE_KEY);
+                editor.remove(SAVE_KEY + TIMESTAMP_SUFFIX);
+                editor.apply();
+            } else {
+                ipsList = Arrays.asList(ips.split(";"));
+            }
         }
         return ipsList;
     }

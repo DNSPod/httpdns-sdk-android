@@ -18,8 +18,9 @@ import java.net.URL;
 public final class ConfigFromServer {
     private static final int TIMEOUT = 2000;    // 请求超时时间 2000s
     private static final int MAX_RETRIES = 1;   // 重试次数
-    private static final int FAIL_RETRY_INTERVAL = 5;   // 失败延时任务启动 5min
-    private static final int MIN_EXPIRATION_TIME = 60; // 成功延时任务启动最小 60 min
+    private static final int FAIL_RETRY_INTERVAL = 5; // 失败延时任务启动 5min
+    private static final int DEFAULT_EXPIRATION_TIME = 60; // 默认成功延时任务启动 60 min
+    private static final int MIN_EXPIRATION_TIME = 1; // 成功延时任务启动最小 1 min
     private static final int MAX_EXPIRATION_TIME = 1440; // 成功延时任务启动最大 1440 min
     private static LookupExtra mLookupExtra;
     private static String mChannel;
@@ -40,7 +41,7 @@ public final class ConfigFromServer {
     /**
      * 获取配置服务ip
      * @param initServer 启动IP列表（国内，国际，http, https）
-     * @return
+     * @return 初始化服务IP
      */
     private static String getInitIp(String[] initServer) {
         if (mIndex > initServer.length) {
@@ -71,7 +72,7 @@ public final class ConfigFromServer {
         boolean enableReport = false;
         boolean enableDomainServer = false;
         String ips = "";
-        int expiredTime = 0;
+        int expiredTime = DEFAULT_EXPIRATION_TIME;
         if (rawRspContent.length() > 0) {
             //  解密
             String rspContent;
@@ -97,18 +98,15 @@ public final class ConfigFromServer {
                 if (item [0].contains("ip")) {
                     ips = item[1];
                 }
-                if (item[0].contains("ttl")) {
-                    expiredTime = Integer.parseInt(item[1]);
+                if (item[0].contains("ttl") && !item[1].isEmpty()) {
+                    int ttl = Integer.parseInt(item[1]);
+                    if (ttl >= MIN_EXPIRATION_TIME && ttl <= MAX_EXPIRATION_TIME ) {
+                        expiredTime = ttl;
+                    }
                 }
             }
             DnsService.setDnsConfigFromServer(enableReport, enableDomainServer);
             if (!ips.isEmpty()) {
-                if (expiredTime < MIN_EXPIRATION_TIME) {
-                    expiredTime = MIN_EXPIRATION_TIME;
-                }
-                if (expiredTime > MAX_EXPIRATION_TIME) {
-                    expiredTime = MAX_EXPIRATION_TIME;
-                }
                 BackupResolver.getInstance().handleDynamicDNSIps(ips, expiredTime);
                 // 请求成功后，按返回的时间延时调度
                 scheduleRetryRequest(expiredTime);
@@ -131,7 +129,7 @@ public final class ConfigFromServer {
                     public void run() {
                         doRequestWithRetry();
                     }
-                }, interval * 60 * 1000);
+                }, (long) interval * 60 * 1000);
     }
 
     // 服务处理，超时后重试及延时更新任务下发
