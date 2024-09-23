@@ -1,5 +1,7 @@
 package com.tencent.msdk.dns.core;
 
+import androidx.annotation.NonNull;
+
 import com.tencent.msdk.dns.BackupResolver;
 import com.tencent.msdk.dns.BuildConfig;
 import com.tencent.msdk.dns.DnsService;
@@ -14,6 +16,8 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.SocketTimeoutException;
 import java.net.URL;
+
+import javax.net.ssl.HttpsURLConnection;
 
 public final class ConfigFromServer {
     private static final int TIMEOUT = 2000;    // 请求超时时间 2000s
@@ -40,11 +44,12 @@ public final class ConfigFromServer {
 
     /**
      * 获取配置服务ip
+     *
      * @param initServer 启动IP列表（国内，国际，http, https）
      * @return 初始化服务IP
      */
     private static String getInitIp(String[] initServer) {
-        if (mIndex > initServer.length) {
+        if (mIndex > initServer.length - 1) {
             mIndex = 0;
         }
         return initServer[mIndex];
@@ -52,6 +57,7 @@ public final class ConfigFromServer {
 
     /**
      * 组合配置请求URL
+     *
      * @return URL todo: 版本号
      */
     private static String getUrlStr() {
@@ -60,7 +66,7 @@ public final class ConfigFromServer {
                 DnsLog.d("httpdns-sdk-intl version still doesn't support https");
                 return null;
             }
-            return "https://" + getInitIp(BuildConfig.HTTPS_INIT_SERVER)+ "/conf?token=" + mLookupExtra.token;
+            return "https://" + getInitIp(BuildConfig.HTTPS_INIT_SERVER) + "/conf?token=" + mLookupExtra.token;
         } else {
             String alg = mChannel.equals(Const.AES_HTTP_CHANNEL) ? "aes" : "des";
             return "http://" + getInitIp(BuildConfig.HTTP_INIT_SERVER) + "/conf?id=" + mLookupExtra.bizId + "&alg=" + alg;
@@ -68,7 +74,7 @@ public final class ConfigFromServer {
     }
 
     // 解析结果解密处理。日志上报配置，域名服务配置下发，动态配置IP处理。
-    private static void handleResponse(String rawRspContent) {
+    private static void handleResponse(@NonNull String rawRspContent) {
         boolean enableReport = false;
         boolean enableDomainServer = false;
         String ips = "";
@@ -95,12 +101,12 @@ public final class ConfigFromServer {
                 if (item[0].contains("domain")) {
                     enableDomainServer = "1".equals(item[1]);
                 }
-                if (item [0].contains("ip")) {
+                if (item[0].contains("ip")) {
                     ips = item[1];
                 }
                 if (item[0].contains("ttl") && !item[1].isEmpty()) {
                     int ttl = Integer.parseInt(item[1]);
-                    if (ttl >= MIN_EXPIRATION_TIME && ttl <= MAX_EXPIRATION_TIME ) {
+                    if (ttl >= MIN_EXPIRATION_TIME && ttl <= MAX_EXPIRATION_TIME) {
                         expiredTime = ttl;
                     }
                 }
@@ -119,10 +125,11 @@ public final class ConfigFromServer {
 
     /**
      * 延时任务调度
+     *
      * @param interval 单位：分钟min
      */
     public static void scheduleRetryRequest(int interval) {
-        DnsLog.d("schedule retry config request start.");
+        DnsLog.d("The delayed scheduling task will be executed after %s minutes.", interval);
         DnsExecutors.MAIN.schedule(
                 new Runnable() {
                     @Override
@@ -135,7 +142,7 @@ public final class ConfigFromServer {
     // 服务处理，超时后重试及延时更新任务下发
     private static void doRequestWithRetry() {
         String urlString = getUrlStr();
-        if (urlString == null) return;
+        if (urlString == null || urlString.isEmpty()) return;
         int attempt = 0;
         while (attempt <= MAX_RETRIES) {
             try {
@@ -143,7 +150,7 @@ public final class ConfigFromServer {
                 handleResponse(response);
                 return;
             } catch (SocketTimeoutException e) {
-                System.out.println("Timeout occurred, retrying... (" + (attempt + 1) + "/" + (MAX_RETRIES + 1) + ")");
+                DnsLog.d("Timeout occurred, %s retrying... (" + (attempt + 1) + "/" + (MAX_RETRIES + 1) + ")", urlString);
                 attempt++;
             } catch (Exception e) {
                 e.printStackTrace();
@@ -156,14 +163,20 @@ public final class ConfigFromServer {
     }
 
     // 发起配置请求，获取配置结果
-    private static String doRequest(String urlString) throws Exception {
+    private static String doRequest(@NonNull String urlString) throws Exception {
+        if (urlString.isEmpty()) return "";
         HttpURLConnection connection = null;
         BufferedReader reader;
         StringBuilder rawRspContent = new StringBuilder();
         String lineTxt;
         try {
             //  发起请求
-            connection = (HttpURLConnection) new URL(urlString).openConnection();
+            URL url = new URL(urlString);
+            if (url.getProtocol().equalsIgnoreCase("https")) {
+                connection = (HttpsURLConnection) url.openConnection();
+            } else {
+                connection = (HttpURLConnection) url.openConnection();
+            }
             connection.setRequestMethod("GET");
             connection.setConnectTimeout(TIMEOUT);
             connection.setReadTimeout(TIMEOUT);
