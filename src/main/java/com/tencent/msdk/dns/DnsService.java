@@ -79,7 +79,12 @@ public final class DnsService {
             sAppContext = appContext;
             sConfig = config;
             // 集成共享式bugly
-            SharedBugly.init(appContext);
+            DnsExecutors.WORK.execute(new Runnable() {
+                @Override
+                public void run() {
+                    SharedBugly.init(appContext);
+                }
+            });
             // 初始化解析IP服务
             BackupResolver.getInstance().init(sConfig);
             // 底层配置获取

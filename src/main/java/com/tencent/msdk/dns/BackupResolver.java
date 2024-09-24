@@ -5,6 +5,7 @@ import static com.tencent.msdk.dns.core.ConfigFromServer.scheduleRetryRequest;
 import android.content.Context;
 import android.content.SharedPreferences;
 
+import com.tencent.msdk.dns.base.executor.DnsExecutors;
 import com.tencent.msdk.dns.base.log.DnsLog;
 import com.tencent.msdk.dns.base.utils.DebounceTask;
 import com.tencent.msdk.dns.base.utils.IpValidator;
@@ -57,13 +58,18 @@ public class BackupResolver {
     public void init(DnsConfig dnsConfig) {
         mConfig = dnsConfig;
         mErrorCount = new AtomicInteger(0);
-        // http和https是两个IP列表，初始化优先取缓存中的动态服务列表；当本地存储不存在时，获取sdk配置中的数据。
-        List<String> ipList = getDNSIpsFromPreference();
-        if (!ipList.isEmpty()) {
-            dnsIps = ipList;
-        } else {
-            dnsIps = getBackUpIps();
-        }
+        // http和https是两个IP列表，服务列表默认值为SDK配置中的数据
+        setDnsIps(getBackUpIps());
+        // 从缓存中获取动态服务列表，并设置。
+        DnsExecutors.WORK.execute(new Runnable() {
+            @Override
+            public void run() {
+                List<String> ipList = getDNSIpsFromPreference();
+                if (!ipList.isEmpty()) {
+                    setDnsIps(ipList);
+                }
+            }
+        });
     }
 
     public void setDnsIps(List<String> ips) {
