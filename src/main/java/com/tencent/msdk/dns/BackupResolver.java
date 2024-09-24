@@ -28,6 +28,7 @@ public class BackupResolver {
     private static BackupResolver mBackupResolver = null; //   静态对象
     private static final String PREFS_NAME = "HTTPDNSFile";
     private static final String SAVE_KEY = "httpdnsIps";
+    private static final String SAVE_TYPE = "httpType";
     private static final String TIMESTAMP_SUFFIX = "_timestamp";
 
     private BackupResolver() {
@@ -202,22 +203,26 @@ public class BackupResolver {
      * @param expirationTime 分钟，范围为1-1440 min
      */
     public void handleDynamicDNSIps(String ips, int expirationTime) {
-        if (ips.isEmpty()) return;
-        List<String> ipList = Arrays.asList(ips.split(";"));
-        List<String> filterIpList = new ArrayList<>();
-        for (String item : ipList) {
-            if (IpValidator.isV4Ip(item)) {
-                filterIpList.add(item);
+        if (ips != null && !ips.isEmpty()) {
+            String[] ipList = ips.split(";");
+            List<String> filterIpList = new ArrayList<>();
+            for (String item : ipList) {
+                if (IpValidator.isV4Ip(item)) {
+                    filterIpList.add(item);
+                }
+            }
+            if (!filterIpList.isEmpty()) {
+                BackupResolver.getInstance().setDnsIps(filterIpList);
+                SharedPreferences sharedPreferences = DnsService.getContext().getSharedPreferences(PREFS_NAME,
+                        Context.MODE_PRIVATE);
+                SharedPreferences.Editor editor = sharedPreferences.edit();
+                editor.putString(SAVE_KEY, String.join(";", filterIpList));
+                editor.putString(SAVE_TYPE, mConfig.channel);
+                long currentTime = System.currentTimeMillis();
+                editor.putLong(SAVE_KEY + TIMESTAMP_SUFFIX, currentTime + (long) expirationTime * 60 * 1000);
+                editor.apply();
             }
         }
-        BackupResolver.getInstance().setDnsIps(filterIpList);
-        SharedPreferences sharedPreferences = DnsService.getContext().getSharedPreferences(PREFS_NAME,
-                Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putString(SAVE_KEY, String.join(";", filterIpList));
-        long currentTime = System.currentTimeMillis();
-        editor.putLong(SAVE_KEY + TIMESTAMP_SUFFIX, currentTime + expirationTime * 60 * 1000);
-        editor.apply(); // 或者使用 commit()
     }
 
     /**
@@ -231,17 +236,19 @@ public class BackupResolver {
         long currentTime = System.currentTimeMillis();
         long expirationTime = sharedPreferences.getLong(SAVE_KEY + TIMESTAMP_SUFFIX, 0);
         String ips = sharedPreferences.getString(SAVE_KEY, "");
+        String httpType = sharedPreferences.getString(SAVE_TYPE, "");
         List<String> ipsList = new ArrayList<>();
 
         if (!ips.isEmpty()) {
-            if (currentTime > expirationTime) {
-                // 数据已过期，删除数据
+            if (currentTime <= expirationTime && httpType.equals(mConfig.channel)) {
+                ipsList = Arrays.asList(ips.split(";"));
+            } else {
+                // 数据无效（过期、加密方式与存储不一致），删除数据
                 SharedPreferences.Editor editor = sharedPreferences.edit();
                 editor.remove(SAVE_KEY);
+                editor.remove(SAVE_TYPE);
                 editor.remove(SAVE_KEY + TIMESTAMP_SUFFIX);
                 editor.apply();
-            } else {
-                ipsList = Arrays.asList(ips.split(";"));
             }
         }
         return ipsList;

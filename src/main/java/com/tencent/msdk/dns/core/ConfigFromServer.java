@@ -151,25 +151,26 @@ public final class ConfigFromServer {
      */
     private static void doRequestWithRetry() {
         String urlString = getUrlStr();
-        if (urlString == null || urlString.isEmpty()) return;
-        int attempt = 0;
-        while (attempt <= MAX_RETRIES) {
-            try {
-                String response = doRequest(urlString);
-                handleResponse(response);
-                return;
-            } catch (SocketTimeoutException e) {
-                DnsLog.d("Timeout occurred, %s retrying... (" + (attempt + 1) + "/" + (MAX_RETRIES + 1) + ")",
-                        urlString);
-                attempt++;
-            } catch (Exception e) {
-                e.printStackTrace();
-                break;
+        if (urlString != null && !urlString.isEmpty()) {
+            int attempt = 0;
+            while (attempt <= MAX_RETRIES) {
+                try {
+                    String response = doRequest(urlString);
+                    handleResponse(response);
+                    return;
+                } catch (SocketTimeoutException e) {
+                    DnsLog.d("Timeout occurred, %s retrying... (" + (attempt + 1) + "/" + (MAX_RETRIES + 1) + ")",
+                            urlString);
+                    attempt++;
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    break;
+                }
             }
+            // 重试失败后，切换初始化IP，并按失败间隔（默认5min）下发延时任务重新请求动态解析IP。
+            mIndex++;
+            scheduleRetryRequest(FAIL_RETRY_INTERVAL);
         }
-        // 重试失败后，切换初始化IP，并按失败间隔（默认5min）下发延时任务重新请求动态解析IP。
-        mIndex++;
-        scheduleRetryRequest(FAIL_RETRY_INTERVAL);
     }
 
     /**
@@ -180,7 +181,9 @@ public final class ConfigFromServer {
      * @throws Exception
      */
     private static String doRequest(@NonNull String urlString) throws Exception {
-        if (urlString.isEmpty()) return "";
+        if (urlString.isEmpty()) {
+            return "";
+        }
         HttpURLConnection connection = null;
         BufferedReader reader;
         StringBuilder rawRspContent = new StringBuilder();
