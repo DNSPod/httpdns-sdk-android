@@ -3,10 +3,11 @@ package com.tencent.msdk.dns.core.rest.aeshttp;
 import android.text.TextUtils;
 
 import com.tencent.msdk.dns.core.rest.share.AbsHttpDnsConfig;
+
 import java.util.Locale;
 
 final class AesHttpDnsConfig extends AbsHttpDnsConfig {
-    private static final String TARGET_URL_FORMAT = "http://%s/d?%s&alg=aes";
+    private static final String TARGET_URL_FORMAT = "http://%s/d?%s&alg=aes" + SDK_VERSION;
     private static final int TARGET_PORT = 80;
 
     @Override

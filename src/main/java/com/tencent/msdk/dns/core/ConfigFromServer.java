@@ -58,7 +58,7 @@ public final class ConfigFromServer {
     /**
      * 组合配置请求URL
      *
-     * @return URL todo: 版本号
+     * @return URL
      */
     private static String getUrlStr() {
         if (mChannel.equals(Const.HTTPS_CHANNEL)) {
