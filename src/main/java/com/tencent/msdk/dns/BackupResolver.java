@@ -72,6 +72,11 @@ public class BackupResolver {
         });
     }
 
+    /**
+     * DNS解析IP列表设置
+     *
+     * @param ips 解析IP列表
+     */
     public void setDnsIps(List<String> ips) {
         if (!ips.isEmpty()) {
             dnsIps = ips;
@@ -90,6 +95,7 @@ public class BackupResolver {
 
     /**
      * 从SDK配置中获取当前解密方式的解析IP列表
+     *
      * @return 解析IP列表
      */
     private List<String> getBackUpIps() {
@@ -191,14 +197,15 @@ public class BackupResolver {
 
     /**
      * 设置动态服务IP并存储在本地
-     * @param ips ip字符串列表,用;分割 eg 1.2.3.4;1.2.4.5
+     *
+     * @param ips            ip字符串列表,用;分割 eg 1.2.3.4;1.2.4.5
      * @param expirationTime 分钟，范围为1-1440 min
      */
     public void handleDynamicDNSIps(String ips, int expirationTime) {
         if (ips.isEmpty()) return;
         List<String> ipList = Arrays.asList(ips.split(";"));
         List<String> filterIpList = new ArrayList<>();
-        for(String item: ipList) {
+        for (String item : ipList) {
             if (IpValidator.isV4Ip(item)) {
                 filterIpList.add(item);
             }
@@ -215,6 +222,7 @@ public class BackupResolver {
 
     /**
      * 从缓存中获取动态服务IP列表
+     *
      * @return 未过期的动态服务IP列表
      */
     private List<String> getDNSIpsFromPreference() {

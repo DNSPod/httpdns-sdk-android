@@ -58,7 +58,7 @@ public final class ConfigFromServer {
     /**
      * 组合配置请求URL
      *
-     * @return URL
+     * @return URL（des 、 aes加密及https加密条件下url）
      */
     private static String getUrlStr() {
         if (mChannel.equals(Const.HTTPS_CHANNEL)) {
@@ -69,11 +69,16 @@ public final class ConfigFromServer {
             return "https://" + getInitIp(BuildConfig.HTTPS_INIT_SERVER) + "/conf?token=" + mLookupExtra.token;
         } else {
             String alg = mChannel.equals(Const.AES_HTTP_CHANNEL) ? "aes" : "des";
-            return "http://" + getInitIp(BuildConfig.HTTP_INIT_SERVER) + "/conf?id=" + mLookupExtra.bizId + "&alg=" + alg;
+            return "http://" + getInitIp(BuildConfig.HTTP_INIT_SERVER) + "/conf?id=" + mLookupExtra.bizId
+                    + "&alg=" + alg;
         }
     }
 
-    // 解析结果解密处理。日志上报配置，域名服务配置下发，动态配置IP处理。
+    /**
+     * 解析结果解密处理。日志上报配置，域名服务配置下发，动态配置IP处理。
+     *
+     * @param rawRspContent 返回的未解密的response
+     */
     private static void handleResponse(@NonNull String rawRspContent) {
         boolean enableReport = false;
         boolean enableDomainServer = false;
@@ -139,7 +144,11 @@ public final class ConfigFromServer {
                 }, (long) interval * 60 * 1000);
     }
 
-    // 服务处理，超时后重试及延时更新任务下发
+    /**
+     * 服务处理，超时后重试及延时更新任务下发
+     * 失败后立即重试（默认）1次
+     * 重试失败后，切换初始化IP，并按失败间隔下发延时任务
+     */
     private static void doRequestWithRetry() {
         String urlString = getUrlStr();
         if (urlString == null || urlString.isEmpty()) return;
@@ -150,7 +159,8 @@ public final class ConfigFromServer {
                 handleResponse(response);
                 return;
             } catch (SocketTimeoutException e) {
-                DnsLog.d("Timeout occurred, %s retrying... (" + (attempt + 1) + "/" + (MAX_RETRIES + 1) + ")", urlString);
+                DnsLog.d("Timeout occurred, %s retrying... (" + (attempt + 1) + "/" + (MAX_RETRIES + 1) + ")",
+                        urlString);
                 attempt++;
             } catch (Exception e) {
                 e.printStackTrace();
@@ -162,7 +172,13 @@ public final class ConfigFromServer {
         scheduleRetryRequest(FAIL_RETRY_INTERVAL);
     }
 
-    // 发起配置请求，获取配置结果
+    /**
+     * 发起配置请求，获取配置结果
+     *
+     * @param urlString 请求url
+     * @return 返回response
+     * @throws Exception
+     */
     private static String doRequest(@NonNull String urlString) throws Exception {
         if (urlString.isEmpty()) return "";
         HttpURLConnection connection = null;

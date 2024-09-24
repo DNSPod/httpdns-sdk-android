@@ -196,7 +196,7 @@ public final class ReportHelper {
             if (statMerge.restDnsStat.errorCode == 0) {
                 //  请求成功后将ErrorCount置为0
                 backupInfo.setErrorCount(0);
-                if(enableReport) {
+                if (enableReport) {
                     MAIN.execute(AttaHelper.report(statMerge.netType, sDnsConfig.lookupExtra.bizId,
                             sDnsConfig.appId, sDnsConfig.channel, eventName, System.currentTimeMillis(), dnsIp,
                             statMerge.restDnsStat.costTimeMills, statMerge.localDnsStat.costTimeMills,
