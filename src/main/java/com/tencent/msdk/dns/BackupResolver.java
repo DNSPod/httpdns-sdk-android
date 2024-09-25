@@ -197,6 +197,24 @@ public class BackupResolver {
     }, 15L);
 
     /**
+     * 判断缓存中获取的请求类型是否与当前一致。
+     * 请求类型将合并成https和http(即DesHttp, AesHttp均为http)
+     *
+     * @param type 存储的请求类型：Https, DesHttp, AesHttp
+     * @return boolean
+     */
+    private Boolean isCurrentHttpType(String type) {
+        if (type.equals(mConfig.channel)) {
+            return true;
+        }
+        // http请求下与存储中加密类型（DesHttp与AesHttp）不一致时，同视为http请求。IP不会变更
+        if (!type.equals(Const.HTTPS_CHANNEL) && !mConfig.channel.equals(Const.HTTPS_CHANNEL)) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
      * 设置动态服务IP并存储在本地
      *
      * @param ips            ip字符串列表,用;分割 eg 1.2.3.4;1.2.4.5
@@ -240,7 +258,7 @@ public class BackupResolver {
         List<String> ipsList = new ArrayList<>();
 
         if (!ips.isEmpty()) {
-            if (currentTime <= expirationTime && httpType.equals(mConfig.channel)) {
+            if (currentTime <= expirationTime && isCurrentHttpType(httpType)) {
                 ipsList = Arrays.asList(ips.split(";"));
             } else {
                 // 数据无效（过期、加密方式与存储不一致），删除数据
