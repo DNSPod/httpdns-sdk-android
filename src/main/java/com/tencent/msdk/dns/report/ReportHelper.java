@@ -105,7 +105,8 @@ public final class ReportHelper {
             CacheStatisticsReport.add(lookupResult);
         } else if (sDnsConfig.useExpiredIpEnable) {
             // 排除预解析，预解析事件不在此处上报。
-            if (sDnsConfig.preLookupDomains != null && String.join(",", sDnsConfig.preLookupDomains).equals(statMerge.hostname)) {
+            if (sDnsConfig.preLookupDomains != null
+                    && String.join(",", sDnsConfig.preLookupDomains).equals(statMerge.hostname)) {
                 return;
             }
             attaReportLookupEvent(ReportConst.EXPIRED_ASYNC_LOOKUP_EVENT_NAME, lookupResult);
