@@ -104,6 +104,10 @@ public final class ReportHelper {
             // 命中缓存的数据，统计上报
             CacheStatisticsReport.add(lookupResult);
         } else if (sDnsConfig.useExpiredIpEnable) {
+            // 排除预解析，预解析事件不在此处上报。
+            if (sDnsConfig.preLookupDomains != null && String.join(",", sDnsConfig.preLookupDomains).equals(statMerge.hostname)) {
+                return;
+            }
             attaReportLookupEvent(ReportConst.EXPIRED_ASYNC_LOOKUP_EVENT_NAME, lookupResult);
         } else if (statMerge.restDnsStat.costTimeMills > 0 && statMerge.localDnsStat.costTimeMills > 0) {
             attaReportLookupEvent(ReportConst.LOOKUP_METHOD_CALLED_EVENT_NAME, lookupResult);
