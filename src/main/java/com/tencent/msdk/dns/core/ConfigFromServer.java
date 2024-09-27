@@ -137,12 +137,13 @@ public final class ConfigFromServer {
     public static void scheduleRetryRequest(int interval) {
         if (getConfigRequestTask != null) {
             DnsExecutors.MAIN.cancel(getConfigRequestTask);
+            getConfigRequestTask = null;
         }
         getConfigRequestTask = new Runnable() {
             @Override
             public void run() {
-                doRequestWithRetry();
                 getConfigRequestTask = null;
+                doRequestWithRetry();
             }
         };
         DnsLog.d("The delayed scheduling task will be executed after %s minutes.", interval);
