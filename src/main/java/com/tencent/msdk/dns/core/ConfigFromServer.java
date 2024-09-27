@@ -29,6 +29,7 @@ public final class ConfigFromServer {
     private static LookupExtra mLookupExtra;
     private static String mChannel;
     private static int mIndex = 0;
+    private static Runnable getConfigRequestTask;
 
     /**
      * 域名接入服务初始化
@@ -134,14 +135,18 @@ public final class ConfigFromServer {
      * @param interval 单位：分钟min
      */
     public static void scheduleRetryRequest(int interval) {
+        if (getConfigRequestTask != null) {
+            DnsExecutors.MAIN.cancel(getConfigRequestTask);
+        }
+        getConfigRequestTask = new Runnable() {
+            @Override
+            public void run() {
+                doRequestWithRetry();
+                getConfigRequestTask = null;
+            }
+        };
         DnsLog.d("The delayed scheduling task will be executed after %s minutes.", interval);
-        DnsExecutors.MAIN.schedule(
-                new Runnable() {
-                    @Override
-                    public void run() {
-                        doRequestWithRetry();
-                    }
-                }, (long) interval * 60 * 1000);
+        DnsExecutors.MAIN.schedule(getConfigRequestTask, (long) interval * 60 * 1000);
     }
 
     /**
