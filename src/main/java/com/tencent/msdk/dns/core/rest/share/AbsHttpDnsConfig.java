@@ -1,5 +1,6 @@
 package com.tencent.msdk.dns.core.rest.share;
 
+import com.tencent.msdk.dns.BuildConfig;
 import com.tencent.msdk.dns.base.log.DnsLog;
 
 import java.net.InetAddress;
@@ -9,6 +10,8 @@ import java.net.SocketAddress;
 public abstract class AbsHttpDnsConfig {
 
     private SocketAddress mBizTargetSockAddr = null;
+
+    protected static String SDK_VERSION = "&sdk=1_" + BuildConfig.VERSION_NAME;
 
     public abstract String getTargetUrl(String dnsIp, String content);
 

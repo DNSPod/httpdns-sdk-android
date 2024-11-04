@@ -211,8 +211,8 @@ public final class CacheHelper {
         }
     }
 
-    private long getRefreshTime (int ttl) {
-        float time = ASYNC_LOOKUP_FACTOR * ttl > MIN_LOOKUP_TIME ? ASYNC_LOOKUP_FACTOR * ttl :MIN_LOOKUP_TIME;
+    private long getRefreshTime(int ttl) {
+        float time = ASYNC_LOOKUP_FACTOR * ttl > MIN_LOOKUP_TIME ? ASYNC_LOOKUP_FACTOR * ttl : MIN_LOOKUP_TIME;
         return (long) (time * 1000);
     }
 

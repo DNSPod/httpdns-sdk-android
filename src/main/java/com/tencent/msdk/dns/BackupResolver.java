@@ -1,9 +1,14 @@
 package com.tencent.msdk.dns;
 
-import android.os.SystemClock;
+import static com.tencent.msdk.dns.core.ConfigFromServer.scheduleRetryRequest;
 
+import android.content.Context;
+import android.content.SharedPreferences;
+
+import com.tencent.msdk.dns.base.executor.DnsExecutors;
 import com.tencent.msdk.dns.base.log.DnsLog;
 import com.tencent.msdk.dns.base.utils.DebounceTask;
+import com.tencent.msdk.dns.base.utils.IpValidator;
 import com.tencent.msdk.dns.core.Const;
 import com.tencent.msdk.dns.core.DnsManager;
 import com.tencent.msdk.dns.core.LookupParameters;
@@ -21,6 +26,10 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class BackupResolver {
     private static BackupResolver mBackupResolver = null; //   静态对象
+    private static final String PREFS_NAME = "HTTPDNSFile";
+    private static final String SAVE_KEY = "httpdnsIps";
+    private static final String SAVE_TYPE = "httpType";
+    private static final String TIMESTAMP_SUFFIX = "_timestamp";
 
     private BackupResolver() {
     }
@@ -34,10 +43,6 @@ public class BackupResolver {
     List<String> dnsIps;
     // 当前对应的解析ip index
     private int mIpIndex = 0;
-    // 记录主ip切换时间，每隔10min切回测试一次主IP（不主动探测主备IP是否恢复）
-    private long mBackupTime = 0;
-    // 尝试切回主ip的间隔时间，默认为10分钟
-    private final long mInterval = 10 * 60 * 1000;
 
     public static BackupResolver getInstance() {
         // 静态get方法
@@ -54,8 +59,32 @@ public class BackupResolver {
     public void init(DnsConfig dnsConfig) {
         mConfig = dnsConfig;
         mErrorCount = new AtomicInteger(0);
-        // http和https是两个IP
-        dnsIps = getBackUpIps();
+        // http和https是两个IP列表，服务列表默认值为SDK配置中的数据
+        setDnsIps(getBackUpIps());
+        // 从缓存中获取动态服务列表，并设置。
+        DnsExecutors.WORK.execute(new Runnable() {
+            @Override
+            public void run() {
+                List<String> ipList = getDNSIpsFromPreference();
+                if (!ipList.isEmpty()) {
+                    setDnsIps(ipList);
+                }
+            }
+        });
+    }
+
+    /**
+     * DNS解析IP列表设置
+     *
+     * @param ips 解析IP列表
+     */
+    public void setDnsIps(List<String> ips) {
+        if (!ips.isEmpty()) {
+            dnsIps = ips;
+            DnsLog.d("dns servers Ips: " + dnsIps);
+            mIpIndex = 0;
+            mErrorCount.set(0);
+        }
     }
 
     public void getServerIps() {
@@ -65,13 +94,16 @@ public class BackupResolver {
         getServerIpsTask.run();
     }
 
-    private ArrayList getBackUpIps() {
-        if (Const.HTTPS_CHANNEL.equals(mConfig.channel) && !BuildConfig.HTTPS_TOLERANCE_SERVER.isEmpty()) {
-            return new ArrayList<String>(Arrays.asList(BuildConfig.HTTPS_INIT_SERVER,
-                    BuildConfig.HTTPS_TOLERANCE_SERVER));
+    /**
+     * 从SDK配置中获取当前解密方式的解析IP列表
+     *
+     * @return 解析IP列表
+     */
+    private List<String> getBackUpIps() {
+        if (Const.HTTPS_CHANNEL.equals(mConfig.channel) && BuildConfig.HTTPS_DNS_SERVER.length > 0) {
+            return new ArrayList<>(Arrays.asList(BuildConfig.HTTPS_DNS_SERVER));
         } else {
-            return new ArrayList<String>(Arrays.asList(BuildConfig.HTTP_INIT_SERVER,
-                    BuildConfig.HTTP_TOLERANCE_SERVER));
+            return new ArrayList<>(Arrays.asList(BuildConfig.HTTP_DNS_SERVER));
         }
     }
 
@@ -103,25 +135,17 @@ public class BackupResolver {
      * 1. 主备IP切换：在精确性、速度上折中处理，主IP解析的同时，会发起LocalDNS解析，若主IP首次解析不成功，立即返回
      * 上次解析结果，如果没有上次解析结果，则返回LocalDNS解析结果，如果主IP 3次解析不成功，则切换到备份IP进行解析。
      * 2. 备份IP切换 域名兜底：所有备份IP都经超过3次不通，切换到域名兜底解析。
-     * 3. 恢复：每隔10min切回测试一次主IP（不主动探测主备IP是否恢复）
-     * 4. 通过参数控制 切换策略的次数判断（默认3次）、恢复主IP策略的时间间隔（默认10min）
+     * 3. 去掉恢复逻辑。新增当轮询切回主IP时，立即获取动态IP列表
+     * 4. 通过参数控制 切换策略的次数判断（默认3次）
      */
     public String getDnsIp() {
-        // 当容灾ip切换超过间隔时间后尝试切换回主ip
-        if ((mIpIndex != 0) && mBackupTime > 0 && ((SystemClock.elapsedRealtime() - mBackupTime) >= mInterval)) {
-            mIpIndex = 0;
-            mErrorCount.set(0);
-        }
         //  mIpIndex+1 进行容灾IP切换
         if (mErrorCount.get() >= maxErrorCount) {
-            // 记录主ip切走的时间
-            if (mIpIndex == 0) {
-                mBackupTime = SystemClock.elapsedRealtime();
-            }
-            // 当前的失败次数达到了切换阈值时进行ipIndex的首尾循环，这里重新切回主IP
+            // 当前的失败次数达到了切换阈值时进行ipIndex的首尾循环，这里重新切回主IP。且重新获取动态解析服务IP。
             if (mIpIndex >= dnsIps.size() - 1) {
                 mIpIndex = 0;
-                mBackupTime = 0;
+                // 调度列表完成切回主IP时，立即调度动态IP列表
+                scheduleRetryRequest(0);
             } else {
                 mIpIndex++;
             }
@@ -164,14 +188,87 @@ public class BackupResolver {
                     List<String> backUpIps = getBackUpIps();
                     mergeList.addAll(serverIps);
                     mergeList.addAll(backUpIps);
-                    dnsIps = mergeList;
-                    DnsLog.d("dns servers Ips: " + dnsIps);
-                    mIpIndex = 0;
-                    mErrorCount.set(0);
+                    setDnsIps(mergeList);
                 }
             } catch (Exception e) {
                 DnsLog.w(e, "getServerIpsTask failed");
             }
         }
     }, 15L);
+
+    /**
+     * 判断缓存中获取的请求类型是否与当前一致。
+     * 请求类型将合并成https和http(即DesHttp, AesHttp均为http)
+     *
+     * @param type 存储的请求类型：Https, DesHttp, AesHttp
+     * @return boolean
+     */
+    private Boolean isCurrentHttpType(String type) {
+        if (type.equals(mConfig.channel)) {
+            return true;
+        }
+        // http请求下与存储中加密类型（DesHttp与AesHttp）不一致时，同视为http请求。IP不会变更
+        if (!type.equals(Const.HTTPS_CHANNEL) && !mConfig.channel.equals(Const.HTTPS_CHANNEL)) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * 设置动态服务IP并存储在本地
+     *
+     * @param ips            ip字符串列表,用;分割 eg 1.2.3.4;1.2.4.5
+     * @param expirationTime 分钟，范围为1-1440 min
+     */
+    public void handleDynamicDNSIps(String ips, int expirationTime) {
+        if (ips != null && !ips.isEmpty()) {
+            String[] ipList = ips.split(";");
+            List<String> filterIpList = new ArrayList<>();
+            for (String item : ipList) {
+                if (IpValidator.isV4Ip(item)) {
+                    filterIpList.add(item);
+                }
+            }
+            if (!filterIpList.isEmpty()) {
+                BackupResolver.getInstance().setDnsIps(filterIpList);
+                SharedPreferences sharedPreferences = DnsService.getContext().getSharedPreferences(PREFS_NAME,
+                        Context.MODE_PRIVATE);
+                SharedPreferences.Editor editor = sharedPreferences.edit();
+                editor.putString(SAVE_KEY, String.join(";", filterIpList));
+                editor.putString(SAVE_TYPE, mConfig.channel);
+                long currentTime = System.currentTimeMillis();
+                editor.putLong(SAVE_KEY + TIMESTAMP_SUFFIX, currentTime + (long) expirationTime * 60 * 1000);
+                editor.apply();
+            }
+        }
+    }
+
+    /**
+     * 从缓存中获取动态服务IP列表
+     *
+     * @return 未过期的动态服务IP列表
+     */
+    private List<String> getDNSIpsFromPreference() {
+        SharedPreferences sharedPreferences = DnsService.getContext().getSharedPreferences(PREFS_NAME,
+                Context.MODE_PRIVATE);
+        long currentTime = System.currentTimeMillis();
+        long expirationTime = sharedPreferences.getLong(SAVE_KEY + TIMESTAMP_SUFFIX, 0);
+        String ips = sharedPreferences.getString(SAVE_KEY, "");
+        String httpType = sharedPreferences.getString(SAVE_TYPE, "");
+        List<String> ipsList = new ArrayList<>();
+
+        if (!ips.isEmpty()) {
+            if (currentTime <= expirationTime && isCurrentHttpType(httpType)) {
+                ipsList = Arrays.asList(ips.split(";"));
+            } else {
+                // 数据无效（过期、加密方式与存储不一致），删除数据
+                SharedPreferences.Editor editor = sharedPreferences.edit();
+                editor.remove(SAVE_KEY);
+                editor.remove(SAVE_TYPE);
+                editor.remove(SAVE_KEY + TIMESTAMP_SUFFIX);
+                editor.apply();
+            }
+        }
+        return ipsList;
+    }
 }
