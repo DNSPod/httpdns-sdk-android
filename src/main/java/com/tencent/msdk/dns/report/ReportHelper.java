@@ -3,6 +3,7 @@ package com.tencent.msdk.dns.report;
 import static com.tencent.msdk.dns.base.executor.DnsExecutors.MAIN;
 
 import android.app.Activity;
+import android.text.TextUtils;
 
 import com.tencent.msdk.dns.BackupResolver;
 import com.tencent.msdk.dns.BuildConfig;
@@ -106,7 +107,7 @@ public final class ReportHelper {
         } else if (sDnsConfig.useExpiredIpEnable) {
             // 排除预解析，预解析事件不在此处上报。
             if (sDnsConfig.preLookupDomains != null
-                    && String.join(",", sDnsConfig.preLookupDomains).equals(statMerge.hostname)) {
+                    && TextUtils.join(",", sDnsConfig.preLookupDomains).equals(statMerge.hostname)) {
                 return;
             }
             attaReportLookupEvent(ReportConst.EXPIRED_ASYNC_LOOKUP_EVENT_NAME, lookupResult);

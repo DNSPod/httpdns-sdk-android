@@ -4,6 +4,7 @@ import static com.tencent.msdk.dns.core.ConfigFromServer.scheduleRetryRequest;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.text.TextUtils;
 
 import com.tencent.msdk.dns.base.executor.DnsExecutors;
 import com.tencent.msdk.dns.base.log.DnsLog;
@@ -234,7 +235,7 @@ public class BackupResolver {
                 SharedPreferences sharedPreferences = DnsService.getContext().getSharedPreferences(PREFS_NAME,
                         Context.MODE_PRIVATE);
                 SharedPreferences.Editor editor = sharedPreferences.edit();
-                editor.putString(SAVE_KEY, String.join(";", filterIpList));
+                editor.putString(SAVE_KEY, TextUtils.join(";", filterIpList));
                 editor.putString(SAVE_TYPE, mConfig.channel);
                 long currentTime = System.currentTimeMillis();
                 editor.putLong(SAVE_KEY + TIMESTAMP_SUFFIX, currentTime + (long) expirationTime * 60 * 1000);
