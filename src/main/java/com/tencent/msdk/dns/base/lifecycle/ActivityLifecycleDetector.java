@@ -9,16 +9,16 @@ import android.os.Bundle;
 
 import com.tencent.msdk.dns.base.log.DnsLog;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+
 
 public final class ActivityLifecycleDetector {
 
     private static final String INSTRUMENTATION_FIELD_NAME = "mInstrumentation";
 
     private static List<ActivityLifecycleCallbacksWrapper> sActivityLifecycleCallbacks =
-            Collections.emptyList();
+            new CopyOnWriteArrayList<>();
 
     private static boolean sDetected = false;
 
@@ -34,9 +34,6 @@ public final class ActivityLifecycleDetector {
     public static synchronized boolean registerActivityLifecycleCallbacks(
             ActivityLifecycleCallbacksWrapper lifecycleCallbacks) {
         if (sDetected) {
-            if (sActivityLifecycleCallbacks.isEmpty()) {
-                sActivityLifecycleCallbacks = new ArrayList<>();
-            }
             sActivityLifecycleCallbacks.add(lifecycleCallbacks);
         }
         return sDetected;
