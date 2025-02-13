@@ -2,13 +2,12 @@ apply plugin: 'com.android.library'
 apply from: 'upload.gradle'
 
 android {
-    compileSdkVersion 28
-    buildToolsVersion "28.0.3"
+    namespace "com.tencent.msdk.dns"
+    compileSdk 34
 
     defaultConfig {
-        //noinspection MinSdkTooLow
-        minSdkVersion 11
-        targetSdkVersion 28
+        minSdk 21
+        targetSdkVersion 34
         versionCode project.subVersionCode
         versionName "${project.subVersionName}a"
 
@@ -43,10 +42,10 @@ android {
         }
     }
 
-    flavorDimensions "version"
 
     productFlavors {
         normal {
+            dimension "version"
             buildConfigField "String[]", "HTTP_INIT_SERVER", HTTP_INIT_SERVER
             buildConfigField "String[]", "HTTPS_INIT_SERVER", HTTPS_INIT_SERVER
             buildConfigField "String[]", "HTTP_DNS_SERVER", HTTP_DNS_SERVER
@@ -60,6 +59,7 @@ android {
         }
 
         intl {
+            dimension "version"
             buildConfigField "String[]", "HTTP_INIT_SERVER", INTL_HTTP_INIT_SERVER
             buildConfigField "String[]", "HTTPS_INIT_SERVER", "{}"
             buildConfigField "String[]", "HTTP_DNS_SERVER", INTL_HTTP_DNS_SERVER
@@ -73,13 +73,18 @@ android {
         }
     }
 
+    buildFeatures {
+        buildConfig = true
+        flavorDimensions = ["version"]
+    }
+
     externalNativeBuild {
         cmake {
             path "CMakeLists.txt"
         }
     }
 
-    libraryVariants.all { variant ->
+    libraryVariants.configureEach { variant ->
         def flavor = variant.getFlavorName()
         def newLibName = flavor == "normal" ?
                 "HTTPDNS_Android_v${defaultConfig.versionName}_${variant.buildType.name}.aar" :
@@ -126,7 +131,6 @@ task generateJavadoc(type: Javadoc, dependsOn: project.configurations.doclava) {
             'src/main/java/com/tencent/msdk/dns/core/stat/AbsStatistics.java',
             'src/main/java/com/tencent/msdk/dns/core/local/LocalDns.java',
             'src/main/java/com/tencent/msdk/dns/core/rest/share/AbsRestDns.java',
-
             'src/main/java/com/tencent/msdk/dns/MSDKDnsResolver.java',
     ]
 }
