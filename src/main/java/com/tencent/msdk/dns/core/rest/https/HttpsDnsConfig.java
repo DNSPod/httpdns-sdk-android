@@ -7,7 +7,7 @@ import com.tencent.msdk.dns.core.rest.share.AbsHttpDnsConfig;
 import java.util.Locale;
 
 public class HttpsDnsConfig extends AbsHttpDnsConfig {
-    private static final String TARGET_URL_FORMAT = "https://%s/d?%s";
+    private static final String TARGET_URL_FORMAT = "https://%s/d?%s" + SDK_VERSION;
     private static final int TARGET_PORT = 443;
 
     @Override
