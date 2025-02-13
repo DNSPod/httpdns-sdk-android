@@ -46,10 +46,10 @@ android {
     productFlavors {
         normal {
             dimension "version"
-            buildConfigField "String", "HTTP_INIT_SERVER", HTTP_INIT_SERVER
-            buildConfigField "String", "HTTPS_INIT_SERVER", HTTPS_INIT_SERVER
-            buildConfigField "String", "HTTP_TOLERANCE_SERVER", HTTP_TOLERANCE_SERVER
-            buildConfigField "String", "HTTPS_TOLERANCE_SERVER", HTTPS_TOLERANCE_SERVER
+            buildConfigField "String[]", "HTTP_INIT_SERVER", HTTP_INIT_SERVER
+            buildConfigField "String[]", "HTTPS_INIT_SERVER", HTTPS_INIT_SERVER
+            buildConfigField "String[]", "HTTP_DNS_SERVER", HTTP_DNS_SERVER
+            buildConfigField "String[]", "HTTPS_DNS_SERVER", HTTPS_DNS_SERVER
             buildConfigField "String", "ATTA_ID", ATTA_ID
             buildConfigField "String", "ATTA_TOKEN", ATTA_TOKEN
             buildConfigField "String[]", "DOMAIN_SERVICE_DOMAINS", DOMAIN_SERVICE_DOMAINS
@@ -60,10 +60,10 @@ android {
 
         intl {
             dimension "version"
-            buildConfigField "String", "HTTP_INIT_SERVER", INTL_HTTP_INIT_SERVER
-            buildConfigField "String", "HTTPS_INIT_SERVER", "\"\""
-            buildConfigField "String", "HTTP_TOLERANCE_SERVER", INTL_HTTP_TOLERANCE_SERVER
-            buildConfigField "String", "HTTPS_TOLERANCE_SERVER", "\"\""
+            buildConfigField "String[]", "HTTP_INIT_SERVER", INTL_HTTP_INIT_SERVER
+            buildConfigField "String[]", "HTTPS_INIT_SERVER", "{}"
+            buildConfigField "String[]", "HTTP_DNS_SERVER", INTL_HTTP_DNS_SERVER
+            buildConfigField "String[]", "HTTPS_DNS_SERVER", "{}"
             buildConfigField "String", "ATTA_ID", INTL_ATTA_ID
             buildConfigField "String", "ATTA_TOKEN", INTL_ATTA_TOKEN
             buildConfigField "String[]", "DOMAIN_SERVICE_DOMAINS", INTL_DOMAIN_SERVICE_DOMAINS

@@ -75,11 +75,18 @@ public final class DnsService {
             DnsLog.setLogLevel(config.logLevel);
             addLogNodes(config.logNodes);
             DnsLog.v("DnsService.init(%s, %s) called, ver:%s", context, config, BuildConfig.VERSION_NAME);
-            Context appContext = context.getApplicationContext();
+            final Context appContext = context.getApplicationContext();
             sAppContext = appContext;
             sConfig = config;
             // 集成共享式bugly
-            SharedBugly.init(appContext);
+            DnsExecutors.WORK.execute(new Runnable() {
+                @Override
+                public void run() {
+                    SharedBugly.init(appContext);
+                }
+            });
+            // 初始化解析IP服务
+            BackupResolver.getInstance().init(sConfig);
             // 底层配置获取
             DnsExecutors.WORK.execute(new Runnable() {
                 @Override
@@ -87,8 +94,6 @@ public final class DnsService {
                     ConfigFromServer.init(sConfig.lookupExtra, sConfig.channel);
                 }
             });
-            // 初始化容灾服务
-            BackupResolver.getInstance().init(sConfig);
             // 初始化SpendHelper配置为正常上报做准备
             SpendReportResolver.getInstance().init();
             NetworkChangeManager.install(appContext);
