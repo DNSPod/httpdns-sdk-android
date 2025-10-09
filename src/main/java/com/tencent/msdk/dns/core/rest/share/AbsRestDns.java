@@ -97,7 +97,8 @@ public abstract class AbsRestDns implements IDns<LookupExtra> {
                 Statistics cachedStat = (Statistics) lookupResult.stat;
 
                 if (DnsService.getDnsConfig().useExpiredIpEnable
-                        && cachedStat.expiredTime < SystemClock.elapsedRealtime()) {
+                    && cachedStat.beginTime < System.currentTimeMillis()
+                    && cachedStat.expiredTime < System.currentTimeMillis()) {
                     requestHostname.append(hostname).append(',');
                 }
             } else {
@@ -413,8 +414,15 @@ public abstract class AbsRestDns implements IDns<LookupExtra> {
          * 解析结果TTL(缓存有效时间), 单位s
          */
         public transient Map<String, Integer> ttl = new HashMap<>();
-
+        /**
+         * 缓存过期时间
+         */
         public long expiredTime = 0;
+        /**
+         * 缓存开始时间，作用于缓存逻辑判断
+         * [缓存开始时间 < 当前时间 < 过期时间]，将缓存有效期限制在时间范围内，用户通过修改当前时间不会导致命中缓存
+         */
+        public long beginTime = 0;
         /**
          * 域名解析重试次数
          */
@@ -466,7 +474,9 @@ public abstract class AbsRestDns implements IDns<LookupExtra> {
                     min = Math.min(value, min);
                 }
             }
-            return SystemClock.elapsedRealtime() + min * 1000L;
+            // -5s的作用在于留有间隔时间
+            this.beginTime = System.currentTimeMillis() - min - 5 * 1000L;
+            return System.currentTimeMillis() + min * 1000L;
         }
 
         @Override
@@ -488,6 +498,7 @@ public abstract class AbsRestDns implements IDns<LookupExtra> {
                     + ", clientIp='" + clientIp + '\''
                     + ", ttl=" + ttl
                     + ", expiredTime=" + expiredTime
+                    + ", beginTime=" + beginTime
                     + ", retryTimes=" + retryTimes
                     + ", cached=" + cached
                     + ", asyncLookup=" + asyncLookup

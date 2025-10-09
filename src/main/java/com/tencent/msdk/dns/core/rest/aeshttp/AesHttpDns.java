@@ -30,7 +30,9 @@ public final class AesHttpDns extends AbsHttpDns {
 
     @Override
     public String getTargetUrl(String dnsIp, String hostname, LookupExtra lookupExtra) {
-        String encryptHostname = encrypt(hostname, lookupExtra.bizKey);
+        long timestamp = AbsHttpDns.getFutureTimestamp(10);
+        // 域名字段中带上失效时间戳，用于底层鉴权
+        String encryptHostname = encrypt(hostname + ';' + timestamp, lookupExtra.bizKey);
         String reqContent;
         switch (mFamily) {
             case DnsDescription.Family.INET:

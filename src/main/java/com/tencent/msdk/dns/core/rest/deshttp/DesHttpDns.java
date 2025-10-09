@@ -34,8 +34,10 @@ public final class DesHttpDns extends AbsHttpDns {
     @Override
     public String getTargetUrl(String dnsIp, String hostname, LookupExtra lookupExtra) {
         List<String> tempList = Arrays.asList(BuildConfig.DOMAIN_SERVICE_DOMAINS);
-        Boolean isServerHostname =   tempList.contains(hostname);
-        String encryptHostname = encrypt(hostname, lookupExtra.bizKey);
+        Boolean isServerHostname = tempList.contains(hostname);
+        long timestamp = AbsHttpDns.getFutureTimestamp(10);
+        // 域名字段中带上失效时间戳，用于底层鉴权
+        String encryptHostname = encrypt(hostname + ';' + timestamp, lookupExtra.bizKey);
         String reqContent;
         switch (mFamily) {
             case DnsDescription.Family.INET:

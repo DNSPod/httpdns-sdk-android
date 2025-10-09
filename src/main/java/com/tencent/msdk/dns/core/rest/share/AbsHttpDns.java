@@ -48,6 +48,16 @@ public abstract class AbsHttpDns extends AbsRestDns {
 
     public abstract SocketAddress getTargetSocketAddress(/* @Nullable */String dnsIp, int family);
 
+    /**
+     * 根据当前时间生成指定分钟后的时间戳
+     * @param minutesToAdd 需要的分钟数
+     * @return 未来时间戳（秒）
+     */
+    public static long getFutureTimestamp(int minutesToAdd) {
+        // return 1746680580;
+        long currentTime = System.currentTimeMillis() / 1000L;
+        return currentTime + minutesToAdd * 60L;
+    }
 
     @Override
     public DnsDescription getDescription() {

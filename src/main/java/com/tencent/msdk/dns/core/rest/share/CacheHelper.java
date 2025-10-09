@@ -71,8 +71,10 @@ public final class CacheHelper {
         if (lookupResult != null) {
             AbsRestDns.Statistics cachedStat = (AbsRestDns.Statistics) lookupResult.stat;
             final boolean useExpiredIpEnable = DnsService.getDnsConfig().useExpiredIpEnable;
+            long currentTime = System.currentTimeMillis();
+            final boolean notExpired = cachedStat.expiredTime > currentTime && currentTime > cachedStat.beginTime;
             // 乐观DNS或者未过期
-            if (useExpiredIpEnable || cachedStat.expiredTime > SystemClock.elapsedRealtime()) {
+            if (useExpiredIpEnable || notExpired) {
                 return lookupResult;
             }
             DnsLog.d("Cache of %s(%d) expired", hostname, mDns.getDescription().family);

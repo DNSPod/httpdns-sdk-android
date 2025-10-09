@@ -29,11 +29,11 @@ public abstract class AbsStatistics implements IDns.IStatistics {
     public long startLookupTimeMills = 0L;
 
     public void startLookup() {
-        startLookupTimeMills = SystemClock.elapsedRealtime();
+        startLookupTimeMills = System.currentTimeMillis();
     }
 
     public void endLookup() {
-        costTimeMills = (int) (SystemClock.elapsedRealtime() - startLookupTimeMills);
+        costTimeMills = (int) (System.currentTimeMillis() - startLookupTimeMills);
     }
 
     public boolean lookupPartCached() {

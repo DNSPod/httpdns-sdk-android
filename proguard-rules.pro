@@ -33,6 +33,8 @@
 # Jni调用相关, 在App中也需要Keep
 -keep public class com.tencent.msdk.dns.base.jni.Jni {*;}
 
+-keepnames class com.tencent.msdk.** { *; }
+
 # 对外接口类
 -keep public class com.tencent.msdk.dns.DnsService {*;}
 -keep public class com.tencent.msdk.dns.core.IpSet {*;}

@@ -20,7 +20,7 @@ public class LookupCache {
     public boolean isExpired() {
         AbsRestDns.Statistics stat = (AbsRestDns.Statistics) lookupResult.stat;
         if (stat != null) {
-            return SystemClock.elapsedRealtime() > stat.expiredTime;
+            return System.currentTimeMillis() > stat.expiredTime && System.currentTimeMillis() > stat.beginTime;
         }
         return true;
     }

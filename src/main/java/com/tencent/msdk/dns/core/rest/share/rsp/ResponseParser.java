@@ -26,6 +26,24 @@ public final class ResponseParser {
 
     private static final String IP_SPLITTER = ";";
 
+    // 计算TTL值，只存在一种IP类型时取对应TTL，否则取最小值
+    private static int calculateTtl(int v4ttl, int v6ttl, String[] inet4Ips, String[] inet6Ips) {
+        int value = Math.min(v4ttl, v6ttl);
+        if (inet6Ips.length == 1 && "0".equals(inet6Ips[0])) {
+            value = v4ttl;
+        } else if (inet4Ips.length == 1 && "0".equals(inet4Ips[0])) {
+            value = v6ttl;
+        }
+        return value;
+    }
+
+    // 将域名和ip组装为 host:ip的形式存入clientIp
+    private static void processIpList(ArrayList<String> targetList, String host, String[] ips) {
+        for (String ip : ips) {
+            targetList.add(host + ":" + ip);
+        }
+    }
+
     public static Response parseResponse(int family, String rawRsp) {
         if (TextUtils.isEmpty(rawRsp)) {
             return Response.EMPTY;
@@ -58,9 +76,7 @@ public final class ResponseParser {
                     clientIp = rspMatcher.group(4) + ",";
                     String[] tmpIps = rspMatcher.group(2).split(IP_SPLITTER);
                     //  将域名和ip组装为 host:ip的形式存入clientIp
-                    for (String tmpIp : tmpIps) {
-                        ipsList.add(host + ":" + tmpIp);
-                    }
+                    processIpList(ipsList, host, tmpIps);
                     ttl.put(host, Integer.parseInt(rspMatcher.group(3)));
                 } catch (Exception e) {
                     DnsLog.w(e, "Parse external response failed");
@@ -112,21 +128,20 @@ public final class ResponseParser {
                     //  批量情况会携带域名信息
                     String host = rspMatcher.group(1);
                     clientIp = rspMatcher.group(6) + ",";
-
                     String[] inet4Ips = rspMatcher.group(2).split(IP_SPLITTER);
                     String[] inet6Ips = rspMatcher.group(4).split(IP_SPLITTER);
-                    // ttl先按ipv4, ipv6的最小值的获取
-                    ttl.put(host, Math.min(Integer.parseInt(rspMatcher.group(3)),
-                            Integer.parseInt(rspMatcher.group(5))));
+
+                    int ttlValue = calculateTtl(
+                        Integer.parseInt(rspMatcher.group(3)),
+                        Integer.parseInt(rspMatcher.group(5)),
+                        inet4Ips,
+                        inet6Ips
+                    );
+                    ttl.put(host, ttlValue);
 
                     //  将域名和ip组装为 host:ip的形式存入clientIp
-                    for (String inet4Ip : inet4Ips) {
-                        inet4IpsList.add(host + ":" + inet4Ip);
-                    }
-
-                    for (String inet6Ip : inet6Ips) {
-                        inet6IpsList.add(host + ":" + inet6Ip);
-                    }
+                    processIpList(inet4IpsList, host, inet4Ips);
+                    processIpList(inet6IpsList, host, inet6Ips);
                 } catch (Exception e) {
                     DnsLog.w(e, "Parse external response failed");
                     return Response.EMPTY;
@@ -149,9 +164,14 @@ public final class ResponseParser {
                 String clientIp = rspMatcher.group(5);
                 String[] inet4Ips = rspMatcher.group(1).split(IP_SPLITTER);
                 String[] inet6Ips = rspMatcher.group(3).split(IP_SPLITTER);
-                // ttl先按ipv4, ipv6的最小值的获取
-                int value = Math.min(Integer.parseInt(rspMatcher.group(2)), Integer.parseInt(rspMatcher.group(4)));
-                ttl.put("onehost", value);
+
+                int ttlValue = calculateTtl(
+                    Integer.parseInt(rspMatcher.group(2)),
+                    Integer.parseInt(rspMatcher.group(4)),
+                    inet4Ips,
+                    inet6Ips
+                );
+                ttl.put("onehost", ttlValue);
 
                 return new Response(clientIp, inet4Ips, inet6Ips, ttl);
             } catch (Exception e) {

@@ -53,12 +53,16 @@ public final class ReportHelper {
         if (null == lookupResult) {
             throw new IllegalArgumentException("lookupResults".concat(Const.NULL_POINTER_TIPS));
         }
-        // atta上报
-        attaReportLookupEvent(ReportConst.PRE_LOOKUP_EVENT_NAME, lookupResult);
 
         // NOTE: 上报字段增减, 记得修改capacity
         Map<String, String> preLookupEventMap = CollectionCompat.createMap(16);
         StatisticsMerge statMerge = (StatisticsMerge) lookupResult.stat;
+        // 预解析atta上报，区分超时失败场景（errorCode=2）
+        if (statMerge.restDnsStat.errorCode == 2) {
+            attaReportLookupEvent(ReportConst.PRE_LOOKUP_RETRY_EVENT_NAME, lookupResult);
+        } else {
+            attaReportLookupEvent(ReportConst.PRE_LOOKUP_EVENT_NAME, lookupResult);
+        }
 
         preLookupEventMap.put(ReportConst.CHANNEL_KEY, sDnsConfig.channel);
         preLookupEventMap.put(ReportConst.NETWORK_TYPE_KEY, statMerge.netType);
@@ -106,13 +110,19 @@ public final class ReportHelper {
             CacheStatisticsReport.add(lookupResult);
         } else if (sDnsConfig.useExpiredIpEnable) {
             // 排除预解析，预解析事件不在此处上报。
-            if (sDnsConfig.preLookupDomains != null
-                    && TextUtils.join(",", sDnsConfig.preLookupDomains).equals(statMerge.hostname)) {
-                return;
+            // 乐观DNS（useExpiredIpEnable=true），缓存自动刷新atta上报，区分异步更新缓存事件的重试（errorCode=2）
+            if (statMerge.restDnsStat.errorCode == 2) {
+                attaReportLookupEvent(ReportConst.ASYNC_ENABLE_EXPIRED_LOOKUP_RETRY_EVENT_NAME, lookupResult);
+            } else {
+                attaReportLookupEvent(ReportConst.EXPIRED_ASYNC_LOOKUP_EVENT_NAME, lookupResult);
             }
-            attaReportLookupEvent(ReportConst.EXPIRED_ASYNC_LOOKUP_EVENT_NAME, lookupResult);
         } else if (statMerge.restDnsStat.costTimeMills > 0 && statMerge.localDnsStat.costTimeMills > 0) {
-            attaReportLookupEvent(ReportConst.LOOKUP_METHOD_CALLED_EVENT_NAME, lookupResult);
+            // 普通解析事件atta上报，区分重试（errorCode=2）
+            if (statMerge.restDnsStat.errorCode == 2) {
+                attaReportLookupEvent(ReportConst.LOOKUP_METHOD_CALLED_RETRY_EVENT_NAME, lookupResult);
+            } else {
+                attaReportLookupEvent(ReportConst.LOOKUP_METHOD_CALLED_EVENT_NAME, lookupResult);
+            }
         } else {
             return;
         }
@@ -173,7 +183,13 @@ public final class ReportHelper {
     }
 
     public static void attaReportAsyncLookupEvent(LookupResult lookupResult) {
-        attaReportLookupEvent(ReportConst.ASYNC_LOOKUP_EVENT_NAME, lookupResult);
+        StatisticsMerge statMerge = (StatisticsMerge) lookupResult.stat;
+        // 缓存自动刷新atta上报，区分超时失败场景（errorCode=2）
+        if (statMerge.restDnsStat.errorCode == 2) {
+            attaReportLookupEvent(ReportConst.ASYNC_LOOKUP_RETRY_EVENT_NAME, lookupResult);
+        } else {
+            attaReportLookupEvent(ReportConst.ASYNC_LOOKUP_EVENT_NAME, lookupResult);
+        }
     }
 
     public static void attaReportDomainServerLookupEvent(LookupResult lookupResult) {
@@ -229,7 +245,6 @@ public final class ReportHelper {
                     }
                     // 报错记录+1
                     backupInfo.incrementErrorCount();
-                    DnsLog.d("dnsip连接失败, 当前失败次数：" + backupInfo.getErrorCount());
                 } else {
                     if (enableReport) {
                         MAIN.execute(AttaHelper.report(statMerge.netType, sDnsConfig.lookupExtra.bizId,

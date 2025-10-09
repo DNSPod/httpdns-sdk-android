@@ -4,14 +4,22 @@ interface ReportConst {
 
     // 预解析
     String PRE_LOOKUP_EVENT_NAME = "HDNSPreLookup";
+    // 预解析重试
+    String PRE_LOOKUP_RETRY_EVENT_NAME = "HDNSPreLookupRetry";
     // 缓存自动刷新（异步）
     String ASYNC_LOOKUP_EVENT_NAME = "HDNSLookupAsync";
+    // 缓存自动刷新重试
+    String ASYNC_LOOKUP_RETRY_EVENT_NAME = "HDNSLookupAsyncRetry";
     // 普通解析
     String LOOKUP_METHOD_CALLED_EVENT_NAME = "HDNSGetHostByName";
+    // 普通解析重试
+    String LOOKUP_METHOD_CALLED_RETRY_EVENT_NAME = "HDNSGetHostByNameRetry";
     // 命中缓存
     String LOOKUP_FROM_CACHED_EVENT_NAME = "HDNSLookupCached";
-    // useExpiredIpEnable为true时的异步更新缓存事件,区别于HDNSLookupAsync
+    // 乐观DNS（useExpiredIpEnable=true），异步更新缓存事件,区别于HDNSLookupAsync
     String EXPIRED_ASYNC_LOOKUP_EVENT_NAME = "HDNSLookupExpiredAsync";
+    // 乐观DNS（useExpiredIpEnable=true），异步更新缓存事件的重试,区别于HDNSLookupAsyncRetry
+    String ASYNC_ENABLE_EXPIRED_LOOKUP_RETRY_EVENT_NAME = "HDNSLookupExpiredAsyncRetry";
     // 域名服务
     String DOMAIN_SERVER_LOOKUP_EVENT_NAME = "HDNSGetDomainIP";
 
